@@ -26,7 +26,7 @@ El detalle completo de la problemática, el stack elegido, el alcance del MVP y 
 
 - Gestión de catálogo de productos (alta, baja, modificación)
 - Registro de movimientos de stock (ingresos y egresos)
-- Panel de alertas de stock crítico
+- Panel de alertas de stock crítico.
 - Generador de órdenes de compra/reposición
 
 El modelo de datos se diseña preparado para múltiples comercios (multi-tenant) a futuro, aunque el MVP de esta entrega se valida con un solo comercio piloto.
