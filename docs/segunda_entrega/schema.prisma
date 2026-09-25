@@ -1,0 +1,146 @@
+// Diseño de la Entrega 2. Los CHECK complementarios están en restricciones.sql.
+// Al implementar, ubicar este archivo en backend/prisma/schema.prisma.
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RolUsuario {
+  DUENO
+  EMPLEADO
+
+  @@map("rol_usuario")
+}
+
+enum UnidadMedida {
+  UNIDAD
+  KG
+
+  @@map("unidad_medida")
+}
+
+enum TipoMovimiento {
+  INGRESO
+  EGRESO
+
+  @@map("tipo_movimiento")
+}
+
+enum MotivoMovimiento {
+  STOCK_INICIAL
+  REPOSICION
+  SALIDA
+  AJUSTE
+
+  @@map("motivo_movimiento")
+}
+
+model Comercio {
+  id       String   @id @default(uuid()) @db.Uuid
+  nombre   String   @db.VarChar(120)
+  creadoEn DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
+
+  usuarios    Usuario[]
+  categorias  Categoria[]
+  proveedores Proveedor[]
+  productos   Producto[]
+
+  @@map("comercios")
+}
+
+model Usuario {
+  id           String     @id @default(uuid()) @db.Uuid
+  comercioId   String     @map("comercio_id") @db.Uuid
+  nombre       String     @db.VarChar(120)
+  correo       String     @unique @db.VarChar(254)
+  passwordHash String     @map("password_hash") @db.VarChar(255)
+  rol          RolUsuario
+  activo       Boolean    @default(true)
+  creadoEn     DateTime   @default(now()) @map("creado_en") @db.Timestamptz(3)
+
+  comercio    Comercio          @relation(fields: [comercioId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  movimientos MovimientoStock[]
+
+  @@index([comercioId])
+  @@map("usuarios")
+}
+
+model Categoria {
+  id                String   @id @default(uuid()) @db.Uuid
+  comercioId        String   @map("comercio_id") @db.Uuid
+  nombre            String   @db.VarChar(120)
+  nombreNormalizado String   @map("nombre_normalizado") @db.VarChar(120)
+  activo            Boolean  @default(true)
+  creadoEn          DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
+
+  comercio  Comercio   @relation(fields: [comercioId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  productos Producto[]
+
+  @@unique([comercioId, nombreNormalizado])
+  @@map("categorias")
+}
+
+model Proveedor {
+  id                String   @id @default(uuid()) @db.Uuid
+  comercioId        String   @map("comercio_id") @db.Uuid
+  nombre            String   @db.VarChar(120)
+  nombreNormalizado String   @map("nombre_normalizado") @db.VarChar(120)
+  telefono          String?  @db.VarChar(40)
+  correo            String?  @db.VarChar(254)
+  activo            Boolean  @default(true)
+  creadoEn          DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
+
+  comercio  Comercio   @relation(fields: [comercioId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  productos Producto[]
+
+  @@unique([comercioId, nombreNormalizado])
+  @@map("proveedores")
+}
+
+model Producto {
+  id            String       @id @default(uuid()) @db.Uuid
+  comercioId    String       @map("comercio_id") @db.Uuid
+  categoriaId   String       @map("categoria_id") @db.Uuid
+  proveedorId   String       @map("proveedor_id") @db.Uuid
+  codigo        String       @db.VarChar(50)
+  nombre        String       @db.VarChar(160)
+  unidad        UnidadMedida
+  stockActual   Decimal      @default(0) @map("stock_actual") @db.Decimal(12, 3)
+  stockMinimo   Decimal      @default(0) @map("stock_minimo") @db.Decimal(12, 3)
+  stockObjetivo Decimal      @default(0) @map("stock_objetivo") @db.Decimal(12, 3)
+  activo        Boolean      @default(true)
+  creadoEn      DateTime     @default(now()) @map("creado_en") @db.Timestamptz(3)
+
+  comercio    Comercio          @relation(fields: [comercioId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  categoria   Categoria         @relation(fields: [categoriaId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  proveedor   Proveedor         @relation(fields: [proveedorId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  movimientos MovimientoStock[]
+
+  @@unique([comercioId, codigo])
+  @@index([comercioId, activo])
+  @@index([categoriaId])
+  @@index([proveedorId])
+  @@map("productos")
+}
+
+model MovimientoStock {
+  id          String           @id @default(uuid()) @db.Uuid
+  productoId  String           @map("producto_id") @db.Uuid
+  usuarioId   String           @map("usuario_id") @db.Uuid
+  tipo        TipoMovimiento
+  motivo      MotivoMovimiento
+  cantidad    Decimal          @db.Decimal(12, 3)
+  observacion String?          @db.VarChar(500)
+  creadoEn    DateTime         @default(now()) @map("creado_en") @db.Timestamptz(3)
+
+  producto Producto @relation(fields: [productoId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  usuario  Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([productoId, creadoEn])
+  @@index([usuarioId])
+  @@map("movimientos_stock")
+}
