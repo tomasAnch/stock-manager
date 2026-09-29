@@ -1,4 +1,5 @@
--- Entrega 2: complemento del diseño, todavía no aplicado a una base del proyecto.
+-- Entrega 2: complemento del esquema Prisma. La aplicación y sus resultados
+-- se documentan en pruebas/. No reemplaza las futuras migraciones del backend.
 -- Incorporar DESPUÉS del CREATE TABLE en la primera migración de PostgreSQL.
 -- No es un script de instalación completo ni debe ejecutarse repetidamente.
 

@@ -1,6 +1,6 @@
 # Módulos y estructura del repositorio
 
-Entrega 2 · Tomás Anchorena y Nazareno Romero · 24/09/2026
+Entrega 2 · Tomás Anchorena y Nazareno Romero · 24/09/2026 · Corrección: 29/09/2026
 
 ## Arquitectura prevista
 
@@ -24,7 +24,7 @@ Los módulos son divisiones de responsabilidad dentro de la misma aplicación, n
 - Acceso y permisos se ejecuta antes de cada operación protegida. El resto recibe el usuario, rol y comercio ya verificados.
 - Catálogo valida referencias del mismo comercio. Al crear un producto con stock inicial, abre una transacción y llama a la lógica de Inventario con ese mismo cliente transaccional. No realiza una segunda llamada HTTP ni una transacción independiente.
 - Inventario verifica el producto y aplica `increment`/`decrement` condicionado. Nunca acepta desde el cliente un saldo final o un usuario responsable arbitrario.
-- Alertas y reposición consulta el saldo almacenado y los umbrales. El frontend mantiene las ediciones temporales de la lista y produce el texto copiable; volver a consultar descarta esas ediciones.
+- Alertas y reposición consulta el saldo almacenado y los umbrales. El frontend mantiene las ediciones temporales de la lista y produce el texto copiable o el CSV definido en RN-14; ambas salidas usan los mismos ítems y cantidades. Volver a consultar descarta esas ediciones.
 - Cada módulo tendrá rutas/controladores para HTTP, validaciones de entrada y servicios para las reglas y operaciones con Prisma. Un cliente compartido de Prisma permite trabajar con transacciones. No se agrega una capa genérica de repositorios sin una necesidad concreta.
 
 Las operaciones que combinan actividad de referencias y asignación de productos necesitan coordinación transaccional, detallada en [el modelo](03-modelo-de-datos.md#operaciones-transaccionales). No se realizan esas verificaciones únicamente en el frontend.
@@ -36,7 +36,7 @@ Las operaciones que combinan actividad de referencias y asignación de productos
 | Acceso | Login y navegación según rol | Iniciar/cerrar sesión, informar credenciales inválidas y volver al acceso cuando una solicitud sea rechazada por sesión inválida. |
 | Catálogo | Listado/búsqueda de productos, detalle, formularios del dueño, categorías y proveedores | Mostrar existencias y umbrales; incluir consulta de inactivos y acciones de reactivación autorizadas. |
 | Inventario | Formulario de ingreso/egreso, ajuste del dueño e historial por producto | Mostrar unidad, validar cantidad, evitar envíos repetidos mientras una solicitud está pendiente y mostrar confirmación solo después de la respuesta exitosa. |
-| Alertas y reposición | Panel de faltantes para ambos roles; lista por proveedor para el dueño | Mostrar mínimos, objetivos y sugerencias; editar u omitir ítems temporalmente y copiar texto. Informar cuándo se calculó y que recalcular descarta los cambios. |
+| Alertas y reposición | Panel de faltantes para ambos roles; lista por proveedor para el dueño | Mostrar mínimos, objetivos y sugerencias; editar u omitir ítems temporalmente, copiar texto o descargar CSV. Informar cuándo se calculó y que recalcular descarta los cambios. |
 
 Ocultar un botón no constituye un control de seguridad: el backend comprueba los permisos ante cualquier solicitud. Los importes de stock viajan como cadenas decimales en la API; la interfaz aplica formato local, sin usar números binarios de coma flotante para determinar saldos o cantidades sugeridas.
 
@@ -45,16 +45,42 @@ Ocultar un botón no constituye un control de seguridad: el backend comprueba lo
 ```text
 stock-manager/
 ├── README.md
-└── docs/
-    ├── TFI_Entrega1_Anchorena_Romero.pdf
-    └── segunda_entrega/
-        ├── 01-requerimientos.md
-        ├── 02-reglas-de-negocio.md
-        ├── 03-modelo-de-datos.md
-        ├── schema.prisma
-        ├── restricciones.sql
-        └── 04-modulos.md
+├── docs/
+│   ├── TFI_Entrega1_Anchorena_Romero.pdf
+│   └── segunda_entrega/
+│       ├── 01-requerimientos.md
+│       ├── 02-reglas-de-negocio.md
+│       ├── 03-modelo-de-datos.md
+│       ├── 04-modulos.md
+│       ├── schema.prisma
+│       ├── restricciones.sql
+│       └── pruebas/             # SQL reproducible y resultados reales
+├── backend/
+│   ├── README.md
+│   ├── prisma/migrations/
+│   ├── src/
+│   │   ├── lib/
+│   │   ├── middlewares/
+│   │   └── modules/
+│   │       ├── acceso/          # README con responsabilidad y alcance
+│   │       ├── catalogo/
+│   │       ├── inventario/
+│   │       └── reposicion/
+│   └── tests/
+└── frontend/
+    ├── README.md
+    └── src/
+        ├── app/
+        ├── components/
+        ├── services/
+        └── features/
+            ├── acceso/         # README con responsabilidad y alcance
+            ├── catalogo/
+            ├── inventario/
+            └── reposicion/
 ```
+
+Las carpetas anteriores existen en el repositorio. Cada módulo tiene un README; los directorios auxiliares incluyen `.gitkeep` para conservarlos en Git. Son la estructura de inicio, todavía sin lógica de aplicación. Los índices de [backend](../../backend/README.md) y [frontend](../../frontend/README.md) enlazan sus módulos.
 
 ## Estructura prevista al implementar
 
@@ -96,6 +122,8 @@ stock-manager/
 ```
 
 Es la estructura de referencia para la implementación. El backend se desarrollará en JavaScript con módulos ES (import/export). Como el generador prisma-client de Prisma 7 produce TypeScript, se utilizará tsx para ejecutar el servidor y el cliente generado, sin una compilación previa separada. Los scripts previstos son `npm run dev` (tsx watch, con recarga automática) y `npm start`. tsx se instalará como dependencia de ejecución porque también se usa en el despliegue. En Prisma 7 el cliente se crea con un adaptador de PostgreSQL (@prisma/adapter-pg), y el cliente se regenera con `prisma generate` cada vez que cambia el esquema.
+
+Los archivos de arranque, dependencias, configuración y cliente generado se incorporarán al implementar. Se fijará una versión de Node.js compatible con las versiones elegidas de Prisma y tsx, igual en desarrollo y despliegue. Por ahora la única fuente del esquema es `docs/segunda_entrega/schema.prisma`; no se mantiene otra copia manual en backend.
 
 ## Secuencia de registrar un movimiento
 
@@ -149,6 +177,8 @@ No se incluye un diagrama de estados de órdenes porque el MVP no guarda órdene
 
 ## Verificaciones previstas durante la implementación
 
+La [prueba de PostgreSQL del 29/09](pruebas/README.md) verifica las restricciones y operaciones SQL, incluida la reversión ante una inserción fallida. La tabla siguiente conserva los casos de integración para cuando existan la API y la interfaz; no se dan por aprobados por la prueba de base de datos.
+
 | Caso | Resultado esperado |
 |---|---|
 | Dos egresos concurrentes de 3 con saldo inicial 3 | Uno se confirma; el otro se rechaza. Saldo 0 y un solo movimiento nuevo. |
@@ -162,3 +192,4 @@ No se incluye un diagrama de estados de órdenes porque el MVP no guarda órdene
 | ID de otro comercio o usuario responsable manipulado | La operación se rechaza sin revelar datos ajenos. |
 | Stock igual al mínimo, mínimo cero y lista vacía | Se respeta RN-12 y se muestran estados vacíos útiles. |
 | Movimiento fraccionario sobre UNIDAD | El backend lo rechaza antes de escribir. |
+| Copiar y exportar una lista editada | Ambos incluyen las mismas cantidades e ítems, sin alterar stock. El CSV respeta RN-14, incluidas tildes, comillas y decimales. |

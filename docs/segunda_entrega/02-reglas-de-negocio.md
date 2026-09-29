@@ -1,6 +1,6 @@
 # Reglas de negocio
 
-Entrega 2 · Tomás Anchorena y Nazareno Romero · 24/09/2026
+Entrega 2 · Tomás Anchorena y Nazareno Romero · 24/09/2026 · Corrección: 29/09/2026
 
 Estas reglas precisan el alcance presentado en la primera entrega. Son decisiones de diseño del equipo. Su aplicación se distribuye entre el backend y PostgreSQL según [el modelo de datos](03-modelo-de-datos.md).
 
@@ -102,13 +102,24 @@ El dueño genera la lista; el proveedor es un destinatario externo, sin acceso a
 
 **Ejemplo:** actual 3, mínimo 5 y objetivo 12 produce una sugerencia de 9. Con mínimo 5 y objetivo 5, se sugieren 2.
 
-## RN-14. Lista temporal y copiable
+## RN-14. Lista temporal, copia y exportación CSV
 
-El dueño puede editar las cantidades sugeridas, con valores positivos válidos para la unidad, u omitir productos. No puede agregar productos que no integren los faltantes del cálculo. Cada bloque copiado identifica proveedor, fecha del cálculo, código, nombre, cantidad solicitada y unidad.
+El dueño puede editar las cantidades sugeridas, con valores positivos válidos para la unidad, u omitir productos. No puede agregar productos que no integren los faltantes del cálculo. Puede copiar texto o descargar un CSV por proveedor: ambas salidas usan la misma lista editada y omiten los ítems retirados. Cada salida identifica proveedor, fecha del cálculo, código, nombre, cantidad solicitada y unidad.
 
-La lista es una fotografía de la consulta: cambios posteriores del stock no reescriben automáticamente las cantidades ya editadas. Recargar o recalcular descarta las ediciones y obtiene los faltantes vigentes. Si no quedan productos, se muestra un estado vacío y no se produce una lista de pedido. Copiar no guarda órdenes ni altera saldos. Si el navegador no permite copiar automáticamente, se ofrece el mismo texto seleccionable para copia manual.
+La lista es una fotografía de la consulta: cambios posteriores del stock no reescriben automáticamente las cantidades ya editadas. Recargar o recalcular descarta las ediciones y obtiene los faltantes vigentes. Si no quedan productos, se muestra un estado vacío y no se permite copiar ni exportar. Ninguna salida guarda órdenes en la base ni altera saldos. El CSV descargado sí puede conservarse fuera del sistema como archivo. Si el navegador no permite copiar automáticamente, se ofrece el mismo texto seleccionable para copia manual.
 
-**Ejemplo:** el dueño cambia una sugerencia de 9 a 12 para comprar un paquete completo. Puede copiarla para enviarla; al recargar vuelve a calcularse la sugerencia según el stock.
+El formato del CSV será:
+
+- Codificación UTF-8 con BOM para conservar tildes y ñ al abrirlo en hojas de cálculo.
+- Separador de columnas `;`, coma decimal y sin separador de miles. Cantidades enteras para `UNIDAD` y tres decimales para `KG` (por ejemplo, `0,250`).
+- Encabezados, en este orden: `proveedor;fecha_calculo;codigo;nombre;cantidad;unidad`.
+- Una fila por producto, repitiendo proveedor y fecha del cálculo. La fecha se expresa como `AAAA-MM-DD HH:mm:ss-03:00`, correspondiente a Argentina, y no cambia al descargar.
+- Fin de línea CRLF. Los campos que contengan `;`, comillas o saltos de línea se encierran entre comillas dobles y las comillas internas se duplican.
+- Los campos de texto se exportan como texto, no como fórmulas: si empiezan con `=`, `+`, `-` o `@` (también después de espacios), se antepone un apóstrofo solo en la salida CSV. No se modifica el dato en la base.
+
+Es el formato elegido para la configuración regional habitual en Argentina; no depende solo del idioma de Excel. Si la configuración de quien lo abre es diferente, deberá importar el archivo seleccionando `;`, coma decimal y código como texto para conservar ceros iniciales. No se promete que todos los programas reconozcan los tipos automáticamente.
+
+**Ejemplo:** el dueño cambia una sugerencia de 9 a 12 para comprar un paquete completo. Tanto el texto como el CSV muestran 12. Para un producto en kg, una cantidad de 0.250 se exporta como `0,250`; al recargar vuelve a calcularse la sugerencia según el stock.
 
 ## RN-15. Acceso, responsables y usuarios inactivos
 

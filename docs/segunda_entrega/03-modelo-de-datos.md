@@ -1,12 +1,82 @@
 # Modelo de datos
 
-Entrega 2 · Tomás Anchorena y Nazareno Romero · 24/09/2026
+Entrega 2 · Tomás Anchorena y Nazareno Romero · 24/09/2026 · Corrección: 29/09/2026
 
 ## Criterio de diseño
 
 Se utiliza PostgreSQL con un modelo relacional de seis tablas. El esquema acompaña [los requerimientos](01-requerimientos.md) y [las reglas de negocio](02-reglas-de-negocio.md). Mantiene un saldo por producto y un historial de movimientos, actualizados juntos. No hay tablas de alertas ni órdenes: ambas vistas se calculan a partir del inventario.
 
 [schema.prisma](schema.prisma) representa columnas, tipos, relaciones, índices y restricciones únicas. [restricciones.sql](restricciones.sql) complementa los controles de fila que se incorporarán a la primera migración.
+
+## Normalización del modelo
+
+Con las dependencias definidas por las reglas de negocio, las seis tablas alcanzan **tercera forma normal (3FN)**. Categorías, proveedores y productos no alcanzan **forma normal de Boyce-Codd (FNBC)** por los casos explicados debajo. Esta conclusión considera todas las claves candidatas, no solo el UUID elegido como clave primaria.
+
+Una clave candidata es un conjunto mínimo de campos que identifica una fila. Una superclave también identifica una fila, pero puede incluir campos de más. Un atributo primo forma parte de al menos una clave candidata. Escribimos `A → B` cuando un mismo valor de A determina siempre el mismo valor de B, según las reglas del modelo.
+
+| Tabla | Claves candidatas | Dependencias relevantes | Conclusión |
+|---|---|---|---|
+| comercios | `id` | `id → nombre, creado_en`. No se considera único el nombre. | 3FN y FNBC. |
+| usuarios | `id`; `correo` | Cada clave determina comercio, nombre, hash, rol, actividad y fecha. El rol no determina el comercio ni identifica al usuario. | 3FN y FNBC. |
+| categorias | `id`; `(comercio_id, nombre_normalizado)`; `(comercio_id, nombre)` inferida de RN-03 | Cada clave determina la fila; además, `nombre → nombre_normalizado`. | 3FN, no FNBC. |
+| proveedores | `id`; `(comercio_id, nombre_normalizado)`; `(comercio_id, nombre)` inferida de RN-03 | Cada clave determina la fila; además, `nombre → nombre_normalizado`. Teléfono y correo no se suponen únicos. | 3FN, no FNBC. |
+| productos | `id`; `(comercio_id, codigo)`; `(categoria_id, codigo)` y `(proveedor_id, codigo)` inferidas de RN-01/RN-02 | Cada clave determina la fila. También `categoria_id → comercio_id` y `proveedor_id → comercio_id`, porque las referencias son del mismo comercio. | 3FN, no FNBC. |
+| movimientos_stock | `id` | `id → producto_id, usuario_id, tipo, motivo, cantidad, observacion, creado_en`. Producto y fecha no son una clave: puede haber más de un movimiento en un mismo instante. | 3FN y FNBC. |
+
+Las claves inferidas no son índices UNIQUE adicionales. Se deducen de las reglas: por ejemplo, una categoría identifica un comercio y el código es único dentro de ese comercio; por eso categoría y código también identifican un producto. El backend y el seed deben mantener la normalización de nombres y las asociaciones de comercio para que esas dependencias se cumplan. Las FK simples, por sí solas, no garantizan las asociaciones entre comercios.
+
+### Primera y segunda forma normal
+
+El modelo está en **1FN** porque guarda un valor por campo: un producto tiene una categoría y un proveedor principal; sus movimientos son filas separadas, no una lista dentro de Producto. Cada fila tiene un identificador y no hay grupos de columnas repetidos.
+
+Está en **2FN** porque los atributos no primos dependen de la totalidad de cada clave candidata. En categorías y proveedores, ni el comercio ni el nombre por separado determinan actividad, fecha o datos de contacto. En productos, ni comercio, categoría o proveedor por separado, ni el código por separado, determinan su nombre, unidad o stock. Las claves compuestas necesitan ambas partes. `nombre_normalizado` y `comercio_id`, involucrados en los casos siguientes, son atributos primos; no constituyen dependencias parciales de atributos no primos.
+
+### Por qué alcanza 3FN y no siempre FNBC
+
+Para cada dependencia no trivial `X → A`, 3FN exige que X sea superclave **o que A sea primo**. FNBC es más estricta: exige que X sea superclave.
+
+En **categorías y proveedores**, `nombre → nombre_normalizado`, ya que RN-03 define una transformación determinista. El nombre solo no es superclave: puede repetirse en distintos comercios. Aun así cumple 3FN porque `nombre_normalizado` participa en la clave `(comercio_id, nombre_normalizado)`. Esa misma dependencia impide FNBC.
+
+Conservamos esa columna para expresar la unicidad mediante un `@@unique` normal en Prisma 7 y mantener el nombre visible con sus mayúsculas. Se consideró un índice único de PostgreSQL sobre una expresión que combine comercio, normalización Unicode, recorte, `regexp_replace` de espacios y `lower`. No necesita una extensión, pero habría que administrarlo mediante SQL adicional para el esquema Prisma elegido. `lower(nombre)` solo no resuelve los espacios repetidos. Optamos por la columna y una única normalización compartida por backend y seed.
+
+En **productos**, la categoría y el proveedor determinan el comercio por RN-01, pero ninguno identifica por sí solo un producto. Ambas dependencias cumplen 3FN porque `comercio_id` es primo: forma parte de `(comercio_id, codigo)`. No cumplen FNBC. Mantener `comercio_id` permite declarar directamente esa restricción única y filtrar inventario por comercio sin obtenerlo primero de otra tabla. Quitar el campo requeriría otra estrategia para conservar esa unicidad y las consultas; no haría imposible el sistema.
+
+Este análisis describe el modelo bajo sus reglas; no asegura que una escritura SQL arbitraria respete las dependencias que valida la aplicación. Los controles se distinguen en [Dónde se garantiza cada regla](#dónde-se-garantiza-cada-regla).
+
+## Stock actual como desnormalización deliberada
+
+`stock_actual` es un saldo derivado y almacenado. Para cada producto debe cumplirse:
+
+```text
+stock_actual = suma de INGRESOS - suma de EGRESOS
+```
+
+La suma incluye el stock inicial y los ajustes según su tipo. Si no hay movimientos, el saldo es cero. Por ejemplo: ingreso inicial 10, reposición 5, salida 4 y ajuste de egreso 1 dan un saldo de 10.
+
+Se almacena deliberadamente para aplicar una estrategia sencilla: comprobar disponibilidad y descontar en una misma actualización condicional sobre la fila del producto. También permite leer el saldo directamente en el catálogo, las alertas y la reposición. No se afirma una mejora de rendimiento medida. Calcular siempre la suma del historial también podría ser correcto con bloqueo y coordinación transaccional; no es la alternativa elegida.
+
+El costo es mantener información redundante. Cada modificación del saldo y su movimiento deben confirmarse en la misma transacción; si falla uno, se revierte todo. No se permite editar el saldo directamente desde la aplicación. Un CHECK que impide negativos no alcanza para asegurar que saldo e historial coincidan.
+
+Esta desnormalización es una materialización de un agregado de otra tabla. No introduce por sí sola una dependencia entre atributos no clave dentro de Producto que invalide el análisis de 3FN anterior. Se documenta porque el mismo hecho se representa en el historial y en un saldo resumido que debemos mantener consistente.
+
+La siguiente consulta debe devolver **cero filas**. Incluye productos inactivos y productos sin movimientos:
+
+```sql
+SELECT p.id, p.codigo, p.stock_actual,
+       COALESCE(SUM(CASE m.tipo
+         WHEN 'INGRESO' THEN m.cantidad
+         WHEN 'EGRESO' THEN -m.cantidad
+       END), 0) AS stock_calculado
+FROM productos AS p
+LEFT JOIN movimientos_stock AS m ON m.producto_id = p.id
+GROUP BY p.id, p.codigo, p.stock_actual
+HAVING p.stock_actual <> COALESCE(SUM(CASE m.tipo
+         WHEN 'INGRESO' THEN m.cantidad
+         WHEN 'EGRESO' THEN -m.cantidad
+       END), 0);
+```
+
+Se utilizará como control de consistencia, no para corregir automáticamente saldos. Una diferencia requiere revisar la causa antes de aplicar un ajuste. La ejecución con datos ficticios se registra en [las pruebas de PostgreSQL](pruebas/README.md).
 
 ## Diagrama entidad-relación
 
@@ -240,7 +310,7 @@ Prisma no ofrece `FOR UPDATE` en sus métodos habituales, por lo que los bloqueo
 
 Las alertas se calculan consultando productos activos del comercio cuyo stock actual sea menor al mínimo. Para reposición se agrega el proveedor y se calcula objetivo menos actual. No se guardan alertas que puedan quedar desactualizadas ni pedidos con estados que no forman parte del MVP.
 
-La lista copiable incluye fecha del cálculo y es temporal. No reserva mercadería ni registra compras. El dueño registra una reposición cuando se recibe el producto, con independencia de lo copiado anteriormente.
+La lista copiable o exportable en CSV incluye fecha del cálculo y es temporal dentro de la aplicación. El archivo descargado puede conservarse fuera del sistema. Ninguna salida reserva mercadería ni registra compras. El dueño registra una reposición cuando se recibe el producto, con independencia de lo copiado o exportado anteriormente.
 
 El stock inicial es un movimiento, por lo que la suma de ingresos menos egresos debe coincidir con el saldo. Las bajas lógicas no modifican esa suma. Los nombres visibles del producto/usuario se consultan desde sus registros actuales; el MVP conserva los hechos y responsables, pero no un historial de cambios de nombres.
 

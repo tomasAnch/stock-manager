@@ -1,0 +1,144 @@
+Pager usage is off.
+Output format is aligned.
+Border style is 1.
+SET
+=== ENTORNO REAL DE LA PRUEBA ===
+                           version_postgresql                            |     base_pruebas     |        fecha_ejecucion        
+-------------------------------------------------------------------------+----------------------+-------------------------------
+ PostgreSQL 18.6 on x86_64-windows, compiled by msvc-19.44.35228, 64-bit | tfi_entrega2_pruebas | 2026-09-29 19:11:57.419358-03
+(1 row)
+
+DO
+=== APLICAR DDL GENERADO Y RESTRICCIONES ===
+BEGIN
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+COMMIT
+=== VERIFICAR INSTALACION ===
+       tabla       |               restriccion               |                                                                                                                                  definicion                                                                                                                                  | validada 
+-------------------+-----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------
+ movimientos_stock | movimientos_ajuste_con_observacion      | CHECK (((motivo <> 'AJUSTE'::motivo_movimiento) OR ((observacion IS NOT NULL) AND ((observacion)::text ~ '[^[:space:]]'::text))))                                                                                                                                            | t
+ movimientos_stock | movimientos_cantidad_positiva           | CHECK ((cantidad > (0)::numeric))                                                                                                                                                                                                                                            | t
+ movimientos_stock | movimientos_tipo_motivo_valido          | CHECK ((((motivo = ANY (ARRAY['STOCK_INICIAL'::motivo_movimiento, 'REPOSICION'::motivo_movimiento])) AND (tipo = 'INGRESO'::tipo_movimiento)) OR ((motivo = 'SALIDA'::motivo_movimiento) AND (tipo = 'EGRESO'::tipo_movimiento)) OR (motivo = 'AJUSTE'::motivo_movimiento))) | t
+ productos         | productos_cantidades_enteras_por_unidad | CHECK (((unidad <> 'UNIDAD'::unidad_medida) OR ((stock_actual = trunc(stock_actual)) AND (stock_minimo = trunc(stock_minimo)) AND (stock_objetivo = trunc(stock_objetivo)))))                                                                                                | t
+ productos         | productos_objetivo_alcanza_minimo       | CHECK ((stock_objetivo >= stock_minimo))                                                                                                                                                                                                                                     | t
+ productos         | productos_stock_actual_no_negativo      | CHECK ((stock_actual >= (0)::numeric))                                                                                                                                                                                                                                       | t
+ productos         | productos_stock_minimo_no_negativo      | CHECK ((stock_minimo >= (0)::numeric))                                                                                                                                                                                                                                       | t
+(7 rows)
+
+    table_name     | cantidad_columnas 
+-------------------+-------------------
+ categorias        |                 6
+ comercios         |                 3
+ movimientos_stock |                 8
+ productos         |                12
+ proveedores       |                 8
+ usuarios          |                 8
+(6 rows)
+
+DO
+=== EJECUTAR CASOS CON DATOS FICTICIOS ===
+BEGIN
+CREATE TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+INSERT 0 2
+INSERT 0 2
+INSERT 0 2
+INSERT 0 2
+INSERT 0 4
+INSERT 0 2
+DO
+=== RECONCILIACION: SALDO GUARDADO CONTRA HISTORIAL ===
+CREATE VIEW
+ codigo | stock_actual | stock_calculado | coincide 
+--------+--------------+-----------------+----------
+ P001   |        2.000 |           2.000 | t
+ P002   |        2.500 |           2.500 | t
+ P003   |        0.000 |               0 | t
+ P001   |        0.000 |               0 | t
+(4 rows)
+
+ verificar 
+-----------
+ 
+(1 row)
+
+=== RESULTADOS DE LOS CASOS ===
+ numero |                       caso                        |                        esperado                        |       obtenido       
+--------+---------------------------------------------------+--------------------------------------------------------+----------------------
+      1 | Acepta 2.500 KG                                   | verdadero                                              | OK
+      2 | Permite mismo codigo en otro comercio             | verdadero                                              | OK
+      3 | Permite mismo nombre normalizado en otro comercio | verdadero                                              | OK
+      4 | Stock negativo                                    | 23514 / productos_stock_actual_no_negativo             | OK: rechazo esperado
+      5 | Minimo negativo                                   | 23514 / productos_stock_minimo_no_negativo             | OK: rechazo esperado
+      6 | Objetivo menor al minimo                          | 23514 / productos_objetivo_alcanza_minimo              | OK: rechazo esperado
+      7 | Stock fraccionario en UNIDAD                      | 23514 / productos_cantidades_enteras_por_unidad        | OK: rechazo esperado
+      8 | Minimo fraccionario en UNIDAD                     | 23514 / productos_cantidades_enteras_por_unidad        | OK: rechazo esperado
+      9 | Objetivo fraccionario en UNIDAD                   | 23514 / productos_cantidades_enteras_por_unidad        | OK: rechazo esperado
+     10 | Codigo duplicado en el mismo comercio             | 23505 / productos_comercio_id_codigo_key               | OK: rechazo esperado
+     11 | Categoria con nombre normalizado duplicado        | 23505 / categorias_comercio_id_nombre_normalizado_key  | OK: rechazo esperado
+     12 | Proveedor con nombre normalizado duplicado        | 23505 / proveedores_comercio_id_nombre_normalizado_key | OK: rechazo esperado
+     13 | Correo de acceso duplicado                        | 23505 / usuarios_correo_key                            | OK: rechazo esperado
+     14 | Movimiento con cantidad cero                      | 23514 / movimientos_cantidad_positiva                  | OK: rechazo esperado
+     15 | Movimiento con cantidad negativa                  | 23514 / movimientos_cantidad_positiva                  | OK: rechazo esperado
+     16 | Reposicion de tipo egreso                         | 23514 / movimientos_tipo_motivo_valido                 | OK: rechazo esperado
+     17 | Salida de tipo ingreso                            | 23514 / movimientos_tipo_motivo_valido                 | OK: rechazo esperado
+     18 | Stock inicial de tipo egreso                      | 23514 / movimientos_tipo_motivo_valido                 | OK: rechazo esperado
+     19 | Ajuste sin observacion                            | 23514 / movimientos_ajuste_con_observacion             | OK: rechazo esperado
+     20 | Ajuste con espacios                               | 23514 / movimientos_ajuste_con_observacion             | OK: rechazo esperado
+     21 | Producto inexistente en movimiento                | 23503 / movimientos_stock_producto_id_fkey             | OK: rechazo esperado
+     22 | No elimina producto con movimientos               | 23001 / movimientos_stock_producto_id_fkey             | OK: rechazo esperado
+     23 | Sugerencia de reposicion 12-3=9                   | verdadero                                              | OK
+     24 | Minimo cero no genera alerta                      | verdadero                                              | OK
+     25 | Stock igual al minimo no genera alerta            | verdadero                                              | OK
+     26 | Egreso valido deja saldo 1                        | verdadero                                              | OK
+     27 | Egreso excesivo no actualiza filas                | verdadero                                              | OK
+     28 | Ingreso sobre inactivo no actualiza filas         | verdadero                                              | OK
+     29 | Fallo al insertar restaura saldo                  | verdadero                                              | OK
+     30 | Fallo al insertar conserva historial              | verdadero                                              | OK
+     31 | Acepta ajuste con motivo y observacion            | verdadero                                              | OK
+     32 | Todos los saldos coinciden con el historial       | verdadero                                              | OK
+(32 rows)
+
+ casos_correctos 
+-----------------
+              32
+(1 row)
+
+ROLLBACK
+Datos ficticios revertidos. Las tablas y los CHECK permanecen instalados.
+ productos_ficticios_restantes 
+-------------------------------
+                             0
+(1 row)
+
+=== FIN: TODOS LOS CASOS TERMINARON SIN FALLOS ===
