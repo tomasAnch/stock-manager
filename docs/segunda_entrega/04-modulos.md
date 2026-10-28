@@ -1,5 +1,7 @@
 # Módulos y estructura del repositorio
 
+> Documento del diseño presentado en septiembre. Desde la etapa 1, el esquema operativo está en [backend/prisma/schema.prisma](../../backend/prisma/schema.prisma) y el estado implementado en [la guía de etapa 1](../implementacion/etapa-1.md). Las referencias futuras de este documento describen aquella entrega.
+
 Entrega 2 · Tomás Anchorena y Nazareno Romero · 24/09/2026 · Corrección: 29/09/2026
 
 ## Arquitectura prevista

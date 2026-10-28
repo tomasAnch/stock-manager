@@ -1,0 +1,107 @@
+Etapa 1 - Ejecucion final local del 28/10/2026
+v24.22.1
+PostgreSQL 18.6 on x86_64-windows, compiled by msvc-19.44.35228, 64-bit
+
+> stock-manager@0.1.0 test
+> npm run test -w backend
+
+
+> @stock-manager/backend@0.1.0 test
+> tsx --test tests/unit/*.test.js
+
+✔ health devuelve disponibilidad sin exponer datos del comercio (120.5167ms)
+✔ base no disponible responde 503 y no filtra errores internos (26.0532ms)
+✔ 404, JSON mal formado y cuerpos excesivos tienen errores JSON controlados (68.9141ms)
+✔ nunca usa desarrollo como base de pruebas por omisión o alias localhost (3.7508ms)
+✔ normaliza espacios y Unicode, conservando mayúsculas y tildes visibles (3.9471ms)
+✔ cantidades decimales exactas y serialización como texto (1.4601ms)
+✔ rechaza redondeos, notación científica, tipos y rangos inválidos (0.4679ms)
+✔ configuración inválida falla sin imprimir credenciales (0.6321ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1196.3895
+
+> stock-manager@0.1.0 test:integration
+> npm run test:integration -w backend
+
+
+> @stock-manager/backend@0.1.0 test:integration
+> tsx tests/run-integration.js
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "stock_manager_test", schema "public" at "127.0.0.1:55433"
+
+1 migration found in prisma/migrations
+
+
+No pending migrations to apply.
+✔ migración instala seis tablas y siete CHECK validados (223.7846ms)
+✔ seed repetible, hashes válidos, referencias en dos comercios y sin restablecer cuentas (2365.9937ms)
+✔ escritura y lectura con cliente generado y rollback real (15.4955ms)
+✔ restricción de stock rechaza escritura inválida desde Prisma (141.9422ms)
+✔ HTTP consulta PostgreSQL mediante el cliente generado (125.0174ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3872.5325
+
+> stock-manager@0.1.0 db:migrate
+> npm run db:migrate -w backend
+
+
+> @stock-manager/backend@0.1.0 db:migrate
+> prisma migrate deploy
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "stock_manager", schema "public" at "127.0.0.1:55433"
+
+1 migration found in prisma/migrations
+
+
+No pending migrations to apply.
+
+> stock-manager@0.1.0 build
+> npm run generate && npm run build -w frontend
+
+
+> stock-manager@0.1.0 generate
+> npm run generate -w backend
+
+
+> @stock-manager/backend@0.1.0 generate
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+
+✔ Generated Prisma Client (7.10.1) to .\src\generated\prisma in 134ms
+
+
+> @stock-manager/frontend@0.1.0 build
+> vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 17 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.46 kB │ gzip:  0.30 kB
+dist/assets/index-CXFWx7D6.css    3.02 kB │ gzip:  1.14 kB
+dist/assets/index-S_uK1knC.js   223.29 kB │ gzip: 70.17 kB
+
+✓ built in 515ms
+0

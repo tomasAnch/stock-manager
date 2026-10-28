@@ -18,10 +18,10 @@ El MVP contempla uno o dos comercios piloto, con datos separados por comercio y 
 | Instancia | Estado | Fecha |
 |---|---|---|
 | Entrega 1: propuesta y viabilidad | Aprobada por la tutora | 01/09/2026 (aprobación) |
-| Entrega 2: diseño y módulos | Correcciones preparadas; pendiente de revisión final de la tutora y del comité | 27/09/2026 (entrega); corrección del 29/09, plazo hasta el 01/10 por la noche |
-| Implementación y entrega final | Pendiente | 14/11/2026 (fecha límite) |
+| Entrega 2: diseño y módulos | Aprobada por la tutora; habilitada la implementación | 27/09/2026 (entrega); correcciones del 29/09 |
+| Implementación y entrega final | Etapa 1 implementada; funciones del MVP pendientes | 14/11/2026 (fecha límite) |
 
-El repositorio contiene la propuesta, el diseño corregido, pruebas ejecutadas en PostgreSQL y las carpetas de módulos de backend y frontend. La lógica de la aplicación se desarrollará en la etapa de implementación.
+El proyecto ya tiene una base ejecutable: frontend React, servidor Express, cliente Prisma, migración inicial y seed de desarrollo. La pantalla de inicio comprueba la conexión con PostgreSQL. Login, catálogo, movimientos y reposición se implementarán en las etapas siguientes; la descripción funcional de abajo corresponde al MVP completo previsto.
 
 ## Stack definido
 
@@ -48,12 +48,16 @@ Para la entrega final, el campus exige al menos un componente principal alojado 
 | [01. Requerimientos y casos de uso](docs/segunda_entrega/01-requerimientos.md) | Objetivo, actores, alcance, RF/RNF, casos de uso, permisos y validación prevista. |
 | [02. Reglas de negocio](docs/segunda_entrega/02-reglas-de-negocio.md) | RN-01 a RN-15, ejemplos y combinaciones de movimientos. |
 | [03. Modelo de datos](docs/segunda_entrega/03-modelo-de-datos.md) | DER, diccionario, normalización, justificación del saldo almacenado, relaciones y restricciones. |
-| [Esquema Prisma](docs/segunda_entrega/schema.prisma) | Modelos, enums, relaciones e índices del diseño para Prisma 7. |
-| [Restricciones SQL complementarias](docs/segunda_entrega/restricciones.sql) | Siete CHECK aplicados y probados en PostgreSQL; se incorporarán a la primera migración. |
+| [Esquema Prisma de la entrega](docs/segunda_entrega/schema.prisma) | Copia histórica del diseño. El esquema operativo está en backend/prisma. |
+| [Restricciones SQL de la entrega](docs/segunda_entrega/restricciones.sql) | Siete CHECK, ya incorporados a la migración inicial del backend. |
 | [04. Módulos y estructura](docs/segunda_entrega/04-modulos.md) | Backend, frontend, carpetas actuales, implementación prevista y secuencia de registrar un movimiento. |
 | [Pruebas de PostgreSQL](docs/segunda_entrega/pruebas/README.md) | DDL generado desde Prisma, instrucciones, casos y salida real de la ejecución. |
 
 Orden sugerido de lectura: requerimientos → reglas → modelo de datos → módulos. Los diagramas Mermaid están incluidos en los Markdown para consultarlos desde GitHub.
+
+### Implementación
+
+[Hoja de ruta de desarrollo](docs/plan-desarrollo.md): etapas, checklist y registro de avance. [Etapa 1: funcionamiento y revisión](docs/implementacion/etapa-1.md): explicación, comprobaciones y límites de lo implementado. [Preparación del despliegue](docs/implementacion/despliegue.md): configuración prevista; todavía no hay un despliegue público.
 
 ## Alcance funcional del MVP
 
@@ -71,7 +75,11 @@ Los comercios y usuarios piloto se cargarán mediante un seed. No se incluyen AB
 ```text
 .
 ├── README.md
+├── package.json                 # Comandos y workspaces
+├── package-lock.json            # Dependencias reproducibles
 ├── docs/
+│   ├── plan-desarrollo.md
+│   ├── implementacion/
 │   ├── TFI_Entrega1_Anchorena_Romero.pdf
 │   └── segunda_entrega/
 │       ├── 01-requerimientos.md
@@ -82,22 +90,63 @@ Los comercios y usuarios piloto se cargarán mediante un seed. No se incluyen AB
 │       ├── restricciones.sql
 │       └── pruebas/
 ├── backend/
+│   ├── prisma/schema.prisma      # Fuente operativa del modelo
+│   ├── prisma/seed.js
 │   ├── prisma/migrations/
+│   ├── src/server.js
+│   ├── src/app.js
 │   ├── src/modules/             # acceso, catalogo, inventario, reposicion
 │   └── tests/
 └── frontend/
+    ├── src/app/                 # Pantalla de conexión
+    ├── src/services/            # Comunicación con la API
     └── src/features/            # acceso, catalogo, inventario, reposicion
 ```
 
-Los README de [backend](backend/README.md) y [frontend](frontend/README.md) explican cada módulo. La [estructura detallada](docs/segunda_entrega/04-modulos.md#estructura-actual-de-la-entrega) distingue las carpetas creadas de los archivos que se incorporarán al programar.
+Los README de [backend](backend/README.md) y [frontend](frontend/README.md) explican el estado de cada parte. Los documentos de la segunda entrega se conservan como antecedente del diseño; la implementación vigente se registra en esta sección.
 
 ## Instalación y ejecución
 
-Todavía no hay una aplicación para instalar. Cuando comience la implementación se documentarán las versiones de Node.js, la instalación de dependencias, las variables de entorno de ejemplo, las migraciones, el seed y los comandos para ejecutar cada parte. No se suben credenciales ni archivos `.env` reales.
+Requisitos: **Node.js 24.22.1** y **PostgreSQL 18** (verificado con 18.6). Node 25 no es la versión elegida: `.npmrc` rechaza instalaciones con otra versión mayor para que ambos integrantes usen el mismo entorno. Si usás NVM para Windows, ejecutá `nvm install 24.22.1` y `nvm use 24.22.1`; comprobá después `node --version` en una nueva terminal. No se necesita instalar Prisma globalmente.
 
-El esquema se validó con Prisma 7.0.0. El 29/09 se aplicaron su DDL y los siete CHECK en PostgreSQL 18.6: pasaron 32 comprobaciones de restricciones y operaciones SQL. Los [scripts y resultados](docs/segunda_entrega/pruebas/README.md) permiten repetir la prueba en una base vacía. Esto no reemplaza los [casos de integración previstos para la aplicación](docs/segunda_entrega/04-modulos.md#verificaciones-previstas-durante-la-implementación).
+Desde la raíz `stock-manager`:
+
+1. Ejecutar `npm ci` y `npm run generate`.
+2. Copiar `backend/.env.example` a `backend/.env` **solo si no existe**. Completar la conexión a PostgreSQL y las contraseñas del seed. No subir este archivo. `frontend/.env.example` es opcional en desarrollo porque el proxy local ya está configurado.
+3. Crear dos bases vacías con el usuario administrador de la instalación:
+
+   ```powershell
+   psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE stock_manager;"
+   psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE stock_manager_test;"
+   ```
+
+   En Windows, si `psql` no está en PATH, reemplazarlo por `& 'C:\Program Files\PostgreSQL\18\bin\psql.exe'`. La contraseña es la elegida al instalar PostgreSQL. Si una base ya existe, inspeccionarla antes de continuar: no borrar ni reutilizar datos de otro proyecto.
+
+4. Ejecutar `npm run db:migrate` y `npm run db:seed`. La migración ya incluye los CHECK: **no ejecutar restricciones.sql otra vez** sobre estas bases.
+5. Ejecutar `npm run dev`. Abrir **http://localhost:5173**. La API usa el puerto 3001; la pantalla debe indicar que la conexión está lista. `Ctrl+C` detiene ambos servidores.
+
+El seed crea dos comercios ficticios, una categoría y proveedor por comercio, y las cuentas `dueno.a@example.invalid`, `empleado.a@example.invalid`, `dueno.b@example.invalid` y `empleado.b@example.invalid`. Usa `SEED_OWNER_PASSWORD` y `SEED_EMPLOYEE_PASSWORD`, de al menos 12 caracteres y hasta 72 bytes, para guardar hashes. Se puede repetir: no duplica registros ni restablece contraseñas existentes. El seed de demostración se bloquea con `NODE_ENV=production`. Todavía no hay pantalla de login.
+
+| Comando desde la raíz | Uso |
+|---|---|
+| `npm run dev` | Inicia frontend y backend con recarga. |
+| `npm run generate` | Regenera el cliente después de cambios en el esquema. |
+| `npm run db:migrate` | Aplica migraciones pendientes, incluidos los CHECK. |
+| `npm run db:seed` | Carga datos de demostración en desarrollo. |
+| `npm test` | Pruebas de lógica y HTTP con base simulada. |
+| `npm run test:integration` | Migra y prueba la base exclusiva `stock_manager_test`. Rechaza datos preexistentes y limpia sus fixtures al terminar. |
+| `npm run build` | Genera el cliente Prisma y compila el frontend en `frontend/dist`. |
+| `npm start` | Inicia solo la API mediante tsx. |
+
+Las pruebas de integración exigen `TEST_DATABASE_URL`, distinta de desarrollo; nunca toman `DATABASE_URL` como reemplazo. Esta etapa no verifica todavía la autorización ni los movimientos concurrentes del futuro MVP. La evidencia histórica de las 32 comprobaciones SQL de septiembre sigue en [segunda entrega](docs/segunda_entrega/pruebas/README.md).
 
 ## Registro de cambios
+
+### 28/10/2026 — Preparación de la implementación
+
+- Se actualiza el estado de la segunda entrega a aprobada por la tutora, según la devolución compartida por el equipo, que habilita comenzar la implementación.
+- Se incorpora una hoja de ruta para implementar y probar el MVP por etapas, incluyendo despliegue, piloto, informe y video. No cambia el alcance funcional ni reemplaza las consignas del campus.
+- Se implementa la etapa 1 con Node 24.22.1, Prisma 7.10.1 y dependencias fijadas en el lockfile. Se agregan aplicación mínima, migración con CHECK, seed repetible, validaciones comunes y pruebas. Los módulos funcionales del MVP siguen pendientes.
 
 ### 29/09/2026 — Correcciones a partir de la devolución
 

@@ -1,6 +1,6 @@
 # Backend
 
-Estructura inicial del backend del TFI. En esta entrega se crean las carpetas y se define qué hará cada módulo; todavía no hay servidor ejecutable ni dependencias instaladas.
+Backend ejecutable con Express y Prisma. La etapa 1 ofrece `GET /api/health`, que consulta PostgreSQL y responde 200 o 503 sin devolver información del comercio. Los siguientes módulos aún están pendientes:
 
 | Módulo | Responsabilidad |
 |---|---|
@@ -9,10 +9,10 @@ Estructura inicial del backend del TFI. En esta entrega se crean las carpetas y 
 | [Inventario](src/modules/inventario/README.md) | Movimientos, saldo e historial. |
 | [Reposición](src/modules/reposicion/README.md) | Alertas y cantidades sugeridas por proveedor. |
 
-`src/lib/` alojará el cliente compartido de Prisma; `src/middlewares/`, los controles de acceso y errores. `tests/` alojará las pruebas del backend. Los `.gitkeep` permiten conservar estos directorios vacíos en Git.
+`src/lib/` contiene configuración, cliente Prisma y validaciones de nombres/cantidades. El manejo general de errores está en `src/app.js`; los controles de autenticación se incorporarán en la etapa 2. `tests/unit/` prueba lógica y HTTP; `tests/integration/` usa PostgreSQL real. CORS controla los orígenes admitidos por el navegador, pero no sustituye la autorización futura.
 
-El backend se implementará con JavaScript, módulos ES, Express y tsx. Se fijarán versiones compatibles de Node.js, Prisma y tsx antes de instalar dependencias. Los futuros comandos `npm run dev` y `npm start` todavía no están disponibles.
+Se usa JavaScript con módulos ES y tsx, también en ejecución de producción. Node 24.22.1 y Prisma 7.10.1 son las versiones verificadas; las demás dependencias están fijadas en package.json y el lockfile raíz. La instalación y los comandos se ejecutan desde la raíz siguiendo el [README principal](../README.md#instalación-y-ejecución).
 
-El esquema vigente está en [docs/segunda_entrega/schema.prisma](../docs/segunda_entrega/schema.prisma). Al implementar se trasladará a `prisma/`, junto con el seed y las migraciones. Los CHECK de [restricciones.sql](../docs/segunda_entrega/restricciones.sql) deberán formar parte de la primera migración. Se evita mantener dos copias manuales del esquema.
+El esquema vigente está en [prisma/schema.prisma](prisma/schema.prisma). La copia documental de septiembre es histórica y no se sincroniza manualmente. La migración inicial ya incluye los siete CHECK: no ejecutar el SQL documental encima. El seed carga solo datos ficticios de desarrollo y no se ejecuta automáticamente al arrancar el servidor ni al migrar.
 
 Diseño completo: [módulos y secuencia de movimientos](../docs/segunda_entrega/04-modulos.md). Pruebas ya ejecutadas: [PostgreSQL](../docs/segunda_entrega/pruebas/README.md).

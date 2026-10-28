@@ -1,6 +1,6 @@
 # Frontend
 
-Estructura inicial de la interfaz React del TFI. Se crean las carpetas de funcionalidades; las pantallas y las dependencias se incorporarán durante la implementación.
+Interfaz React con Vite. En la etapa 1, `src/app/App.jsx` muestra una pantalla de inicio con conexión, carga, error y reintento. Los módulos funcionales de abajo siguen pendientes; no hay botones que simulen operaciones implementadas.
 
 | Módulo | Pantallas previstas |
 |---|---|
@@ -9,8 +9,8 @@ Estructura inicial de la interfaz React del TFI. Se crean las carpetas de funcio
 | [Inventario](src/features/inventario/README.md) | Registro de movimientos, ajustes e historial. |
 | [Reposición](src/features/reposicion/README.md) | Alertas y lista editable, copiable y exportable. |
 
-`src/app/` alojará la configuración de la aplicación y la navegación; `src/components/`, componentes compartidos; `src/services/`, la comunicación HTTP con el backend. Sus `.gitkeep` permiten conservar las carpetas vacías en Git.
+`src/app/` contiene la pantalla y estilos iniciales; `src/components/` queda disponible para componentes compartidos. `src/services/api.js` realiza la consulta HTTP. En desarrollo, Vite redirige `/api` al servidor local. Para hosting separado se configura `VITE_API_URL` antes de compilar; nunca se colocan secretos en variables `VITE_*`.
 
-Todavía no hay una aplicación para ejecutar. Ocultar controles según el rol mejorará la interfaz, pero la autorización real corresponderá al backend.
+Ejecutar `npm run dev` desde la raíz inicia ambos servidores. `npm run build` genera el cliente Prisma y compila la interfaz en `frontend/dist`. Ver [instalación](../README.md#instalación-y-ejecución). La autorización por rol llegará en la etapa 2 y se comprobará en el backend.
 
 Diseño completo: [módulos y estructura](../docs/segunda_entrega/04-modulos.md).
