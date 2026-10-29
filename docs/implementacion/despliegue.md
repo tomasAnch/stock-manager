@@ -13,7 +13,15 @@ Etapa 1 · 28/10/2026. Configuración prevista, todavía no desplegada ni verifi
 - Comprobación de disponibilidad: `/api/health`. Devuelve 503 si la base o la tabla consultada no están disponibles. No devuelve versión, cuentas ni datos de negocio.
 - Usar la conexión y TLS indicados por el proveedor sin desactivar la validación de certificados. Revisar conexión directa para migraciones si el servicio ofrece un pool separado.
 
-No ejecutar el seed de demostración en producción. El alta de cuentas piloto reales y sus credenciales se coordinará antes del primer despliegue funcional. No se guarda información sensible en este documento.
+No ejecutar el seed de demostración en producción: mantener `NODE_ENV=production` y `ALLOW_DEMO_SEED=false`. El alta de cuentas piloto reales y sus credenciales se coordinará antes del primer despliegue funcional. No se guarda información sensible en este documento.
+
+### Cómo ejecutar la migración según el servicio
+
+“Antes del arranque” describe el orden, no obliga a usar un hook específico. En Render, el comando **pre-deploy** está disponible en servicios pagos; no se puede asumir su disponibilidad en el plan gratis. Si se elige un servicio sin ese hook, el primer despliegue puede coordinarse manualmente: desde una copia con las migraciones de la versión a publicar, configurar la conexión directa de la base elegida, ejecutar `npm run db:migrate`, verificar el resultado y recién después publicar esa versión. Esa sesión debe tener `NODE_ENV=production` y el seed deshabilitado. Las credenciales se configuran fuera del repositorio. Fuente: [despliegues de Render](https://render.com/docs/deploys), consultada el 29/10/2026.
+
+Otra posibilidad es incorporar la migración a un paso automatizado de entrega o al build si el proveedor lo permite. No se configura todavía: antes hay que verificar conectividad, credenciales, compatibilidad con la versión que sigue funcionando y evitar que un build de vista previa migre producción. La decisión y el comando efectivo se registrarán al elegir el hosting.
+
+La base gratuita de Render expira a los **30 días desde su creación**. Si se crease el 29/10, ese plazo llegaría al 28/11, después del 14/11; aun así podría no cubrir la defensa. Se evaluarán las opciones del stack, incluida Supabase, con sus condiciones vigentes y la duración necesaria antes de decidir. No se presupone que otro plan gratuito no tenga límites. Fuente: [plan gratuito de Render](https://render.com/docs/free), consultada el 29/10/2026.
 
 ## Frontend
 

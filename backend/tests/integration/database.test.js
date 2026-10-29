@@ -58,7 +58,16 @@ test('restricción de stock rechaza escritura inválida desde Prisma', async () 
   const commerce = demoStores[0].id;
   const category = await prisma.categoria.findFirstOrThrow({ where: { comercioId: commerce } });
   const supplier = await prisma.proveedor.findFirstOrThrow({ where: { comercioId: commerce } });
-  await assert.rejects(prisma.producto.create({ data: { comercioId: commerce, categoriaId: category.id, proveedorId: supplier.id, codigo: 'INVALIDO', nombre: 'Inválido', unidad: 'UNIDAD', stockActual: '-1' } }));
+  await assert.rejects(
+    prisma.producto.create({ data: {
+      comercioId: commerce, categoriaId: category.id, proveedorId: supplier.id,
+      codigo: 'INVALIDO', nombre: 'Inválido', unidad: 'UNIDAD', stockActual: '-1',
+    } }),
+    error => {
+      assert.match(error.message, /productos_stock_actual_no_negativo/);
+      return true;
+    },
+  );
   assert.equal(await prisma.producto.count(), 0);
 });
 test('HTTP consulta PostgreSQL mediante el cliente generado', async () => {

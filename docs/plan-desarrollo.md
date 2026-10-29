@@ -20,7 +20,7 @@ El último commit local revisado al preparar el plan es `20ac7ea`. La carpeta es
 
 - [Requerimientos y permisos](segunda_entrega/01-requerimientos.md): RF-01 a RF-12 y RNF-01 a RNF-08.
 - [Reglas de negocio](segunda_entrega/02-reglas-de-negocio.md): RN-01 a RN-15.
-- [Modelo de datos](segunda_entrega/03-modelo-de-datos.md), [esquema Prisma](segunda_entrega/schema.prisma) y [CHECK](segunda_entrega/restricciones.sql).
+- [Modelo de datos presentado](segunda_entrega/03-modelo-de-datos.md), [esquema operativo](../backend/prisma/schema.prisma) y [migración con CHECK](../backend/prisma/migrations/202610280001_initial/migration.sql). Las copias de esquema/SQL en segunda_entrega son históricas.
 - [Módulos](segunda_entrega/04-modulos.md): organización y operaciones transaccionales.
 
 Se conserva React, Node.js con Express, PostgreSQL y Prisma 7. El backend será JavaScript con módulos ES y ejecución mediante tsx. Las versiones concretas compatibles se verificarán al preparar el entorno. No se cambia el stack ni se agregan funcionalidades fuera del MVP sin una decisión explícita del equipo.
@@ -157,9 +157,9 @@ Se priorizan comportamientos importantes y errores posibles; no se agrega un tes
 
 ## Registro de avance y continuidad
 
-**Estado actual:** etapa 1 implementada y verificada localmente, pendiente de revisión por Naza/Claude. Ver [explicación y pruebas](implementacion/etapa-1.md). Las etapas 2 a 7 siguen pendientes.
+**Estado actual:** correcciones de la etapa 1 implementadas y verificadas el 29/10: 14 pruebas de lógica/HTTP y 5 de integración correctas, instalación nueva sobre bases vacías, compilación e interfaz comprobadas. Ver [seguimiento de la revisión](implementacion/revision-etapa-1.md) y [registro inicial del 28/10](implementacion/etapa-1.md). Falta compartir esta versión para la revisión cruzada y ejecutar la instalación en el equipo de Nazareno. Las etapas 2 a 7 siguen pendientes.
 
-**Siguiente acción:** compartir la etapa 1 para revisión (Git lo ejecuta Tomás); resolver observaciones y continuar con acceso y permisos.
+**Siguiente acción:** compartir las correcciones y su evidencia para revisión de Naza/Claude (Git lo ejecuta Tomás). Tras resolver las observaciones y comprobar la instalación compartida, continuar con acceso y permisos.
 
 **Datos externos pendientes:** disponibilidad y acceso al comercio piloto; cuentas y condiciones del hosting. No se necesitan para redactar o probar toda la lógica local.
 

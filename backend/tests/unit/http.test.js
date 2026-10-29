@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { createApp } from '../../src/app.js';
 
-async function withServer(prisma, callback) {
-  const server = createApp({ prisma }).listen(0, '127.0.0.1');
+async function withServer(prisma, callback, logger = { error() {} }) {
+  const server = createApp({ prisma, logger }).listen(0, '127.0.0.1');
   await once(server, 'listening');
   try { await callback(`http://127.0.0.1:${server.address().port}`); }
   finally { await new Promise(resolve => server.close(resolve)); }
@@ -20,11 +20,15 @@ test('health devuelve disponibilidad sin exponer datos del comercio', async () =
   });
 });
 test('base no disponible responde 503 y no filtra errores internos', async () => {
+  const messages = [];
   await withServer({ comercio: { count: async () => { throw new Error('password=secreto'); } } }, async url => {
     const res = await fetch(`${url}/api/health`);
     assert.equal(res.status, 503);
     assert.deepEqual(await res.json(), { status: 'unavailable', database: 'unavailable' });
-  });
+  }, { error: (...args) => messages.push(args) });
+  assert.equal(messages.length, 1);
+  assert.equal(messages[0][1].type, 'Error');
+  assert(!JSON.stringify(messages).includes('password=secreto'));
 });
 test('404, JSON mal formado y cuerpos excesivos tienen errores JSON controlados', async () => {
   await withServer({}, async url => {

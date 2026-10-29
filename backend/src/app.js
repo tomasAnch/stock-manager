@@ -1,7 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { ValidationError } from './lib/validation.js';
+import { errorHandler } from './middlewares/error-handler.js';
+import { safeErrorDetails } from './lib/error-details.js';
 
 export function createApp({ prisma, origin = 'http://localhost:5173', logger = console }) {
   const app = express();
@@ -16,22 +17,13 @@ export function createApp({ prisma, origin = 'http://localhost:5173', logger = c
       // Comprueba conexión y presencia del esquema sin devolver datos del comercio.
       await prisma.comercio.count();
       res.json({ status: 'ok', database: 'connected' });
-    } catch {
+    } catch (error) {
+      logger.error('No se pudo comprobar la disponibilidad de la base.', safeErrorDetails(error));
       res.status(503).json({ status: 'unavailable', database: 'unavailable' });
     }
   });
 
   app.use((_req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Ruta no encontrada.' } }));
-  app.use((error, _req, res, _next) => {
-    if (error instanceof ValidationError) {
-      return res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: error.message } });
-    }
-    if (error.type === 'entity.parse.failed' || error.type === 'entity.too.large') {
-      return res.status(error.type === 'entity.too.large' ? 413 : 400)
-        .json({ error: { code: 'INVALID_BODY', message: 'El cuerpo de la solicitud no es válido.' } });
-    }
-    logger.error('Error interno al procesar una solicitud.');
-    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'No se pudo completar la operación.' } });
-  });
+  app.use(errorHandler(logger));
   return app;
 }

@@ -1,5 +1,13 @@
 import { databaseUrl } from '../src/lib/config.js';
 
+function databaseIdentity(url) {
+  const hostname = url.hostname.toLowerCase();
+  const host = hostname === 'localhost' ? '127.0.0.1' : hostname;
+  const port = url.port || '5432';
+  const name = decodeURIComponent(url.pathname);
+  return `${host}:${port}${name}`;
+}
+
 export function requireTestDatabase(env = process.env) {
   const value = env.TEST_DATABASE_URL;
   if (!value) throw new Error('Falta TEST_DATABASE_URL; no se usa DATABASE_URL como reemplazo.');
@@ -9,8 +17,7 @@ export function requireTestDatabase(env = process.env) {
   }
   if (env.DATABASE_URL) {
     const dev = new URL(databaseUrl(env.DATABASE_URL));
-    const key = url => `${url.hostname.toLowerCase().replace(/^localhost$/, '127.0.0.1')}:${url.port || '5432'}${decodeURIComponent(url.pathname)}`;
-    if (key(dev) === key(target)) throw new Error('La base de desarrollo y la de pruebas deben ser distintas.');
+    if (databaseIdentity(dev) === databaseIdentity(target)) throw new Error('La base de desarrollo y la de pruebas deben ser distintas.');
   }
   return value;
 }

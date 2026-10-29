@@ -107,7 +107,7 @@ Los README de [backend](backend/README.md) y [frontend](frontend/README.md) expl
 
 ## Instalación y ejecución
 
-Requisitos: **Node.js 24.22.1** y **PostgreSQL 18** (verificado con 18.6). Node 25 no es la versión elegida: `.npmrc` rechaza instalaciones con otra versión mayor para que ambos integrantes usen el mismo entorno. Si usás NVM para Windows, ejecutá `nvm install 24.22.1` y `nvm use 24.22.1`; comprobá después `node --version` en una nueva terminal. No se necesita instalar Prisma globalmente.
+Versión recomendada: **Node.js 24.22.1** y **PostgreSQL 18** (verificado con 18.6). `.nvmrc` y `.node-version` fijan esa recomendación. El rango de npm es `>=24.22.1 <25`: acepta versiones 24.x posteriores, pero rechaza Node 22, Node 25 y versiones anteriores al mínimo. Si usás NVM para Windows, ejecutá `nvm install 24.22.1` y `nvm use 24.22.1`; comprobá después `node --version` en una nueva terminal. No se necesita instalar Prisma globalmente.
 
 Desde la raíz `stock-manager`:
 
@@ -122,10 +122,10 @@ Desde la raíz `stock-manager`:
 
    En Windows, si `psql` no está en PATH, reemplazarlo por `& 'C:\Program Files\PostgreSQL\18\bin\psql.exe'`. La contraseña es la elegida al instalar PostgreSQL. Si una base ya existe, inspeccionarla antes de continuar: no borrar ni reutilizar datos de otro proyecto.
 
-4. Ejecutar `npm run db:migrate` y `npm run db:seed`. La migración ya incluye los CHECK: **no ejecutar restricciones.sql otra vez** sobre estas bases.
+4. Ejecutar `npm run db:migrate`. Verificar que `DATABASE_URL` apunta al desarrollo y habilitar `ALLOW_DEMO_SEED=true` en `backend/.env`; después ejecutar `npm run db:seed`. El valor de ejemplo es `false` para exigir esta decisión explícita. La migración ya incluye los CHECK: **no ejecutar restricciones.sql otra vez** sobre estas bases.
 5. Ejecutar `npm run dev`. Abrir **http://localhost:5173**. La API usa el puerto 3001; la pantalla debe indicar que la conexión está lista. `Ctrl+C` detiene ambos servidores.
 
-El seed crea dos comercios ficticios, una categoría y proveedor por comercio, y las cuentas `dueno.a@example.invalid`, `empleado.a@example.invalid`, `dueno.b@example.invalid` y `empleado.b@example.invalid`. Usa `SEED_OWNER_PASSWORD` y `SEED_EMPLOYEE_PASSWORD`, de al menos 12 caracteres y hasta 72 bytes, para guardar hashes. Se puede repetir: no duplica registros ni restablece contraseñas existentes. El seed de demostración se bloquea con `NODE_ENV=production`. Todavía no hay pantalla de login.
+El seed crea dos comercios ficticios, una categoría y proveedor por comercio, y las cuentas `dueno.a@example.invalid`, `empleado.a@example.invalid`, `dueno.b@example.invalid` y `empleado.b@example.invalid`. Usa `SEED_OWNER_PASSWORD` y `SEED_EMPLOYEE_PASSWORD`, de al menos 12 caracteres y hasta 72 bytes, para guardar hashes. Se puede repetir: no duplica registros ni restablece contraseñas existentes. El seed de demostración requiere `ALLOW_DEMO_SEED=true` y se bloquea siempre con `NODE_ENV=production`, incluso si está habilitado. La habilitación no identifica automáticamente qué base es de producción: revisar siempre la conexión elegida. Todavía no hay pantalla de login.
 
 | Comando desde la raíz | Uso |
 |---|---|
@@ -134,13 +134,33 @@ El seed crea dos comercios ficticios, una categoría y proveedor por comercio, y
 | `npm run db:migrate` | Aplica migraciones pendientes, incluidos los CHECK. |
 | `npm run db:seed` | Carga datos de demostración en desarrollo. |
 | `npm test` | Pruebas de lógica y HTTP con base simulada. |
-| `npm run test:integration` | Migra y prueba la base exclusiva `stock_manager_test`. Rechaza datos preexistentes y limpia sus fixtures al terminar. |
+| `npm run test:integration` | Inspecciona antes de migrar la base exclusiva `stock_manager_test`. Rechaza datos y objetos ajenos; después migra, prueba y limpia sus fixtures. |
 | `npm run build` | Genera el cliente Prisma y compila el frontend en `frontend/dist`. |
 | `npm start` | Inicia solo la API mediante tsx. |
 
 Las pruebas de integración exigen `TEST_DATABASE_URL`, distinta de desarrollo; nunca toman `DATABASE_URL` como reemplazo. Esta etapa no verifica todavía la autorización ni los movimientos concurrentes del futuro MVP. La evidencia histórica de las 32 comprobaciones SQL de septiembre sigue en [segunda entrega](docs/segunda_entrega/pruebas/README.md).
 
+### Si se interrumpió una prueba
+
+El rechazo por datos existentes es intencional: el runner no los borra automáticamente. Primero cerrá las pruebas en ejecución y revisá el host, puerto y nombre de `TEST_DATABASE_URL`. Si hay datos desconocidos o que quieras conservar, no continúes con el borrado.
+
+Solo si confirmaste que **stock_manager_test es exclusivamente descartable**, podés recrearla. Este ejemplo corresponde a la instalación local del README (ajustar host/puerto/usuario a esa base de pruebas, nunca a desarrollo o producción):
+
+```powershell
+psql -h localhost -p 5432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "DROP DATABASE stock_manager_test;"
+psql -h localhost -p 5432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE stock_manager_test;"
+npm run test:integration
+```
+
+Si hay conexiones abiertas, PostgreSQL rechazará el borrado; cerralas antes de reintentar. No usar `--force` ni cambiar el nombre por `stock_manager`. La nueva ejecución vuelve a aplicar la migración. Ejecutar las pruebas de a una sobre esa base dedicada; no compartirla con una aplicación en uso.
+
 ## Registro de cambios
+
+### 29/10/2026 — Revisión de la etapa 1
+
+- Se agregan mensajes controlados para errores, habilitación explícita del seed y una inspección de la base de pruebas anterior a las migraciones.
+- Se precisa el CHECK esperado en las pruebas, se simplifica código y se documenta la recuperación de pruebas interrumpidas.
+- Se conserva la migración aplicada y la evidencia del 28/10. La nueva verificación desde una copia limpia se registra por separado en [la revisión](docs/implementacion/revision-etapa-1.md).
 
 ### 28/10/2026 — Preparación de la implementación
 

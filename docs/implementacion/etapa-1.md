@@ -1,6 +1,6 @@
 # Etapa 1 — Entorno, base de datos y aplicación mínima
 
-Implementación local del 28/10/2026. Lista para revisión del equipo; no equivale a la aplicación completa ni a un despliegue público.
+Registro de la implementación local del 28/10/2026. La revisión posterior y su evidencia nueva están en [revisión del 29/10](revision-etapa-1.md). Los conteos de este documento corresponden a la primera versión; no equivale a la aplicación completa ni a un despliegue público.
 
 ## Qué funciona
 

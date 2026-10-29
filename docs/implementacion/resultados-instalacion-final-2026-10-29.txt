@@ -1,0 +1,472 @@
+Instalacion nueva del 29/10/2026 - copia aislada sin node_modules, cliente generado ni .env.
+v24.22.1
+> psql en postgres : SELECT version();
+                                 version                                 
+-------------------------------------------------------------------------
+ PostgreSQL 18.6 on x86_64-windows, compiled by msvc-19.44.35228, 64-bit
+(1 row)
+
+> psql en postgres : SHOW data_directory;
+                        data_directory                        
+--------------------------------------------------------------
+ C:/Users/tomas/AppData/Local/Temp/tfi-revision-pg18-20261029
+(1 row)
+
+> psql en postgres : DROP DATABASE stock_manager;
+DROP DATABASE
+> psql en postgres : DROP DATABASE stock_manager_test;
+DROP DATABASE
+> psql en postgres : CREATE DATABASE stock_manager;
+CREATE DATABASE
+> psql en postgres : CREATE DATABASE stock_manager_test;
+CREATE DATABASE
+> psql en stock_manager : SELECT count(*) AS tablas_publicas_antes FROM pg_tables WHERE schemaname = 'public';
+ tablas_publicas_antes 
+-----------------------
+                     0
+(1 row)
+
+> psql en stock_manager_test : SELECT count(*) AS tablas_publicas_antes FROM pg_tables WHERE schemaname = 'public';
+ tablas_publicas_antes 
+-----------------------
+                     0
+(1 row)
+
+> npm ci --offline --no-audit
+
+added 268 packages in 11s
+
+61 packages are looking for funding
+  run `npm fund` for details
+Exit code: 0 (esperado: 0)
+> npm run generate
+
+> stock-manager@0.1.0 generate
+> npm run generate -w backend
+
+
+> @stock-manager/backend@0.1.0 generate
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+
+✔ Generated Prisma Client (7.10.1) to .\src\generated\prisma in 75ms
+
+Exit code: 0 (esperado: 0)
+Se creo .env exclusivo de esta copia, con contrasenas aleatorias no registradas en este log.
+> npm test
+
+> stock-manager@0.1.0 test
+> npm run test -w backend
+
+
+> @stock-manager/backend@0.1.0 test
+> tsx --test tests/unit/*.test.js
+
+✔ diagnóstico conserva tipo, código y ubicación, pero no mensaje, metadatos ni ruta completa (1.9581ms)
+✔ 500 registra diagnóstico controlado sin filtrar el error ni la solicitud (0.5279ms)
+✔ seed requiere habilitación exacta y producción siempre prevalece (0.6717ms)
+✔ seed informa contraseñas inválidas antes de consultar la base (0.6906ms)
+✔ health devuelve disponibilidad sin exponer datos del comercio (67.2285ms)
+✔ base no disponible responde 503 y no filtra errores internos (15.0273ms)
+✔ 404, JSON mal formado y cuerpos excesivos tienen errores JSON controlados (33.319ms)
+✔ preflight acepta base sin tablas y base migrada sin datos de negocio (0.9951ms)
+✔ preflight rechaza datos conocidos, tablas ajenas y relaciones fuera de public (0.7879ms)
+✔ nunca usa desarrollo como base de pruebas por omisión o alias localhost (1.7968ms)
+✔ normaliza espacios y Unicode, conservando mayúsculas y tildes visibles (2.7798ms)
+✔ cantidades decimales exactas y serialización como texto (1.3403ms)
+✔ rechaza redondeos, notación científica, tipos y rangos inválidos (0.4559ms)
+✔ configuración inválida falla sin imprimir credenciales (0.4968ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 740.372
+Exit code: 0 (esperado: 0)
+> psql en stock_manager_test : CREATE TABLE preflight_probe(id integer); INSERT INTO preflight_probe VALUES (1);
+CREATE TABLE
+INSERT 0 1
+> npm run test:integration
+
+> stock-manager@0.1.0 test:integration
+> npm run test:integration -w backend
+
+
+> @stock-manager/backend@0.1.0 test:integration
+> tsx tests/run-integration.js
+
+La base de pruebas contiene objetos ajenos al proyecto. No se ejecutaron migraciones. {
+  type: 'Error',
+  locations: [
+    'preflight-database.js:17:13',
+    'preflight-database.js:33:9',
+    'run-integration.js:12:3'
+  ]
+}
+npm error Lifecycle script `test:integration` failed with error:
+npm error code 1
+npm error path C:\Users\tomas\AppData\Local\Temp\tfi-revision-etapa1-final-20261029\backend
+npm error workspace @stock-manager/backend@0.1.0
+npm error location C:\Users\tomas\AppData\Local\Temp\tfi-revision-etapa1-final-20261029\backend
+npm error command failed
+npm error command C:\Windows\system32\cmd.exe /d /s /c tsx tests/run-integration.js
+Exit code: 1 (esperado: 1)
+> psql en stock_manager_test : SELECT count(*) AS dato_ajeno_conservado FROM preflight_probe; SELECT to_regclass('public._prisma_migrations') AS migraciones_no_creadas;
+ dato_ajeno_conservado 
+-----------------------
+                     1
+(1 row)
+
+ migraciones_no_creadas 
+------------------------
+ 
+(1 row)
+
+> psql en stock_manager_test : DROP TABLE preflight_probe; CREATE TABLE comercios(id integer); INSERT INTO comercios VALUES (1);
+DROP TABLE
+CREATE TABLE
+INSERT 0 1
+> npm run test:integration
+
+> stock-manager@0.1.0 test:integration
+> npm run test:integration -w backend
+
+
+> @stock-manager/backend@0.1.0 test:integration
+> tsx tests/run-integration.js
+
+La base de pruebas contiene datos. No se ejecutaron migraciones; consultar la recuperación en el README. {
+  type: 'Error',
+  locations: [
+    'preflight-database.js:26:13',
+    'preflight-database.js:33:9',
+    'run-integration.js:12:3'
+  ]
+}
+npm error Lifecycle script `test:integration` failed with error:
+npm error code 1
+npm error path C:\Users\tomas\AppData\Local\Temp\tfi-revision-etapa1-final-20261029\backend
+npm error workspace @stock-manager/backend@0.1.0
+npm error location C:\Users\tomas\AppData\Local\Temp\tfi-revision-etapa1-final-20261029\backend
+npm error command failed
+npm error command C:\Windows\system32\cmd.exe /d /s /c tsx tests/run-integration.js
+Exit code: 1 (esperado: 1)
+> psql en stock_manager_test : SELECT count(*) AS dato_conocido_conservado FROM comercios; SELECT to_regclass('public._prisma_migrations') AS migraciones_no_creadas;
+ dato_conocido_conservado 
+--------------------------
+                        1
+(1 row)
+
+ migraciones_no_creadas 
+------------------------
+ 
+(1 row)
+
+> psql en stock_manager_test : DROP TABLE comercios;
+DROP TABLE
+> npm run db:migrate
+
+> stock-manager@0.1.0 db:migrate
+> npm run db:migrate -w backend
+
+
+> @stock-manager/backend@0.1.0 db:migrate
+> prisma migrate deploy
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "stock_manager", schema "public" at "127.0.0.1:55434"
+
+1 migration found in prisma/migrations
+
+Applying migration `202610280001_initial`
+
+┌─────────────────────────────────────────────────────────┐
+│  Update available 7.10.1 -> 8.0.0-rc.28                 │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+The following migration(s) have been applied:
+
+migrations/
+  └─ 202610280001_initial/
+    └─ migration.sql
+
+All migrations have been successfully applied.
+Exit code: 0 (esperado: 0)
+> npm run db:seed
+
+> stock-manager@0.1.0 db:seed
+> npm run db:seed -w backend
+
+
+> @stock-manager/backend@0.1.0 db:seed
+> tsx prisma/seed.js
+
+Seed rechazado (NOT_ENABLED): Para cargar datos ficticios, habilitar ALLOW_DEMO_SEED=true en el entorno de desarrollo.
+npm error Lifecycle script `db:seed` failed with error:
+npm error code 1
+npm error path C:\Users\tomas\AppData\Local\Temp\tfi-revision-etapa1-final-20261029\backend
+npm error workspace @stock-manager/backend@0.1.0
+npm error location C:\Users\tomas\AppData\Local\Temp\tfi-revision-etapa1-final-20261029\backend
+npm error command failed
+npm error command C:\Windows\system32\cmd.exe /d /s /c tsx prisma/seed.js
+Exit code: 1 (esperado: 1)
+> npm run db:seed
+
+> stock-manager@0.1.0 db:seed
+> npm run db:seed -w backend
+
+
+> @stock-manager/backend@0.1.0 db:seed
+> tsx prisma/seed.js
+
+Seed rechazado (PRODUCTION): El seed de demostración no se ejecuta en producción.
+npm error Lifecycle script `db:seed` failed with error:
+npm error code 1
+npm error path C:\Users\tomas\AppData\Local\Temp\tfi-revision-etapa1-final-20261029\backend
+npm error workspace @stock-manager/backend@0.1.0
+npm error location C:\Users\tomas\AppData\Local\Temp\tfi-revision-etapa1-final-20261029\backend
+npm error command failed
+npm error command C:\Windows\system32\cmd.exe /d /s /c tsx prisma/seed.js
+Exit code: 1 (esperado: 1)
+> npm run db:seed
+
+> stock-manager@0.1.0 db:seed
+> npm run db:seed -w backend
+
+
+> @stock-manager/backend@0.1.0 db:seed
+> tsx prisma/seed.js
+
+Seed rechazado (PASSWORD): Las contraseñas del seed deben tener al menos 12 caracteres y como máximo 72 bytes.
+npm error Lifecycle script `db:seed` failed with error:
+npm error code 1
+npm error path C:\Users\tomas\AppData\Local\Temp\tfi-revision-etapa1-final-20261029\backend
+npm error workspace @stock-manager/backend@0.1.0
+npm error location C:\Users\tomas\AppData\Local\Temp\tfi-revision-etapa1-final-20261029\backend
+npm error command failed
+npm error command C:\Windows\system32\cmd.exe /d /s /c tsx prisma/seed.js
+Exit code: 1 (esperado: 1)
+> psql en stock_manager : SELECT count(*) AS comercios_tras_rechazos_seed FROM comercios;
+ comercios_tras_rechazos_seed 
+------------------------------
+                            0
+(1 row)
+
+> npm run db:seed
+
+> stock-manager@0.1.0 db:seed
+> npm run db:seed -w backend
+
+
+> @stock-manager/backend@0.1.0 db:seed
+> tsx prisma/seed.js
+
+Seed completo: dos comercios y cuatro cuentas de prueba. No se restablecen contraseñas existentes.
+Exit code: 0 (esperado: 0)
+> npm run db:seed
+
+> stock-manager@0.1.0 db:seed
+> npm run db:seed -w backend
+
+
+> @stock-manager/backend@0.1.0 db:seed
+> tsx prisma/seed.js
+
+Seed completo: dos comercios y cuatro cuentas de prueba. No se restablecen contraseñas existentes.
+Exit code: 0 (esperado: 0)
+> npm run test:integration
+
+> stock-manager@0.1.0 test:integration
+> npm run test:integration -w backend
+
+
+> @stock-manager/backend@0.1.0 test:integration
+> tsx tests/run-integration.js
+
+Preflight correcto: sin datos ni objetos ajenos. Se pueden aplicar migraciones.
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "stock_manager_test", schema "public" at "127.0.0.1:55434"
+
+1 migration found in prisma/migrations
+
+Applying migration `202610280001_initial`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 202610280001_initial/
+    └─ migration.sql
+
+All migrations have been successfully applied.
+✔ migración instala seis tablas y siete CHECK validados (132.4451ms)
+✔ seed repetible, hashes válidos, referencias en dos comercios y sin restablecer cuentas (1800.7357ms)
+✔ escritura y lectura con cliente generado y rollback real (6.3013ms)
+✔ restricción de stock rechaza escritura inválida desde Prisma (80.1189ms)
+✔ HTTP consulta PostgreSQL mediante el cliente generado (53.3458ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2637.2366
+Exit code: 0 (esperado: 0)
+> npm run test:integration
+
+> stock-manager@0.1.0 test:integration
+> npm run test:integration -w backend
+
+
+> @stock-manager/backend@0.1.0 test:integration
+> tsx tests/run-integration.js
+
+Preflight correcto: sin datos ni objetos ajenos. Se pueden aplicar migraciones.
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "stock_manager_test", schema "public" at "127.0.0.1:55434"
+
+1 migration found in prisma/migrations
+
+
+No pending migrations to apply.
+✔ migración instala seis tablas y siete CHECK validados (141.8029ms)
+✔ seed repetible, hashes válidos, referencias en dos comercios y sin restablecer cuentas (1810.4416ms)
+✔ escritura y lectura con cliente generado y rollback real (6.8079ms)
+✔ restricción de stock rechaza escritura inválida desde Prisma (74.192ms)
+✔ HTTP consulta PostgreSQL mediante el cliente generado (61.3806ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2678.3227
+Exit code: 0 (esperado: 0)
+> npm run db:migrate
+
+> stock-manager@0.1.0 db:migrate
+> npm run db:migrate -w backend
+
+
+> @stock-manager/backend@0.1.0 db:migrate
+> prisma migrate deploy
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "stock_manager", schema "public" at "127.0.0.1:55434"
+
+1 migration found in prisma/migrations
+
+
+No pending migrations to apply.
+Exit code: 0 (esperado: 0)
+> npm run build
+
+> stock-manager@0.1.0 build
+> npm run generate && npm run build -w frontend
+
+
+> stock-manager@0.1.0 generate
+> npm run generate -w backend
+
+
+> @stock-manager/backend@0.1.0 generate
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+
+✔ Generated Prisma Client (7.10.1) to .\src\generated\prisma in 84ms
+
+
+> @stock-manager/frontend@0.1.0 build
+> vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 17 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.46 kB │ gzip:   0.30 kB
+dist/assets/index-CXFWx7D6.css    3.02 kB │ gzip:   1.14 kB
+dist/assets/index-DfnGlSBO.js   432.69 kB │ gzip: 131.75 kB
+
+✓ built in 390ms
+Exit code: 0 (esperado: 0)
+> psql en stock_manager : SELECT migration_name, finished_at IS NOT NULL AS aplicada FROM _prisma_migrations; SELECT count(*) AS comercios_demo FROM comercios;
+    migration_name    | aplicada 
+----------------------+----------
+ 202610280001_initial | t
+(1 row)
+
+ comercios_demo 
+----------------
+              2
+(1 row)
+
+> psql en stock_manager_test : SELECT migration_name, finished_at IS NOT NULL AS aplicada FROM _prisma_migrations; SELECT count(*) AS comercios_test_restantes FROM comercios;
+    migration_name    | aplicada 
+----------------------+----------
+ 202610280001_initial | t
+(1 row)
+
+ comercios_test_restantes 
+--------------------------
+                        0
+(1 row)
+
+FIN: instalacion nueva, rechazos esperados, migraciones registradas, pruebas y build correctos.
+Verificacion adicional: compilar sin NODE_ENV=development del arnes de pruebas, usando el modo de produccion predeterminado de Vite.
+
+> stock-manager@0.1.0 build
+> npm run generate && npm run build -w frontend
+
+
+> stock-manager@0.1.0 generate
+> npm run generate -w backend
+
+
+> @stock-manager/backend@0.1.0 generate
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+
+✔ Generated Prisma Client (7.10.1) to .\src\generated\prisma in 92ms
+
+
+> @stock-manager/frontend@0.1.0 build
+> vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 17 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.46 kB │ gzip:  0.30 kB
+dist/assets/index-CXFWx7D6.css    3.02 kB │ gzip:  1.14 kB
+dist/assets/index-B8BrYMWi.js   223.46 kB │ gzip: 70.21 kB
+
+✓ built in 211ms
+Exit code: 0
