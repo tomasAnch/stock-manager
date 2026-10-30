@@ -157,9 +157,9 @@ Se priorizan comportamientos importantes y errores posibles; no se agrega un tes
 
 ## Registro de avance y continuidad
 
-**Estado actual:** correcciones de la etapa 1 implementadas y verificadas el 29/10: 14 pruebas de lógica/HTTP y 5 de integración correctas, instalación nueva sobre bases vacías, compilación e interfaz comprobadas. Ver [seguimiento de la revisión](implementacion/revision-etapa-1.md) y [registro inicial del 28/10](implementacion/etapa-1.md). Falta compartir esta versión para la revisión cruzada y ejecutar la instalación en el equipo de Nazareno. Las etapas 2 a 7 siguen pendientes.
+**Estado actual:** etapa 1 cerrada tras la revisión cruzada y la instalación de Nazareno del 30/10 sobre el commit `501810c`, informado por el equipo. Su [salida de terminal](implementacion/instalacion-nazareno-2026-10-30.txt) registra migraciones iniciales, seed repetido, 14 pruebas de lógica/HTTP y 5 de integración correctas (integración ejecutada dos veces), y compilación. Su [captura](implementacion/instalacion-nazareno-2026-10-30.png) muestra la conexión lista. Ver también [seguimiento y límites de la evidencia](implementacion/revision-etapa-1.md). Las etapas 2 a 7 siguen pendientes.
 
-**Siguiente acción:** compartir las correcciones y su evidencia para revisión de Naza/Claude (Git lo ejecuta Tomás). Tras resolver las observaciones y comprobar la instalación compartida, continuar con acceso y permisos.
+**Siguiente acción:** compartir el registro de cierre (Git lo ejecuta Tomás) y continuar con la etapa 2: acceso y permisos.
 
 **Datos externos pendientes:** disponibilidad y acceso al comercio piloto; cuentas y condiciones del hosting. No se necesitan para redactar o probar toda la lógica local.
 

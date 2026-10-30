@@ -2,7 +2,13 @@
 
 29/10/2026 · Correcciones a partir de la revisión de Nazareno y Claude.
 
-La ronda está implementada y verificada localmente. No cambia el alcance del MVP ni incorpora el login de la etapa 2. Queda compartir esta versión para la revisión cruzada y probar la instalación en el equipo de Nazareno.
+La ronda está implementada y verificada localmente. No cambia el alcance del MVP ni incorpora el login de la etapa 2. La revisión cruzada y la instalación en el equipo de Nazareno se completaron según el reporte recibido el 30/10, detallado a continuación.
+
+## Cierre del 30/10: instalación de Nazareno
+
+Se conserva sin modificar el [TXT enviado por Nazareno](instalacion-nazareno-2026-10-30.txt), que identifica el commit `501810c`, Windows, Node 24.22.1 y PostgreSQL 18.6. La salida muestra aplicación inicial de la migración en ambas bases, dos ejecuciones correctas del seed, 14/14 pruebas de lógica/HTTP, 5/5 de integración en dos ejecuciones y compilación correcta. La segunda integración informa que no hay migraciones pendientes. La [captura enviada](instalacion-nazareno-2026-10-30.png) muestra la pantalla con la conexión lista.
+
+El propio TXT aclara que no incluye la salida de `npm ci`, la generación inicial, la creación de las bases ni `npm run dev`: esos pasos están informados por Nazareno. El build sí registra una generación del cliente correcta. Tampoco incluye la salida del aviso de scripts de npm mencionado en su mensaje. No se reconstruyen registros ausentes ni se presenta esta ejecución como realizada por Codex. Con la revisión y la instalación reportadas por el equipo, se cierra la etapa 1 y queda pendiente iniciar acceso y permisos.
 
 ## Qué se corrigió
 
@@ -47,7 +53,7 @@ Archivos para revisar:
 - [Primer intento de esta ronda](resultados-instalacion-2026-10-29.txt), conservado como ejecución fallida. Detectó un `P2010` al leer el tipo interno de `pg_class.relkind` con Prisma. Se corrigió convirtiendo los campos del catálogo a `text`; después se repitió desde otra copia y bases vacías. El fallo inicial no cuenta como evidencia de un rechazo correcto por datos preexistentes.
 - [Comprobaciones del navegador](navegador-revision-etapa-1.json), [captura de escritorio](revision-etapa-1-escritorio.png) y [captura móvil](revision-etapa-1-movil.png).
 
-Esta es una instalación nueva en el mismo equipo de Tomás. No se presenta como una instalación realizada por Nazareno ni como una prueba de otro sistema operativo. La comprobación en su equipo sigue pendiente.
+La ejecución del 29/10 es una instalación nueva en el mismo equipo de Tomás. No se presenta como una instalación realizada por Nazareno ni como una prueba de otro sistema operativo. La comprobación posterior en su equipo se registra por separado en el cierre del 30/10.
 
 ## Archivos históricos preservados
 
@@ -62,4 +68,4 @@ El [informe del 28/10](etapa-1.md) conserva los resultados de esa fecha; esta re
 
 ## Cómo seguimos
 
-Tomás comparte los cambios mediante Git y Nazareno/Claude revisan esa versión. Para cargar otra vez datos de demostración en un entorno ya existente, hay que habilitar expresamente `ALLOW_DEMO_SEED=true`; no se modifica el `.env` personal desde esta corrección. Luego se continúa con acceso y permisos según la hoja de ruta.
+Tomás comparte el registro de cierre mediante Git. Para cargar otra vez datos de demostración en un entorno ya existente, hay que habilitar expresamente `ALLOW_DEMO_SEED=true`; no se modifica el `.env` personal desde esta corrección. Nazareno informó que lo dejó en `false` al terminar. La próxima etapa es acceso y permisos según la hoja de ruta.

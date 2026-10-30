@@ -19,7 +19,7 @@ El MVP contempla uno o dos comercios piloto, con datos separados por comercio y 
 |---|---|---|
 | Entrega 1: propuesta y viabilidad | Aprobada por la tutora | 01/09/2026 (aprobación) |
 | Entrega 2: diseño y módulos | Aprobada por la tutora; habilitada la implementación | 27/09/2026 (entrega); correcciones del 29/09 |
-| Implementación y entrega final | Etapa 1 implementada; funciones del MVP pendientes | 14/11/2026 (fecha límite) |
+| Implementación y entrega final | Etapa 1 cerrada tras revisión e instalación en ambos equipos; funciones del MVP pendientes | 14/11/2026 (fecha límite) |
 
 El proyecto ya tiene una base ejecutable: frontend React, servidor Express, cliente Prisma, migración inicial y seed de desarrollo. La pantalla de inicio comprueba la conexión con PostgreSQL. Login, catálogo, movimientos y reposición se implementarán en las etapas siguientes; la descripción funcional de abajo corresponde al MVP completo previsto.
 
@@ -112,7 +112,12 @@ Versión recomendada: **Node.js 24.22.1** y **PostgreSQL 18** (verificado con 18
 Desde la raíz `stock-manager`:
 
 1. Ejecutar `npm ci` y `npm run generate`.
+
+   Nazareno reportó un aviso `install-scripts` / `allowScripts` sobre scripts no ejecutados de `@prisma/engines`, `esbuild` y `prisma`. En su instalación, la generación, las pruebas y la compilación funcionaron igualmente. Si aparece ese aviso, comprobar los resultados de los comandos siguientes; no habilitar todos los scripts automáticamente. El aviso no está incluido en la salida guardada, por lo que esta nota registra lo informado por Nazareno.
+
 2. Copiar `backend/.env.example` a `backend/.env` **solo si no existe**. Completar la conexión a PostgreSQL y las contraseñas del seed. No subir este archivo. `frontend/.env.example` es opcional en desarrollo porque el proxy local ya está configurado.
+
+   En Windows, guardar, cerrar el editor y volver a abrir el archivo exacto con `notepad backend/.env`, desde la raíz del proyecto. Comprobar localmente que quedaron los valores editados y que no se guardó como `.env.txt`. Ante un error de autenticación `P1000`, revisar también que los cambios se hayan guardado y que la conexión corresponda al usuario, contraseña y servidor elegidos. No pegar el contenido del `.env` en chats ni incluirlo en capturas o registros de pruebas.
 3. Crear dos bases vacías con el usuario administrador de la instalación:
 
    ```powershell
@@ -155,6 +160,11 @@ npm run test:integration
 Si hay conexiones abiertas, PostgreSQL rechazará el borrado; cerralas antes de reintentar. No usar `--force` ni cambiar el nombre por `stock_manager`. La nueva ejecución vuelve a aplicar la migración. Ejecutar las pruebas de a una sobre esa base dedicada; no compartirla con una aplicación en uso.
 
 ## Registro de cambios
+
+### 30/10/2026 — Instalación de Nazareno y cierre de la etapa 1
+
+- Se incorpora la [salida enviada por Nazareno](docs/implementacion/instalacion-nazareno-2026-10-30.txt) sobre el commit `501810c` y su [captura de conexión](docs/implementacion/instalacion-nazareno-2026-10-30.png). Registra migraciones, seed repetido, 14 pruebas de lógica/HTTP, 5 de integración en dos ejecuciones y compilación correcta.
+- Se aclaran el aviso de instalación reportado y la comprobación del guardado del `.env`. Se actualiza la hoja de ruta: la siguiente etapa es acceso y permisos.
 
 ### 29/10/2026 — Revisión de la etapa 1
 
