@@ -57,6 +57,8 @@ Orden sugerido de lectura: requerimientos → reglas → modelo de datos → mó
 
 ### Implementación
 
+[Participación y preparación de la defensa](docs/participacion-y-defensa.md): reparto de etapas y registro de aportes, decisiones, pruebas y revisión de cada integrante.
+
 [Hoja de ruta de desarrollo](docs/plan-desarrollo.md): etapas, checklist y registro de avance. [Etapa 1: funcionamiento y revisión](docs/implementacion/etapa-1.md): explicación, comprobaciones y límites de lo implementado. [Preparación del despliegue](docs/implementacion/despliegue.md): configuración prevista; todavía no hay un despliegue público.
 
 ## Alcance funcional del MVP

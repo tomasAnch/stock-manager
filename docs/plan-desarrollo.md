@@ -27,6 +27,8 @@ Se conserva React, Node.js con Express, PostgreSQL y Prisma 7. El backend será 
 
 ## Forma de avanzar
 
+Desde el 04/11, Tomás lleva las etapas 1, 3 y 5 con Codex; Nazareno lleva las etapas 2 y 4 con Claude. El otro integrante revisa cada etapa con su asistente. Las etapas 6 y 7 son compartidas, con tareas por repartir antes de iniciarlas. El [registro de participación y defensa](participacion-y-defensa.md) contiene responsables, fichas de aportes, decisiones, pruebas y revisión.
+
 Cada función se completará de punta a punta: pantalla, validaciones del backend y persistencia. Así se podrá usar y revisar una parte de la aplicación antes de terminar todas las demás. El diseño visual básico se establecerá al iniciar el frontend y se mantendrá entre módulos.
 
 En cada etapa:
@@ -43,7 +45,7 @@ No se necesita una aprobación nueva para cada archivo, test o arreglo técnico 
 ## Etapa 0 — Preparar el trabajo compartido
 
 - [x] Revisar el estado local y remoto: Tomás ejecutó fetch/status y confirmó main al día. Los comandos de Git quedan a cargo de Tomás.
-- [x] Acordar el trabajo: Codex implementa; Nazareno y Claude revisan cada etapa sobre la versión compartida. Las correcciones se integran antes de seguir con partes afectadas.
+- [x] Acordar el trabajo: desde el 04/11 se alternan responsables y revisión según el registro de participación. El acuerdo inicial de implementación con Codex y revisión de Nazareno/Claude se aplicó a la etapa 1. Las correcciones se integran antes de seguir con partes afectadas.
 - [x] Confirmar el recorrido inicial: conexión, acceso, catálogo, inventario y reposición, según los RF vigentes. La etapa 1 incluye solo la pantalla de conexión.
 - [ ] Identificar las cuentas disponibles para despliegue y el comercio piloto, sin convertir su disponibilidad en un bloqueo de toda la programación.
 
@@ -159,7 +161,7 @@ Se priorizan comportamientos importantes y errores posibles; no se agrega un tes
 
 **Estado actual:** etapa 1 cerrada tras la revisión cruzada y la instalación de Nazareno del 30/10 sobre el commit `501810c`, informado por el equipo. Su [salida de terminal](implementacion/instalacion-nazareno-2026-10-30.txt) registra migraciones iniciales, seed repetido, 14 pruebas de lógica/HTTP y 5 de integración correctas (integración ejecutada dos veces), y compilación. Su [captura](implementacion/instalacion-nazareno-2026-10-30.png) muestra la conexión lista. Ver también [seguimiento y límites de la evidencia](implementacion/revision-etapa-1.md). Las etapas 2 a 7 siguen pendientes.
 
-**Siguiente acción:** compartir el registro de cierre (Git lo ejecuta Tomás) y continuar con la etapa 2: acceso y permisos.
+**Siguiente acción:** compartir el reparto y el registro de participación. Nazareno y Claude implementan la etapa 2 (acceso y permisos); Tomás y Codex revisan el commit compartido antes de iniciar la etapa 3. Git lo ejecutan los integrantes.
 
 **Datos externos pendientes:** disponibilidad y acceso al comercio piloto; cuentas y condiciones del hosting. No se necesitan para redactar o probar toda la lógica local.
 
