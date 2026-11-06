@@ -1,15 +1,15 @@
 # Backend
 
-Backend ejecutable con Express y Prisma. La etapa 1 ofrece `GET /api/health`, que consulta PostgreSQL y responde 200 o 503 sin devolver información del comercio. Los siguientes módulos aún están pendientes:
+Backend ejecutable con Express y Prisma. `GET /api/health` consulta PostgreSQL y responde 200 o 503 sin devolver información del comercio. Desde la etapa 2 están `POST /api/auth/login` y `GET /api/auth/sesion`. Estado de cada módulo:
 
 | Módulo | Responsabilidad |
 |---|---|
-| [Acceso](src/modules/acceso/README.md) | Sesión, usuario activo, rol y comercio. |
+| [Acceso](src/modules/acceso/README.md) | Sesión, usuario activo, rol y comercio. Implementado en la etapa 2. |
 | [Catálogo](src/modules/catalogo/README.md) | Categorías, proveedores, productos y umbrales. |
 | [Inventario](src/modules/inventario/README.md) | Movimientos, saldo e historial. |
 | [Reposición](src/modules/reposicion/README.md) | Alertas y cantidades sugeridas por proveedor. |
 
-`src/lib/` contiene configuración, cliente Prisma y validaciones de nombres/cantidades. El manejo general de errores está en `src/middlewares/error-handler.js` y registra solo tipo, código y ubicaciones controladas; los controles de autenticación se incorporarán en la etapa 2. `tests/unit/` prueba lógica y HTTP; `tests/integration/` usa PostgreSQL real. CORS controla los orígenes admitidos por el navegador, pero no sustituye la autorización futura.
+`src/lib/` contiene configuración, cliente Prisma y validaciones de nombres/cantidades. El manejo general de errores está en `src/middlewares/error-handler.js` y registra solo tipo, código y ubicaciones controladas. `src/middlewares/autenticacion.js` contiene `requireAuth` (token + usuario activo leído de la base) y `requireRole`; `src/modules/acceso/comercio.js`, el filtro por comercio para los módulos siguientes. `tests/unit/` prueba lógica y HTTP; `tests/integration/` usa PostgreSQL real. CORS controla los orígenes admitidos por el navegador, pero no sustituye la autorización: esa la decide el backend en cada solicitud.
 
 Se usa JavaScript con módulos ES y tsx, también en ejecución de producción. Node 24.22.1 y Prisma 7.10.1 son las versiones verificadas; las demás dependencias están fijadas en package.json y el lockfile raíz. La instalación y los comandos se ejecutan desde la raíz siguiendo el [README principal](../README.md#instalación-y-ejecución).
 

@@ -3,8 +3,11 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { errorHandler } from './middlewares/error-handler.js';
 import { safeErrorDetails } from './lib/error-details.js';
+import { accesoRouter } from './modules/acceso/acceso.routes.js';
 
-export function createApp({ prisma, origin = 'http://localhost:5173', logger = console }) {
+// auth: { secret, expiresIn } de authConfig(). Es obligatorio para firmar y verificar sesiones.
+export function createApp({ prisma, auth, origin = 'http://localhost:5173', logger = console }) {
+  if (!auth?.secret) throw new Error('createApp necesita la configuración de autenticación.');
   const app = express();
   app.disable('x-powered-by');
   app.use(helmet());
@@ -22,6 +25,8 @@ export function createApp({ prisma, origin = 'http://localhost:5173', logger = c
       res.status(503).json({ status: 'unavailable', database: 'unavailable' });
     }
   });
+
+  app.use('/api/auth', accesoRouter({ prisma, auth }));
 
   app.use((_req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Ruta no encontrada.' } }));
   app.use(errorHandler(logger));

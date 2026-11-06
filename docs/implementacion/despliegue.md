@@ -9,7 +9,7 @@ Etapa 1 · 28/10/2026. Configuración prevista, todavía no desplegada ni verifi
 - Instalación/build: `npm ci --include=dev` y `npm run generate`. El CLI de Prisma está en dependencias de desarrollo y se necesita para migrar/generar.
 - Migración antes del arranque: `npm run db:migrate`. No usar `db push`, ejecutar el SQL de la segunda entrega ni hacer reset de una base con datos.
 - Inicio: `npm start`. tsx y el adaptador de PostgreSQL son dependencias de ejecución.
-- Variables: `NODE_ENV=production`, `HOST=0.0.0.0`, `PORT` asignado por el servicio, `DATABASE_URL` y `FRONTEND_ORIGIN` con el origen HTTPS del frontend sin barra final.
+- Variables: `NODE_ENV=production`, `HOST=0.0.0.0`, `PORT` asignado por el servicio, `DATABASE_URL`, `FRONTEND_ORIGIN` con el origen HTTPS del frontend sin barra final y `JWT_SECRET` propio del despliegue (nunca el de un equipo de desarrollo), más `JWT_EXPIRES_IN` si se cambia la duración de 8 h.
 - Comprobación de disponibilidad: `/api/health`. Devuelve 503 si la base o la tabla consultada no están disponibles. No devuelve versión, cuentas ni datos de negocio.
 - Usar la conexión y TLS indicados por el proveedor sin desactivar la validación de certificados. Revisar conexión directa para migraciones si el servicio ofrece un pool separado.
 

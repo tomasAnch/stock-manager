@@ -116,3 +116,18 @@ Copiar esta ficha para las etapas 2 a 7. Usar frases cortas y enlaces a los docu
 - **Para practicar en la defensa:** explicar qué hace cada capa al mostrar «La conexión está lista», para qué sirve una migración, en qué se diferencia del seed y por qué las pruebas usan otra base.
 - **Comprensión pendiente de practicar:** que ambos expliquen ese recorrido con sus palabras. La instalación correcta no acredita por sí sola esa comprensión.
 - **Siguiente paso:** Nazareno y Claude implementan la etapa 2; Tomás y Codex revisan la versión compartida.
+
+## Etapa 2 — Acceso y permisos
+
+- **Estado:** implementada el 05/11/2026 y probada por Nazareno en su equipo; pendiente de la revisión de Tomás con Codex.
+- **Responsable:** Nazareno, con implementación asistida por Claude. **Revisor:** Tomás, con Codex.
+- **Versión:** parte de `41bf10a`. *[Completar con el commit que comparta Nazareno y, si cambia, el commit final después de la revisión.]*
+- **Qué quedó funcionando:** login, cierre de sesión, sesión que se revalida al recargar y al cambiar de sección, menú distinto para dueño y empleado, y controles `requireAuth`, `requireRole` y filtro por comercio listos para las etapas 3 a 5 (RF-01, RF-02, RN-01, RN-15). Detalle en [etapa 2](implementacion/etapa-2.md).
+- **Asistencia de IA:** Claude escribió el código del backend y del frontend, las pruebas y la documentación de esta etapa, y ejecutó las pruebas automáticas, de integración y de navegador en una copia aislada. Las salidas están en [resultados de Claude](implementacion/resultados-etapa-2-claude-2026-11-05.txt).
+- **Aporte personal de Nazareno:** pidió la implementación y la revisión con Claude. Agregó `JWT_SECRET` a su `.env`, ejecutó en su equipo `npm ci`, `npm run generate`, `npm test` (25/25) y `npm run test:integration` (7/7) (salida en [resultados de Nazareno](implementacion/resultados-etapa-2-naza-2026-11-05.txt)) y recorrió a mano el login, la recarga y el cierre de sesión con ambos roles.
+- **Aporte personal de Tomás:** *[Completar con la revisión con Codex.]*
+- **Decisiones importantes:** rol y comercio leídos de la base en cada solicitud, no del token; token en el encabezado y en `sessionStorage` en lugar de cookie; mismo mensaje para cualquier credencial inválida. Motivos y alternativas en [etapa 2](implementacion/etapa-2.md#decisiones).
+- **Pruebas y evidencia:** 25/25 de lógica/HTTP, 7/7 de integración en dos ejecuciones y 11 pasos de navegador, ejecutados por Claude. En el equipo de Nazareno (Windows): 25/25 y 7/7, más el recorrido manual con ambos roles.
+- **Revisión cruzada:** *[Completar: observación de Tomás/Codex → resolución o motivo para descartarla → verificación.]*
+- **Para explicar en la defensa:** la diferencia entre identificar (login, `requireAuth`) y autorizar (`requireRole`, filtro por comercio); por qué cambiar el rol en el navegador no sirve; el ejemplo del empleado desactivado con un token todavía vigente.
+- **Comprensión pendiente de practicar:** que Nazareno explique con sus palabras el recorrido del login y el de una solicitud protegida.

@@ -1,0 +1,99 @@
+Etapa 2 — Acceso y permisos · ejecución de Claude · 05/11/2026, 21:39 (hora de Argentina)
+Versión: commit 41bf10a + cambios de la etapa 2 (todavía sin commit)
+Entorno: copia aislada de Claude, Linux, Node v24.22.1, npm 11.21.2, PostgreSQL 18.4 con bases nuevas y vacías
+Limitación: en este entorno no se puede descargar el motor de migraciones de Prisma, así que no se ejecutó
+'npm run test:integration' completo. Se aplicó el mismo migration.sql y se corrió el mismo archivo de pruebas.
+En el equipo de Nazareno corresponde ejecutar 'npm run test:integration' tal cual.
+
+$ npm ci
+added 282 packages, and audited 285 packages in 12s
+found 0 vulnerabilities
+
+$ npm run generate
+✔ Generated Prisma Client (7.10.1) to ./src/generated/prisma in 118ms
+
+$ npm test
+✔ login correcto devuelve token y datos públicos, sin el hash (96.386825ms)
+✔ contraseña incorrecta, correo inexistente y cuenta inactiva responden igual (323.126564ms)
+✔ login sin datos o con tipos inválidos responde 400 (15.069904ms)
+✔ sesión: sin token, encabezado mal formado, otra firma, otro algoritmo, sin firma o vencido se rechazan (18.585126ms)
+✔ un token vigente deja de servir si el usuario se desactiva o ya no existe (11.744072ms)
+✔ rol y comercio salen de la base aunque el token diga otra cosa (4.682798ms)
+✔ requireRole: el empleado recibe 403 y el dueño pasa (9.54089ms)
+✔ filtro por comercio: reemplaza el comercio enviado y no consulta IDs inválidos (1.318072ms)
+✔ configuración: exige un secreto largo y un vencimiento válido, sin mostrar el secreto (0.567622ms)
+✔ CORS permite el encabezado Authorization desde el frontend configurado (3.729871ms)
+✔ diagnóstico conserva tipo, código y ubicación, pero no mensaje, metadatos ni ruta completa (1.822453ms)
+✔ 500 registra diagnóstico controlado sin filtrar el error ni la solicitud (0.481828ms)
+✔ seed requiere habilitación exacta y producción siempre prevalece (0.568795ms)
+✔ seed informa contraseñas inválidas antes de consultar la base (0.77139ms)
+✔ health devuelve disponibilidad sin exponer datos del comercio (55.385044ms)
+✔ base no disponible responde 503 y no filtra errores internos (24.701728ms)
+✔ 404, JSON mal formado y cuerpos excesivos tienen errores JSON controlados (26.842644ms)
+✔ la app no arranca sin configuración de autenticación (0.675275ms)
+✔ preflight acepta base sin tablas y base migrada sin datos de negocio (0.97869ms)
+✔ preflight rechaza datos conocidos, tablas ajenas y relaciones fuera de public (0.662161ms)
+✔ nunca usa desarrollo como base de pruebas por omisión o alias localhost (1.143448ms)
+✔ normaliza espacios y Unicode, conservando mayúsculas y tildes visibles (1.742145ms)
+✔ cantidades decimales exactas y serialización como texto (0.879056ms)
+✔ rechaza redondeos, notación científica, tipos y rangos inválidos (0.390302ms)
+✔ configuración inválida falla sin imprimir credenciales (0.399681ms)
+ℹ tests 25
+ℹ pass 25
+ℹ fail 0
+
+$ preflight sobre stock_manager_test (base recién creada)
+  preflight: ACEPTA
+$ aplicar backend/prisma/migrations/202610280001_initial/migration.sql
+  migración aplicada
+
+$ pruebas de integración, corrida 1 (tests/integration/database.test.js)
+✔ migración instala seis tablas y siete CHECK validados (151.031893ms)
+✔ seed repetible, hashes válidos, referencias en dos comercios y sin restablecer cuentas (1593.701756ms)
+✔ escritura y lectura con cliente generado y rollback real (8.159913ms)
+✔ restricción de stock rechaza escritura inválida desde Prisma (62.464404ms)
+✔ HTTP consulta PostgreSQL mediante el cliente generado (73.256997ms)
+✔ acceso con PostgreSQL: login, sesión y rechazo inmediato al desactivar la cuenta (1020.107894ms)
+✔ acceso con PostgreSQL: permisos por rol y registros de otro comercio (331.45073ms)
+ℹ tests 7
+ℹ pass 7
+ℹ fail 0
+
+$ pruebas de integración, corrida 2 (tests/integration/database.test.js)
+✔ migración instala seis tablas y siete CHECK validados (115.623141ms)
+✔ seed repetible, hashes válidos, referencias en dos comercios y sin restablecer cuentas (1631.254406ms)
+✔ escritura y lectura con cliente generado y rollback real (13.398472ms)
+✔ restricción de stock rechaza escritura inválida desde Prisma (59.985692ms)
+✔ HTTP consulta PostgreSQL mediante el cliente generado (42.212213ms)
+✔ acceso con PostgreSQL: login, sesión y rechazo inmediato al desactivar la cuenta (977.519103ms)
+✔ acceso con PostgreSQL: permisos por rol y registros de otro comercio (343.055203ms)
+ℹ tests 7
+ℹ pass 7
+ℹ fail 0
+
+$ npm run build
+dist/assets/index-C0fxjKYq.css    5.03 kB │ gzip:  1.58 kB
+dist/assets/index-DZW-16f2.js   228.56 kB │ gzip: 71.88 kB
+✓ built in 165ms
+
+$ recorrido en navegador (Chromium, API con npm start y frontend con vite)
+1) sin sesión muestra el login
+2) contraseña incorrecta: mensaje genérico y campo de contraseña vacío = true
+3) dueño entra; menú: Inicio | Catálogo | Inventario | Alertas y reposición · rol: DUEÑO
+4) recargar la página mantiene la sesión
+5) sección pendiente muestra su etapa
+6) usuario desactivado: al cambiar de sección vuelve al login con aviso
+7) empleado B entra; menú: Inicio | Catálogo | Inventario | Alertas · comercio: Comercio de prueba B
+8) cerrar sesión borra el token (null) y al recargar sigue en el login
+9) token vencido guardado: al abrir vuelve al login con "La sesión venció"
+10) móvil 390px: desborde horizontal login=false panel=false
+11) login completo solo con teclado (Tab + Enter)
+errores de consola/JS: [
+  'Failed to load resource: the server responded with a status of 404 (Not Found)',
+  'Failed to load resource: the server responded with a status of 401 (Unauthorized)',
+  'Failed to load resource: the server responded with a status of 401 (Unauthorized)',
+  'Failed to load resource: the server responded with a status of 401 (Unauthorized)'
+]
+
+Los 401 de la consola son los rechazos esperados (contraseña incorrecta, usuario desactivado y token vencido).
+El 404 corresponde al ícono de la pestaña (favicon), que el proyecto no incluye.

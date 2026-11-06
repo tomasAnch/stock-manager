@@ -19,9 +19,9 @@ El MVP contempla uno o dos comercios piloto, con datos separados por comercio y 
 |---|---|---|
 | Entrega 1: propuesta y viabilidad | Aprobada por la tutora | 01/09/2026 (aprobación) |
 | Entrega 2: diseño y módulos | Aprobada por la tutora; habilitada la implementación | 27/09/2026 (entrega); correcciones del 29/09 |
-| Implementación y entrega final | Etapa 1 cerrada tras revisión e instalación en ambos equipos; funciones del MVP pendientes | 14/11/2026 (fecha límite) |
+| Implementación y entrega final | Etapa 1 cerrada; etapa 2 (acceso y permisos) implementada y en revisión; catálogo, movimientos y reposición pendientes | 14/11/2026 (fecha límite) |
 
-El proyecto ya tiene una base ejecutable: frontend React, servidor Express, cliente Prisma, migración inicial y seed de desarrollo. La pantalla de inicio comprueba la conexión con PostgreSQL. Login, catálogo, movimientos y reposición se implementarán en las etapas siguientes; la descripción funcional de abajo corresponde al MVP completo previsto.
+El proyecto ya tiene una base ejecutable: frontend React, servidor Express, cliente Prisma, migración inicial y seed de desarrollo. Desde la etapa 2 se ingresa con usuario y contraseña, y cada rol ve su menú; el backend verifica la sesión, el rol y el comercio en cada solicitud protegida. Catálogo, movimientos y reposición se implementarán en las etapas siguientes; la descripción funcional de abajo corresponde al MVP completo previsto.
 
 ## Stack definido
 
@@ -59,7 +59,7 @@ Orden sugerido de lectura: requerimientos → reglas → modelo de datos → mó
 
 [Participación y preparación de la defensa](docs/participacion-y-defensa.md): reparto de etapas y registro de aportes, decisiones, pruebas y revisión de cada integrante.
 
-[Hoja de ruta de desarrollo](docs/plan-desarrollo.md): etapas, checklist y registro de avance. [Etapa 1: funcionamiento y revisión](docs/implementacion/etapa-1.md): explicación, comprobaciones y límites de lo implementado. [Preparación del despliegue](docs/implementacion/despliegue.md): configuración prevista; todavía no hay un despliegue público.
+[Hoja de ruta de desarrollo](docs/plan-desarrollo.md): etapas, checklist y registro de avance. [Etapa 1: funcionamiento y revisión](docs/implementacion/etapa-1.md): explicación, comprobaciones y límites de lo implementado. [Etapa 2: acceso y permisos](docs/implementacion/etapa-2.md): login, sesión, roles, decisiones y pruebas. [Preparación del despliegue](docs/implementacion/despliegue.md): configuración prevista; todavía no hay un despliegue público.
 
 ## Alcance funcional del MVP
 
@@ -100,7 +100,8 @@ Los comercios y usuarios piloto se cargarán mediante un seed. No se incluyen AB
 │   ├── src/modules/             # acceso, catalogo, inventario, reposicion
 │   └── tests/
 └── frontend/
-    ├── src/app/                 # Pantalla de conexión
+    ├── src/app/                 # Estado de la sesión y estructura general
+    ├── src/components/          # Componentes compartidos (estado de la conexión)
     ├── src/services/            # Comunicación con la API
     └── src/features/            # acceso, catalogo, inventario, reposicion
 ```
@@ -117,7 +118,7 @@ Desde la raíz `stock-manager`:
 
    Nazareno reportó un aviso `install-scripts` / `allowScripts` sobre scripts no ejecutados de `@prisma/engines`, `esbuild` y `prisma`. En su instalación, la generación, las pruebas y la compilación funcionaron igualmente. Si aparece ese aviso, comprobar los resultados de los comandos siguientes; no habilitar todos los scripts automáticamente. El aviso no está incluido en la salida guardada, por lo que esta nota registra lo informado por Nazareno.
 
-2. Copiar `backend/.env.example` a `backend/.env` **solo si no existe**. Completar la conexión a PostgreSQL y las contraseñas del seed. No subir este archivo. `frontend/.env.example` es opcional en desarrollo porque el proxy local ya está configurado.
+2. Copiar `backend/.env.example` a `backend/.env` **solo si no existe**. Completar la conexión a PostgreSQL, las contraseñas del seed y `JWT_SECRET` (el comando para generarlo está en el ejemplo). Si ya tenías un `.env` de la etapa 1, agregale `JWT_SECRET` y `JWT_EXPIRES_IN=8h`: sin el secreto, la API no arranca. No subir este archivo. `frontend/.env.example` es opcional en desarrollo porque el proxy local ya está configurado.
 
    En Windows, guardar, cerrar el editor y volver a abrir el archivo exacto con `notepad backend/.env`, desde la raíz del proyecto. Comprobar localmente que quedaron los valores editados y que no se guardó como `.env.txt`. Ante un error de autenticación `P1000`, revisar también que los cambios se hayan guardado y que la conexión corresponda al usuario, contraseña y servidor elegidos. No pegar el contenido del `.env` en chats ni incluirlo en capturas o registros de pruebas.
 3. Crear dos bases vacías con el usuario administrador de la instalación:
@@ -130,9 +131,9 @@ Desde la raíz `stock-manager`:
    En Windows, si `psql` no está en PATH, reemplazarlo por `& 'C:\Program Files\PostgreSQL\18\bin\psql.exe'`. La contraseña es la elegida al instalar PostgreSQL. Si una base ya existe, inspeccionarla antes de continuar: no borrar ni reutilizar datos de otro proyecto.
 
 4. Ejecutar `npm run db:migrate`. Verificar que `DATABASE_URL` apunta al desarrollo y habilitar `ALLOW_DEMO_SEED=true` en `backend/.env`; después ejecutar `npm run db:seed`. El valor de ejemplo es `false` para exigir esta decisión explícita. La migración ya incluye los CHECK: **no ejecutar restricciones.sql otra vez** sobre estas bases.
-5. Ejecutar `npm run dev`. Abrir **http://localhost:5173**. La API usa el puerto 3001; la pantalla debe indicar que la conexión está lista. `Ctrl+C` detiene ambos servidores.
+5. Ejecutar `npm run dev`. Abrir **http://localhost:5173** e ingresar con una cuenta del seed. La API usa el puerto 3001; en el inicio debe aparecer que la conexión está lista. `Ctrl+C` detiene ambos servidores.
 
-El seed crea dos comercios ficticios, una categoría y proveedor por comercio, y las cuentas `dueno.a@example.invalid`, `empleado.a@example.invalid`, `dueno.b@example.invalid` y `empleado.b@example.invalid`. Usa `SEED_OWNER_PASSWORD` y `SEED_EMPLOYEE_PASSWORD`, de al menos 12 caracteres y hasta 72 bytes, para guardar hashes. Se puede repetir: no duplica registros ni restablece contraseñas existentes. El seed de demostración requiere `ALLOW_DEMO_SEED=true` y se bloquea siempre con `NODE_ENV=production`, incluso si está habilitado. La habilitación no identifica automáticamente qué base es de producción: revisar siempre la conexión elegida. Todavía no hay pantalla de login.
+El seed crea dos comercios ficticios, una categoría y proveedor por comercio, y las cuentas `dueno.a@example.invalid`, `empleado.a@example.invalid`, `dueno.b@example.invalid` y `empleado.b@example.invalid`. Usa `SEED_OWNER_PASSWORD` y `SEED_EMPLOYEE_PASSWORD`, de al menos 12 caracteres y hasta 72 bytes, para guardar hashes. Se puede repetir: no duplica registros ni restablece contraseñas existentes. El seed de demostración requiere `ALLOW_DEMO_SEED=true` y se bloquea siempre con `NODE_ENV=production`, incluso si está habilitado. La habilitación no identifica automáticamente qué base es de producción: revisar siempre la conexión elegida. Para ingresar se usan esas cuentas con la contraseña del seed correspondiente a su rol.
 
 | Comando desde la raíz | Uso |
 |---|---|
@@ -145,7 +146,7 @@ El seed crea dos comercios ficticios, una categoría y proveedor por comercio, y
 | `npm run build` | Genera el cliente Prisma y compila el frontend en `frontend/dist`. |
 | `npm start` | Inicia solo la API mediante tsx. |
 
-Las pruebas de integración exigen `TEST_DATABASE_URL`, distinta de desarrollo; nunca toman `DATABASE_URL` como reemplazo. Esta etapa no verifica todavía la autorización ni los movimientos concurrentes del futuro MVP. La evidencia histórica de las 32 comprobaciones SQL de septiembre sigue en [segunda entrega](docs/segunda_entrega/pruebas/README.md).
+Las pruebas de integración exigen `TEST_DATABASE_URL`, distinta de desarrollo; nunca toman `DATABASE_URL` como reemplazo. Las pruebas de la etapa 2 cubren login, sesión vencida o alterada, usuario desactivado, permisos por rol y registros de otro comercio; los movimientos concurrentes corresponden a la etapa 4. La evidencia histórica de las 32 comprobaciones SQL de septiembre sigue en [segunda entrega](docs/segunda_entrega/pruebas/README.md).
 
 ### Si se interrumpió una prueba
 
@@ -162,6 +163,12 @@ npm run test:integration
 Si hay conexiones abiertas, PostgreSQL rechazará el borrado; cerralas antes de reintentar. No usar `--force` ni cambiar el nombre por `stock_manager`. La nueva ejecución vuelve a aplicar la migración. Ejecutar las pruebas de a una sobre esa base dedicada; no compartirla con una aplicación en uso.
 
 ## Registro de cambios
+
+### 05/11/2026 — Etapa 2: acceso y permisos (en revisión)
+
+- Se agregan login (`POST /api/auth/login`), consulta de sesión (`GET /api/auth/sesion`) y cierre de sesión en el navegador. Los middlewares `requireAuth` y `requireRole` y el filtro por comercio quedan listos para los módulos siguientes.
+- El token JWT solo identifica al usuario y vence; rol, comercio y estado activo se leen de la base en cada solicitud. Nueva variable obligatoria `JWT_SECRET` y dependencia `jsonwebtoken`.
+- La interfaz muestra login, datos de la sesión y un menú distinto para dueño y empleado. Detalle, decisiones y pruebas en [etapa 2](docs/implementacion/etapa-2.md).
 
 ### 30/10/2026 — Instalación de Nazareno y cierre de la etapa 1
 

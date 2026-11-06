@@ -6,9 +6,14 @@ import { createPrisma } from '../../src/lib/prisma.js';
 import { createApp } from '../../src/app.js';
 import { seedDemo, demoStores } from '../../prisma/seed-data.js';
 import { requireTestDatabase } from '../test-database.js';
+import express from 'express';
+import { requireAuth, requireRole } from '../../src/middlewares/autenticacion.js';
+import { errorHandler } from '../../src/middlewares/error-handler.js';
+import { buscarDelComercio } from '../../src/modules/acceso/comercio.js';
 
 // El runner ya reemplazó DATABASE_URL después de comprobar que era distinta.
 const prisma = createPrisma(requireTestDatabase({ TEST_DATABASE_URL: process.env.TEST_DATABASE_URL }));
+const auth = { secret: 'secreto-solo-para-integracion-0123456789', expiresIn: '8h' };
 let ownsFixtures = false;
 before(async () => {
   for (const model of ['movimientoStock', 'producto', 'usuario', 'categoria', 'proveedor', 'comercio']) {
@@ -71,11 +76,69 @@ test('restricción de stock rechaza escritura inválida desde Prisma', async () 
   assert.equal(await prisma.producto.count(), 0);
 });
 test('HTTP consulta PostgreSQL mediante el cliente generado', async () => {
-  const server = createApp({ prisma }).listen(0, '127.0.0.1');
+  const server = createApp({ prisma, auth }).listen(0, '127.0.0.1');
   await once(server, 'listening');
   try {
     const response = await fetch(`http://127.0.0.1:${server.address().port}/api/health`);
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), { status: 'ok', database: 'connected' });
   } finally { await new Promise(resolve => server.close(resolve)); }
+});
+
+async function withServer(app, callback) {
+  const server = app.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  try { await callback(`http://127.0.0.1:${server.address().port}`); }
+  finally { await new Promise(resolve => server.close(resolve)); }
+}
+async function login(url, correo, contrasena) {
+  return fetch(`${url}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ correo, contrasena }) });
+}
+const sesion = (url, token) => fetch(`${url}/api/auth/sesion`, { headers: { Authorization: `Bearer ${token}` } });
+
+// Usa las cuentas del seed de la prueba anterior (contraseñas solo-test-*).
+test('acceso con PostgreSQL: login, sesión y rechazo inmediato al desactivar la cuenta', async () => {
+  await withServer(createApp({ prisma, auth }), async url => {
+    assert.equal((await login(url, 'dueno.a@example.invalid', 'clave-equivocada')).status, 401);
+    const res = await login(url, 'DUENO.A@example.invalid', 'solo-test-dueno-123');
+    assert.equal(res.status, 200);
+    const { token, usuario } = await res.json();
+    assert.equal(usuario.rol, 'DUENO');
+    assert.equal(usuario.comercio.id, demoStores[0].id);
+    assert.equal((await sesion(url, token)).status, 200);
+
+    await prisma.usuario.update({ where: { id: usuario.id }, data: { activo: false } });
+    const rechazada = await sesion(url, token);
+    assert.equal(rechazada.status, 401);
+    assert.equal((await rechazada.json()).error.code, 'INVALID_SESSION');
+    assert.equal((await login(url, 'dueno.a@example.invalid', 'solo-test-dueno-123')).status, 401);
+    await prisma.usuario.update({ where: { id: usuario.id }, data: { activo: true } });
+    assert.equal((await sesion(url, token)).status, 200);
+  });
+});
+
+test('acceso con PostgreSQL: permisos por rol y registros de otro comercio', async () => {
+  const app = express();
+  app.get('/prueba/solo-dueno', requireAuth({ prisma, auth }), requireRole('DUENO'), (_req, res) => res.json({ ok: true }));
+  app.get('/prueba/categorias/:id', requireAuth({ prisma, auth }), async (req, res) => {
+    res.json(await buscarDelComercio(prisma.categoria, req.params.id, req.auth, { select: { id: true, nombre: true } }));
+  });
+  app.use(errorHandler({ error() {} }));
+  const propia = await prisma.categoria.findFirstOrThrow({ where: { comercioId: demoStores[0].id } });
+  const ajena = await prisma.categoria.findFirstOrThrow({ where: { comercioId: demoStores[1].id } });
+
+  await withServer(createApp({ prisma, auth }), async apiUrl => {
+    const { token } = await (await login(apiUrl, 'empleado.a@example.invalid', 'solo-test-empleado-456')).json();
+    await withServer(app, async url => {
+      const headers = { Authorization: `Bearer ${token}` };
+      assert.equal((await fetch(`${url}/prueba/solo-dueno`, { headers })).status, 403);
+      const mismaTienda = await fetch(`${url}/prueba/categorias/${propia.id}`, { headers });
+      assert.equal(mismaTienda.status, 200);
+      assert.equal((await mismaTienda.json()).id, propia.id);
+      const otraTienda = await fetch(`${url}/prueba/categorias/${ajena.id}`, { headers });
+      // Mismo 404 genérico que un ID inexistente: no revela que existe en otro comercio.
+      assert.equal(otraTienda.status, 404);
+      assert.deepEqual(await otraTienda.json(), { error: { code: 'NOT_FOUND', message: 'No se encontró el registro.' } });
+    });
+  });
 });

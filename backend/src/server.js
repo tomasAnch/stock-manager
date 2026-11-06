@@ -1,10 +1,11 @@
 import { createApp } from './app.js';
 import { createPrisma } from './lib/prisma.js';
-import { serverConfig } from './lib/config.js';
+import { authConfig, serverConfig } from './lib/config.js';
 
 const { host, port, origin } = serverConfig();
+const auth = authConfig();
 const prisma = createPrisma();
-const server = createApp({ prisma, origin }).listen(port, host, () => {
+const server = createApp({ prisma, auth, origin }).listen(port, host, () => {
   console.info(`Servidor disponible en http://${host}:${port}`);
 });
 server.on('error', async () => {

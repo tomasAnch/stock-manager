@@ -10,6 +10,20 @@ export function databaseUrl(value = process.env.DATABASE_URL) {
   return value;
 }
 
+// Configuración del token de sesión. El secreto firma los tokens: quien lo conozca
+// podría fabricar sesiones válidas, por eso es obligatorio, largo y nunca se imprime.
+export function authConfig(env = process.env) {
+  const secret = env.JWT_SECRET;
+  if (typeof secret !== 'string' || secret.length < 32) {
+    throw new Error('JWT_SECRET debe tener al menos 32 caracteres. Revisar backend/.env.');
+  }
+  const expiresIn = env.JWT_EXPIRES_IN || '8h';
+  if (!/^[1-9]\d{0,2}[mh]$/.test(expiresIn)) {
+    throw new Error('JWT_EXPIRES_IN debe indicar minutos u horas, por ejemplo 8h o 30m.');
+  }
+  return { secret, expiresIn };
+}
+
 export function serverConfig(env = process.env) {
   const port = Number(env.PORT || 3001);
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('PORT inválido.');

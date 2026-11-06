@@ -1,8 +1,12 @@
 import { ValidationError } from '../lib/validation.js';
 import { safeErrorDetails } from '../lib/error-details.js';
+import { HttpError } from '../lib/http-error.js';
 
 export function errorHandler(logger = console) {
   return (error, _req, res, _next) => {
+    if (error instanceof HttpError) {
+      return res.status(error.status).json({ error: { code: error.code, message: error.message } });
+    }
     if (error instanceof ValidationError) {
       return res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: error.message } });
     }

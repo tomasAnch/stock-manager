@@ -4,6 +4,13 @@ export class ValidationError extends Error {
   constructor(message) { super(message); this.name = 'ValidationError'; }
 }
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Los ID de la base son UUID. Validarlos evita consultar PostgreSQL con texto que no puede ser un ID.
+export function isUuid(value) {
+  return typeof value === 'string' && UUID.test(value);
+}
+
 export function normalizeName(input) {
   if (typeof input !== 'string') throw new ValidationError('El nombre debe ser texto.');
   const nombre = input.normalize('NFC').trim().replace(/\s+/gu, ' ');

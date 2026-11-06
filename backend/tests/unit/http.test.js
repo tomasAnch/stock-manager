@@ -3,8 +3,10 @@ import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { createApp } from '../../src/app.js';
 
+const auth = { secret: 'secreto-solo-para-pruebas-unitarias-0123456789', expiresIn: '8h' };
+
 async function withServer(prisma, callback, logger = { error() {} }) {
-  const server = createApp({ prisma, logger }).listen(0, '127.0.0.1');
+  const server = createApp({ prisma, auth, logger }).listen(0, '127.0.0.1');
   await once(server, 'listening');
   try { await callback(`http://127.0.0.1:${server.address().port}`); }
   finally { await new Promise(resolve => server.close(resolve)); }
@@ -40,4 +42,7 @@ test('404, JSON mal formado y cuerpos excesivos tienen errores JSON controlados'
     const large = await fetch(`${url}/api/health`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value: 'a'.repeat(40000) }) });
     assert.equal(large.status, 413);
   });
+});
+test('la app no arranca sin configuración de autenticación', () => {
+  assert.throws(() => createApp({ prisma: {} }), /autenticación/);
 });

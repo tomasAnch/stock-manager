@@ -1,0 +1,123 @@
+Etapa 2 - Salida de la terminal de Nazareno en su equipo (Windows, PowerShell), 05/11/2026.
+Copiada tal cual. Antes de esto agregó JWT_SECRET y JWT_EXPIRES_IN a backend/.env (no se incluye el valor).
+
+PS C:\Users\Usuario\Desktop\naza carrera\CUARTO CUATRIMESTRE\Trabajo Final\stock-manager>    npm ci
+
+added 282 packages, and audited 285 packages in 20s
+
+62 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm warn install-scripts 3 packages have install scripts not yet covered by allowScripts:
+npm warn install-scripts   @prisma/engines@7.10.1 (postinstall: node scripts/postinstall.js)
+npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+npm warn install-scripts   prisma@7.10.1 (preinstall: node scripts/preinstall-entry.js)
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+npm notice
+npm notice New major version of npm available! 11.19.1 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice
+PS C:\Users\Usuario\Desktop\naza carrera\CUARTO CUATRIMESTRE\Trabajo Final\stock-manager>    npm run generate
+
+> stock-manager@0.1.0 generate
+> npm run generate -w backend
+
+
+> @stock-manager/backend@0.1.0 generate
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+
+✔ Generated Prisma Client (7.10.1) to .\src\generated\prisma in 587ms
+
+PS C:\Users\Usuario\Desktop\naza carrera\CUARTO CUATRIMESTRE\Trabajo Final\stock-manager>    npm test
+
+> stock-manager@0.1.0 test
+> npm run test -w backend
+
+
+> @stock-manager/backend@0.1.0 test
+> tsx --test tests/unit/*.test.js
+
+✔ login correcto devuelve token y datos públicos, sin el hash (99.4256ms)
+✔ contraseña incorrecta, correo inexistente y cuenta inactiva responden igual (264.2742ms)
+✔ login sin datos o con tipos inválidos responde 400 (13.4041ms)
+✔ sesión: sin token, encabezado mal formado, otra firma, otro algoritmo, sin firma o vencido se rechazan (17.7778ms)
+✔ un token vigente deja de servir si el usuario se desactiva o ya no existe (10.0499ms)
+✔ rol y comercio salen de la base aunque el token diga otra cosa (8.9185ms)
+✔ requireRole: el empleado recibe 403 y el dueño pasa (5.5554ms)
+✔ filtro por comercio: reemplaza el comercio enviado y no consulta IDs inválidos (0.6373ms)
+✔ configuración: exige un secreto largo y un vencimiento válido, sin mostrar el secreto (0.3902ms)
+✔ CORS permite el encabezado Authorization desde el frontend configurado (6.8545ms)
+✔ diagnóstico conserva tipo, código y ubicación, pero no mensaje, metadatos ni ruta completa (1.5697ms)
+✔ 500 registra diagnóstico controlado sin filtrar el error ni la solicitud (0.4309ms)
+✔ seed requiere habilitación exacta y producción siempre prevalece (0.5126ms)
+✔ seed informa contraseñas inválidas antes de consultar la base (0.5639ms)
+✔ health devuelve disponibilidad sin exponer datos del comercio (59.3538ms)
+✔ base no disponible responde 503 y no filtra errores internos (15.6413ms)
+✔ 404, JSON mal formado y cuerpos excesivos tienen errores JSON controlados (37.5583ms)
+✔ la app no arranca sin configuración de autenticación (1.3302ms)
+✔ preflight acepta base sin tablas y base migrada sin datos de negocio (0.9244ms)
+✔ preflight rechaza datos conocidos, tablas ajenas y relaciones fuera de public (0.6236ms)
+✔ nunca usa desarrollo como base de pruebas por omisión o alias localhost (1.1376ms)
+✔ normaliza espacios y Unicode, conservando mayúsculas y tildes visibles (2.9745ms)
+✔ cantidades decimales exactas y serialización como texto (0.921ms)
+✔ rechaza redondeos, notación científica, tipos y rangos inválidos (0.3294ms)
+✔ configuración inválida falla sin imprimir credenciales (0.3836ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1297.4967
+PS C:\Users\Usuario\Desktop\naza carrera\CUARTO CUATRIMESTRE\Trabajo Final\stock-manager>    npm run test:integration
+
+> stock-manager@0.1.0 test:integration
+> npm run test:integration -w backend
+
+
+> @stock-manager/backend@0.1.0 test:integration
+> tsx tests/run-integration.js
+
+Preflight correcto: sin datos ni objetos ajenos. Se pueden aplicar migraciones.
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "stock_manager_test", schema "public" at "localhost:5432"
+
+1 migration found in prisma/migrations
+
+
+┌─────────────────────────────────────────────────────────┐
+│  Update available 7.10.1 -> 8.0.0-rc.30                 │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+No pending migrations to apply.
+✔ migración instala seis tablas y siete CHECK validados (308.5066ms)
+✔ seed repetible, hashes válidos, referencias en dos comercios y sin restablecer cuentas (1369.1496ms)
+✔ escritura y lectura con cliente generado y rollback real (5.1323ms)
+✔ restricción de stock rechaza escritura inválida desde Prisma (115.7449ms)
+✔ HTTP consulta PostgreSQL mediante el cliente generado (65.1486ms)
+✔ acceso con PostgreSQL: login, sesión y rechazo inmediato al desactivar la cuenta (785.1232ms)
+✔ acceso con PostgreSQL: permisos por rol y registros de otro comercio (255.0504ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3467.8518

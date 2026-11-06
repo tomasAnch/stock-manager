@@ -1,96 +1,84 @@
 import React, { useEffect, useState } from 'react';
-import { checkHealth } from '../services/api.js';
+import { obtenerSesion } from '../services/api.js';
+import { borrarToken, guardarToken, leerToken } from '../features/acceso/token-guardado.js';
+import LoginPage from '../features/acceso/LoginPage.jsx';
+import Panel from '../features/acceso/Panel.jsx';
 
-const connectionStates = {
-  loading: { title: 'Comprobando conexión…', description: 'Estamos consultando el servicio.' },
-  ok: {
-    title: 'La conexión está lista',
-    description: 'La pantalla, el servidor y la base de datos se están comunicando.',
-  },
-  error: {
-    title: 'No pudimos conectar',
-    description: 'Comprobá que el servidor y la base estén encendidos y volvé a intentar.',
-  },
-};
-
-const upcomingModules = [
-  { number: '01', title: 'Catálogo', description: 'Productos, categorías y proveedores organizados en un solo lugar.' },
-  { number: '02', title: 'Inventario', description: 'Entradas, salidas y un historial para seguir cada movimiento.' },
-  { number: '03', title: 'Reposición', description: 'Faltantes a la vista y listas para compartir con tus proveedores.' },
-];
+// Estados de la sesión:
+// - verificando: hay un token guardado y se consulta al backend si sigue siendo válido.
+// - anonimo: se muestra el login (con un aviso opcional, por ejemplo "la sesión venció").
+// - autenticado: se muestra el panel del rol.
+// - sinConexion: hay token pero el backend no respondió; se ofrece reintentar.
+function estadoInicial() {
+  return leerToken() ? { fase: 'verificando' } : { fase: 'anonimo' };
+}
 
 export default function App() {
-  const [attempt, setAttempt] = useState(0);
-  const [status, setStatus] = useState('loading');
+  const [sesion, setSesion] = useState(estadoInicial);
 
   useEffect(() => {
+    if (sesion.fase !== 'verificando') return undefined;
+    const token = leerToken();
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-    let active = true;
-    setStatus('loading');
+    obtenerSesion(token, controller.signal)
+      .then(({ usuario }) => setSesion({ fase: 'autenticado', token, usuario }))
+      .catch(error => {
+        if (controller.signal.aborted) return;
+        if (error.status === 401) cerrarSesion(error.message);
+        else setSesion({ fase: 'sinConexion', mensaje: error.message });
+      });
+    return () => controller.abort();
+  }, [sesion.fase]);
 
-    checkHealth(controller.signal)
-      .then(() => { if (active) setStatus('ok'); })
-      .catch(() => { if (active) setStatus('error'); })
-      .finally(() => clearTimeout(timeout));
+  function iniciarSesion(token, usuario) {
+    guardarToken(token);
+    setSesion({ fase: 'autenticado', token, usuario });
+  }
 
-    return () => {
-      active = false;
-      clearTimeout(timeout);
-      controller.abort();
-    };
-  }, [attempt]);
+  function cerrarSesion(aviso) {
+    borrarToken();
+    setSesion({ fase: 'anonimo', aviso });
+  }
 
-  const connection = connectionStates[status];
-  const isLoading = status === 'loading';
+  function actualizarUsuario(usuario) {
+    setSesion(actual => (actual.fase === 'autenticado' ? { ...actual, usuario } : actual));
+  }
 
   return (
     <div className="shell">
       <header className="topbar">
-        <a className="brand" href="/" aria-label="Stock Manager, inicio">
+        <span className="brand">
           <span className="brand-mark" aria-hidden="true">▥</span> Stock Manager
-        </a>
+        </span>
         <span className="tag">TFI · UTN</span>
       </header>
-      <main>
-        <p className="eyebrow">INVENTARIO PARA TU COMERCIO</p>
-        <h1>Todo empieza<br />por tener el control.</h1>
-        <p className="intro">
-          Un lugar para organizar tus productos, registrar movimientos y preparar la próxima reposición.
-        </p>
-        <section className={`connection ${status}`} aria-labelledby="connection-title">
-          <div className="connection-copy" role="status" aria-live="polite">
-            <span className="status-label">
-              <span className="dot" aria-hidden="true" />ESTADO DE LA CONEXIÓN
-            </span>
-            <h2 id="connection-title">{connection.title}</h2>
-            <p>{connection.description}</p>
+
+      {sesion.fase === 'anonimo' && <LoginPage aviso={sesion.aviso} onLogin={iniciarSesion} />}
+
+      {sesion.fase === 'verificando' && (
+        <main><p className="intro" role="status">Comprobando tu sesión…</p></main>
+      )}
+
+      {sesion.fase === 'sinConexion' && (
+        <main>
+          <p className="form-error" role="alert">{sesion.mensaje}</p>
+          <div className="actions">
+            <button type="button" onClick={() => setSesion({ fase: 'verificando' })}>Reintentar</button>
+            <button type="button" className="secondary" onClick={() => cerrarSesion()}>Volver al login</button>
           </div>
-          <button disabled={isLoading} onClick={() => setAttempt(value => value + 1)}>
-            {isLoading ? 'Comprobando…' : 'Volver a comprobar'}
-            <span aria-hidden="true"> ↗</span>
-          </button>
-        </section>
-        <section className="roadmap" aria-labelledby="roadmap-title">
-          <div className="section-heading">
-            <h2 id="roadmap-title">Lo que estamos construyendo</h2>
-            <span>Próximas etapas</span>
-          </div>
-          <div className="cards">
-            {upcomingModules.map(module => (
-              <article key={module.number}>
-                <span className="number">{module.number}</span>
-                <h3>{module.title}</h3>
-                <p>{module.description}</p>
-                <span className="pending">Pendiente de implementación</span>
-              </article>
-            ))}
-          </div>
-        </section>
-        <p className="stage-note">
-          Etapa 1 · Base del proyecto. El acceso con usuarios y las funciones de inventario se incorporan en las próximas etapas.
-        </p>
-      </main>
+        </main>
+      )}
+
+      {sesion.fase === 'autenticado' && (
+        <Panel
+          token={sesion.token}
+          usuario={sesion.usuario}
+          onUsuario={actualizarUsuario}
+          onSesionInvalida={cerrarSesion}
+          onCerrarSesion={() => cerrarSesion('Cerraste la sesión.')}
+        />
+      )}
+
       <footer>
         <span>Stock Manager</span>
         <span>Tomás Anchorena · Nazareno Romero</span>

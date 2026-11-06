@@ -69,10 +69,10 @@ No se necesita una aprobación nueva para cada archivo, test o arreglo técnico 
 
 RF-01 y RF-02; RN-01 y RN-15.
 
-- [ ] Implementar login, cierre de sesión y navegación según dueño/empleado.
-- [ ] Validar token, vencimiento y usuario activo en cada solicitud protegida; obtener rol y comercio desde el usuario consultado.
-- [ ] Centralizar permisos y filtros por comercio, sin aceptar el comercio enviado por el cliente como autorización.
-- [ ] Probar credenciales inválidas, token vencido, usuario desactivado, operaciones de otro rol y referencias a otro comercio.
+- [x] Implementar login, cierre de sesión y navegación según dueño/empleado.
+- [x] Validar token, vencimiento y usuario activo en cada solicitud protegida; obtener rol y comercio desde el usuario consultado.
+- [x] Centralizar permisos y filtros por comercio, sin aceptar el comercio enviado por el cliente como autorización.
+- [x] Probar credenciales inválidas, token vencido, usuario desactivado, operaciones de otro rol y referencias a otro comercio. Ver [etapa 2](implementacion/etapa-2.md).
 - [ ] Hacer un primer ensayo de despliegue del recorrido disponible cuando estén las cuentas y accesos. Registrar cualquier bloqueo externo y continuar con módulos independientes.
 
 **Terminada cuando:** ambos roles acceden a su interfaz y las solicitudes no autorizadas se rechazan también al llamar directamente a la API. El resultado del ensayo online se registra por separado; una pantalla local no cuenta como despliegue.
@@ -159,9 +159,9 @@ Se priorizan comportamientos importantes y errores posibles; no se agrega un tes
 
 ## Registro de avance y continuidad
 
-**Estado actual:** etapa 1 cerrada tras la revisión cruzada y la instalación de Nazareno del 30/10 sobre el commit `501810c`, informado por el equipo. Su [salida de terminal](implementacion/instalacion-nazareno-2026-10-30.txt) registra migraciones iniciales, seed repetido, 14 pruebas de lógica/HTTP y 5 de integración correctas (integración ejecutada dos veces), y compilación. Su [captura](implementacion/instalacion-nazareno-2026-10-30.png) muestra la conexión lista. Ver también [seguimiento y límites de la evidencia](implementacion/revision-etapa-1.md). Las etapas 2 a 7 siguen pendientes.
+**Estado actual:** etapa 1 cerrada (instalación de Nazareno del 30/10 sobre `501810c`; ver [revisión](implementacion/revision-etapa-1.md)). Etapa 2 implementada por Nazareno con Claude el 05/11 y pendiente de revisión: login, sesión, navegación por rol y controles de acceso, con 25 pruebas de lógica/HTTP y 7 de integración correctas en el entorno de Claude. Ver [etapa 2](implementacion/etapa-2.md). El ensayo de despliegue sigue pendiente. Las etapas 3 a 7 siguen pendientes.
 
-**Siguiente acción:** compartir el reparto y el registro de participación. Nazareno y Claude implementan la etapa 2 (acceso y permisos); Tomás y Codex revisan el commit compartido antes de iniciar la etapa 3. Git lo ejecutan los integrantes.
+**Siguiente acción:** Nazareno ejecuta las pruebas en su equipo y comparte el commit; Tomás y Codex revisan la etapa 2 antes de iniciar la etapa 3. Git lo ejecutan los integrantes.
 
 **Datos externos pendientes:** disponibilidad y acceso al comercio piloto; cuentas y condiciones del hosting. No se necesitan para redactar o probar toda la lógica local.
 
