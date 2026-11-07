@@ -385,3 +385,21 @@ button.link:hover:not(:disabled) {
     width:100%;
   }
 }
+.connection-notice {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:0 0 20px;
+  padding:12px 14px;
+  border-radius:8px;
+  background:#fff1e8;
+  border:1px solid #e0c7b5;
+  color:#7a2f16;
+  font-size:14px;
+}
+.connection-notice p {
+  margin:0;
+  flex:1 1 220px;
+}

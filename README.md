@@ -164,6 +164,10 @@ Si hay conexiones abiertas, PostgreSQL rechazará el borrado; cerralas antes de 
 
 ## Registro de cambios
 
+### 07/11/2026 — Etapa 2: correcciones de la revisión
+
+- El login rechaza contraseñas de más de 72 bytes, el límite que compara bcrypt (observación bloqueante de la revisión). El token sin vencimiento se rechaza y el panel avisa cuando no puede comprobar la sesión por un problema de conexión. Detalle en [etapa 2](docs/implementacion/etapa-2.md#revisión-cruzada).
+
 ### 05/11/2026 — Etapa 2: acceso y permisos (en revisión)
 
 - Se agregan login (`POST /api/auth/login`), consulta de sesión (`GET /api/auth/sesion`) y cierre de sesión en el navegador. Los middlewares `requireAuth` y `requireRole` y el filtro por comercio quedan listos para los módulos siguientes.

@@ -8,17 +8,24 @@ export default function Panel({ token, usuario, onUsuario, onSesionInvalida, onC
   const secciones = seccionesDelRol(usuario.rol);
   const [seccionId, setSeccionId] = useState('inicio');
   const seccion = secciones.find(item => item.id === seccionId) ?? secciones[0];
+  const [reintento, setReintento] = useState(0);
+  const [avisoConexion, setAvisoConexion] = useState('');
 
   // Al cambiar de sección se vuelve a consultar la sesión. Si el usuario fue
   // desactivado o el token venció, el backend responde 401 y se vuelve al login.
   // Si cambió su rol en la base, el menú se actualiza con el dato del servidor.
+  // Si el servidor no responde, se avisa y se ofrece reintentar sin cerrar la sesión.
   useEffect(() => {
     const controller = new AbortController();
     obtenerSesion(token, controller.signal)
-      .then(data => onUsuario(data.usuario))
-      .catch(error => { if (error.status === 401) onSesionInvalida(error.message); });
+      .then(data => { setAvisoConexion(''); onUsuario(data.usuario); })
+      .catch(error => {
+        if (controller.signal.aborted) return; // se cambió de sección antes de la respuesta
+        if (error.status === 401) onSesionInvalida(error.message);
+        else setAvisoConexion(error.message);
+      });
     return () => controller.abort();
-  }, [seccionId, token]);
+  }, [seccionId, token, reintento]);
 
   return (
     <>
@@ -39,6 +46,12 @@ export default function Panel({ token, usuario, onUsuario, onSesionInvalida, onC
         ))}
       </nav>
       <main>
+        {avisoConexion && (
+          <div className="connection-notice" role="alert">
+            <p>{avisoConexion}</p>
+            <button type="button" className="secondary" onClick={() => setReintento(valor => valor + 1)}>Reintentar</button>
+          </div>
+        )}
         {seccion.id === 'inicio'
           ? <Inicio usuario={usuario} secciones={secciones.slice(1)} onAbrir={setSeccionId} />
           : <SeccionPendiente seccion={seccion} />}

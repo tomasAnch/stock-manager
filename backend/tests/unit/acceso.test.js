@@ -94,11 +94,44 @@ test('login sin datos o con tipos inválidos responde 400', async () => {
   });
 });
 
-test('sesión: sin token, encabezado mal formado, otra firma, otro algoritmo, sin firma o vencido se rechazan', async () => {
+test('contraseñas de más de 72 bytes se rechazan antes de consultar la base', async () => {
+  const largo72 = 'a'.repeat(72);
+  const enies36 = 'ñ'.repeat(36); // 36 caracteres, 72 bytes
+  // El problema que se evita: bcrypt ignora lo que pasa de 72 bytes.
+  const hash72 = bcrypt.hashSync(largo72, 4);
+  assert.equal(bcrypt.compareSync(`${largo72}INVALIDA`, hash72), true);
+
+  const lista = [
+    { ...usuarios()[0], passwordHash: hash72 },
+    { ...usuarios()[1], passwordHash: bcrypt.hashSync(enies36, 4) },
+  ];
+  const base = fakePrisma(lista);
+  let consultas = 0;
+  const prisma = { usuario: { findUnique: args => { consultas += 1; return base.usuario.findUnique(args); } } };
+  await withServer(createApp({ prisma, auth }), async url => {
+    const login = contrasena => post(`${url}/api/auth/login`, { correo: lista[0].correo, contrasena });
+    const loginEnie = contrasena => post(`${url}/api/auth/login`, { correo: lista[1].correo, contrasena });
+
+    // Justo en el límite: entra.
+    assert.equal((await login(largo72)).status, 200);
+    assert.equal((await loginEnie(enies36)).status, 200);
+    const antes = consultas;
+
+    // Un byte de más, en texto común o con caracteres de 2 bytes: se rechaza sin comparar.
+    for (const res of [await login(`${largo72}INVALIDA`), await loginEnie(`${enies36}x`), await loginEnie('ñ'.repeat(37))]) {
+      assert.equal(res.status, 400);
+      assert.equal((await res.json()).error.code, 'VALIDATION_ERROR');
+    }
+    assert.equal(consultas, antes);
+  });
+});
+
+test('sesión: sin token, encabezado mal formado, otra firma, otro algoritmo, sin firma, sin vencimiento o vencido se rechazan', async () => {
   const usuarioId = '20000000-0000-4000-8000-000000000001';
   const otraFirma = jwt.sign({}, 'otro-secreto-que-no-es-el-del-servidor-000', { subject: usuarioId, expiresIn: '1h' });
   const otroAlgoritmo = jwt.sign({}, auth.secret, { algorithm: 'HS512', subject: usuarioId, expiresIn: '1h' });
   const sinFirma = jwt.sign({}, null, { algorithm: 'none', subject: usuarioId });
+  const sinVencimiento = jwt.sign({}, auth.secret, { subject: usuarioId });
   const vencido = jwt.sign({ sub: usuarioId, exp: Math.floor(Date.now() / 1000) - 10 }, auth.secret);
   await withServer(createApp({ prisma: fakePrisma(), auth }), async url => {
     const casos = [
@@ -109,6 +142,7 @@ test('sesión: sin token, encabezado mal formado, otra firma, otro algoritmo, si
       [{ Authorization: `Bearer ${otraFirma}` }, 'INVALID_TOKEN'],
       [{ Authorization: `Bearer ${otroAlgoritmo}` }, 'INVALID_TOKEN'],
       [{ Authorization: `Bearer ${sinFirma}` }, 'INVALID_TOKEN'],
+      [{ Authorization: `Bearer ${sinVencimiento}` }, 'INVALID_TOKEN'],
       [{ Authorization: `Bearer ${vencido}` }, 'SESSION_EXPIRED'],
     ];
     for (const [headers, code] of casos) {

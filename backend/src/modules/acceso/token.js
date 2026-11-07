@@ -12,6 +12,9 @@ export function firmarToken(usuarioId, { secret, expiresIn }) {
   return jwt.sign({}, secret, { algorithm: ALGORITHM, subject: usuarioId, expiresIn });
 }
 
+const tokenInvalido = () =>
+  new HttpError(401, 'INVALID_TOKEN', 'La sesión no es válida. Iniciá sesión nuevamente.');
+
 // Devuelve el ID del usuario si la firma y el vencimiento son válidos.
 export function verificarToken(token, { secret }) {
   let payload;
@@ -21,10 +24,10 @@ export function verificarToken(token, { secret }) {
     if (error.name === 'TokenExpiredError') {
       throw new HttpError(401, 'SESSION_EXPIRED', 'La sesión venció. Iniciá sesión nuevamente.');
     }
-    throw new HttpError(401, 'INVALID_TOKEN', 'La sesión no es válida. Iniciá sesión nuevamente.');
+    throw tokenInvalido();
   }
-  if (!isUuid(payload.sub)) {
-    throw new HttpError(401, 'INVALID_TOKEN', 'La sesión no es válida. Iniciá sesión nuevamente.');
-  }
+  // La librería controla exp solo si el token lo trae. Se exige siempre: un token sin
+  // vencimiento serviría para siempre. Los que firma la aplicación siempre lo llevan.
+  if (!isUuid(payload.sub) || typeof payload.exp !== 'number') throw tokenInvalido();
   return payload.sub;
 }

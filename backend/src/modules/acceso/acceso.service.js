@@ -4,9 +4,15 @@ import { ValidationError } from '../../lib/validation.js';
 import { firmarToken } from './token.js';
 
 // Hash de una contraseña aleatoria que nadie conoce. Se compara contra él cuando el
-// correo no existe, para que la respuesta tarde lo mismo que con un correo real y no
-// se pueda averiguar qué cuentas existen midiendo el tiempo.
+// correo no existe, así bcrypt trabaja igual que con un correo real. Es una mitigación:
+// reduce la diferencia de tiempo entre cuentas existentes e inexistentes, pero no
+// garantiza que las respuestas tarden exactamente lo mismo.
 const HASH_FICTICIO = '$2b$12$xBLbTHL8C52993F4h9Sq8eYbMgOYWQAjquELCNmauuKVjVaB59F.e';
+
+// bcrypt solo usa los primeros 72 bytes de la contraseña y descarta el resto al comparar:
+// sin este límite, «contraseña de 72 bytes» + «cualquier cosa» entraría igual. Se mide en
+// bytes, no en caracteres («ñ» ocupa 2). El seed aplica el mismo límite al crear cuentas.
+const MAX_BYTES_CONTRASENA = 72;
 
 // Un único mensaje para correo inexistente, contraseña incorrecta o cuenta inactiva (CU-01).
 const CREDENCIALES_INVALIDAS = () =>
@@ -37,7 +43,7 @@ function leerCredenciales(body) {
   if (typeof correo !== 'string' || typeof contrasena !== 'string' || !correo.trim() || !contrasena) {
     throw new ValidationError('Ingresá correo y contraseña.');
   }
-  if (correo.length > 254 || contrasena.length > 200) {
+  if (correo.length > 254 || Buffer.byteLength(contrasena, 'utf8') > MAX_BYTES_CONTRASENA) {
     throw new ValidationError('El correo o la contraseña superan el largo permitido.');
   }
   // Los correos se guardan en minúsculas (RN-02).

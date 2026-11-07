@@ -119,15 +119,15 @@ Copiar esta ficha para las etapas 2 a 7. Usar frases cortas y enlaces a los docu
 
 ## Etapa 2 — Acceso y permisos
 
-- **Estado:** implementada el 05/11/2026 y probada por Nazareno en su equipo; pendiente de la revisión de Tomás con Codex.
+- **Estado:** implementada el 05/11/2026 y probada por Nazareno en su equipo. Revisada por Tomás con Codex el 06/11; correcciones aplicadas el 07/11, pendientes de que Nazareno repita las pruebas y Tomás las confirme.
 - **Responsable:** Nazareno, con implementación asistida por Claude. **Revisor:** Tomás, con Codex.
-- **Versión:** parte de `41bf10a`. *[Completar con el commit que comparta Nazareno y, si cambia, el commit final después de la revisión.]*
+- **Versión:** parte de `41bf10a`; revisada sobre `e6f0ce4` (rama `etapa-2-acceso`). *[Completar con el commit final después de las correcciones.]*
 - **Qué quedó funcionando:** login, cierre de sesión, sesión que se revalida al recargar y al cambiar de sección, menú distinto para dueño y empleado, y controles `requireAuth`, `requireRole` y filtro por comercio listos para las etapas 3 a 5 (RF-01, RF-02, RN-01, RN-15). Detalle en [etapa 2](implementacion/etapa-2.md).
 - **Asistencia de IA:** Claude escribió el código del backend y del frontend, las pruebas y la documentación de esta etapa, y ejecutó las pruebas automáticas, de integración y de navegador en una copia aislada. Las salidas están en [resultados de Claude](implementacion/resultados-etapa-2-claude-2026-11-05.txt).
 - **Aporte personal de Nazareno:** pidió la implementación y la revisión con Claude. Agregó `JWT_SECRET` a su `.env`, ejecutó en su equipo `npm ci`, `npm run generate`, `npm test` (25/25) y `npm run test:integration` (7/7) (salida en [resultados de Nazareno](implementacion/resultados-etapa-2-naza-2026-11-05.txt)) y recorrió a mano el login, la recarga y el cierre de sesión con ambos roles.
 - **Aporte personal de Tomás:** *[Completar con la revisión con Codex.]*
 - **Decisiones importantes:** rol y comercio leídos de la base en cada solicitud, no del token; token en el encabezado y en `sessionStorage` en lugar de cookie; mismo mensaje para cualquier credencial inválida. Motivos y alternativas en [etapa 2](implementacion/etapa-2.md#decisiones).
-- **Pruebas y evidencia:** 25/25 de lógica/HTTP, 7/7 de integración en dos ejecuciones y 11 pasos de navegador, ejecutados por Claude. En el equipo de Nazareno (Windows): 25/25 y 7/7, más el recorrido manual con ambos roles.
-- **Revisión cruzada:** *[Completar: observación de Tomás/Codex → resolución o motivo para descartarla → verificación.]*
+- **Pruebas y evidencia:** 05/11: 25/25 de lógica/HTTP, 7/7 de integración en dos ejecuciones y 11 pasos de navegador, ejecutados por Claude; en el equipo de Nazareno (Windows), 25/25 y 7/7, más el recorrido manual con ambos roles. 07/11, después de las correcciones: 26/26, 7/7 en dos ejecuciones y 7 pasos de navegador, ejecutados por Claude ([salida](implementacion/resultados-etapa-2-claude-2026-11-07.txt)).
+- **Revisión cruzada:** Tomás revisó con Codex el 06/11: una observación bloqueante (el login aceptaba texto agregado después de los 72 bytes que compara bcrypt) y tres sugerencias (exigir el vencimiento del token, avisar los errores de conexión en el panel y no prometer tiempos idénticos en la documentación). Las cuatro se resolvieron el 07/11, cada una con su prueba; detalle en [etapa 2](implementacion/etapa-2.md#revisión-cruzada).
 - **Para explicar en la defensa:** la diferencia entre identificar (login, `requireAuth`) y autorizar (`requireRole`, filtro por comercio); por qué cambiar el rol en el navegador no sirve; el ejemplo del empleado desactivado con un token todavía vigente.
 - **Comprensión pendiente de practicar:** que Nazareno explique con sus palabras el recorrido del login y el de una solicitud protegida.

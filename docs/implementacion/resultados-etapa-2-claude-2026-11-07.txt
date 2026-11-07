@@ -1,0 +1,103 @@
+Etapa 2 — Correcciones de la revisión · ejecución de Claude · 07/11/2026, 00:31 (hora de Argentina)
+Versión: rama etapa-2-acceso en e6f0ce4 + correcciones de la revisión (todavía sin commit)
+Entorno: copia aislada de Claude, Linux, Node v24.22.1, npm 11.21.2, PostgreSQL 18.4 con bases nuevas y vacías
+Limitación: igual que el 05/11, en este entorno no se puede descargar el motor de migraciones de Prisma.
+Se aplicó el mismo migration.sql y se corrió el mismo archivo de pruebas de integración.
+En el equipo de Nazareno corresponde ejecutar 'npm run test:integration' tal cual.
+
+$ npm test
+✔ login correcto devuelve token y datos públicos, sin el hash (83.147259ms)
+✔ contraseña incorrecta, correo inexistente y cuenta inactiva responden igual (365.838951ms)
+✔ login sin datos o con tipos inválidos responde 400 (12.858071ms)
+✔ contraseñas de más de 72 bytes se rechazan antes de consultar la base (20.084765ms)
+✔ sesión: sin token, encabezado mal formado, otra firma, otro algoritmo, sin firma, sin vencimiento o vencido se rechazan (16.565664ms)
+✔ un token vigente deja de servir si el usuario se desactiva o ya no existe (12.51166ms)
+✔ rol y comercio salen de la base aunque el token diga otra cosa (3.761828ms)
+✔ requireRole: el empleado recibe 403 y el dueño pasa (5.660506ms)
+✔ filtro por comercio: reemplaza el comercio enviado y no consulta IDs inválidos (0.921967ms)
+✔ configuración: exige un secreto largo y un vencimiento válido, sin mostrar el secreto (0.584123ms)
+✔ CORS permite el encabezado Authorization desde el frontend configurado (3.512111ms)
+✔ diagnóstico conserva tipo, código y ubicación, pero no mensaje, metadatos ni ruta completa (1.854662ms)
+✔ 500 registra diagnóstico controlado sin filtrar el error ni la solicitud (0.450078ms)
+✔ seed requiere habilitación exacta y producción siempre prevalece (0.60029ms)
+✔ seed informa contraseñas inválidas antes de consultar la base (0.609671ms)
+✔ health devuelve disponibilidad sin exponer datos del comercio (50.57798ms)
+✔ base no disponible responde 503 y no filtra errores internos (15.526066ms)
+✔ 404, JSON mal formado y cuerpos excesivos tienen errores JSON controlados (26.041049ms)
+✔ la app no arranca sin configuración de autenticación (0.590297ms)
+✔ preflight acepta base sin tablas y base migrada sin datos de negocio (0.994971ms)
+✔ preflight rechaza datos conocidos, tablas ajenas y relaciones fuera de public (0.770286ms)
+✔ nunca usa desarrollo como base de pruebas por omisión o alias localhost (1.22881ms)
+✔ normaliza espacios y Unicode, conservando mayúsculas y tildes visibles (1.733029ms)
+✔ cantidades decimales exactas y serialización como texto (0.932912ms)
+✔ rechaza redondeos, notación científica, tipos y rangos inválidos (0.413167ms)
+✔ configuración inválida falla sin imprimir credenciales (0.343791ms)
+ℹ tests 26
+ℹ pass 26
+ℹ fail 0
+
+$ pruebas con errores introducidos a propósito (tests/unit/acceso.test.js)
+-- 1) volver al límite anterior de 200 caracteres
+ℹ fail 1
+ℹ pass 10
+✖ contraseñas de más de 72 bytes se rechazan antes de consultar la base (25.937296ms)
+✖ failing tests:
+-- 2) contar caracteres en lugar de bytes
+ℹ fail 1
+ℹ pass 10
+✖ contraseñas de más de 72 bytes se rechazan antes de consultar la base (25.933635ms)
+✖ failing tests:
+-- 3) no exigir el vencimiento del token
+ℹ fail 1
+ℹ pass 10
+✖ failing tests:
+✖ sesión: sin token, encabezado mal formado, otra firma, otro algoritmo, sin firma, sin vencimiento o vencido se rechazan (16.513801ms)
+Después de cada prueba se restauró el archivo original.
+
+$ pruebas de integración, corrida 1 (tests/integration/database.test.js)
+✔ migración instala seis tablas y siete CHECK validados (116.546719ms)
+✔ seed repetible, hashes válidos, referencias en dos comercios y sin restablecer cuentas (1854.349969ms)
+✔ escritura y lectura con cliente generado y rollback real (9.850668ms)
+✔ restricción de stock rechaza escritura inválida desde Prisma (64.142898ms)
+✔ HTTP consulta PostgreSQL mediante el cliente generado (69.680366ms)
+✔ acceso con PostgreSQL: login, sesión y rechazo inmediato al desactivar la cuenta (1121.517412ms)
+✔ acceso con PostgreSQL: permisos por rol y registros de otro comercio (364.068459ms)
+ℹ tests 7
+ℹ pass 7
+ℹ fail 0
+
+$ pruebas de integración, corrida 2 (tests/integration/database.test.js)
+✔ migración instala seis tablas y siete CHECK validados (125.218486ms)
+✔ seed repetible, hashes válidos, referencias en dos comercios y sin restablecer cuentas (1921.772224ms)
+✔ escritura y lectura con cliente generado y rollback real (6.754156ms)
+✔ restricción de stock rechaza escritura inválida desde Prisma (63.761291ms)
+✔ HTTP consulta PostgreSQL mediante el cliente generado (55.851451ms)
+✔ acceso con PostgreSQL: login, sesión y rechazo inmediato al desactivar la cuenta (1130.233909ms)
+✔ acceso con PostgreSQL: permisos por rol y registros de otro comercio (369.412198ms)
+ℹ tests 7
+ℹ pass 7
+ℹ fail 0
+
+$ comprobaciones contra la API en marcha (base de desarrollo con el seed)
+login correcto: 200
+73 bytes ASCII: 400 {"error":{"code":"VALIDATION_ERROR","message":"El correo o la contraseña superan el largo permitido."}}
+37 eñes (74 bytes): 400
+token firmado sin exp: 401 INVALID_TOKEN
+token de la app: 200
+
+$ npm run build -w frontend
+dist/assets/index-BFOMBxAf.css    5.31 kB │ gzip:  1.61 kB
+dist/assets/index-D6BeCCnO.js   228.86 kB │ gzip: 71.92 kB
+✓ built in 157ms
+
+$ navegador (Chromium, Playwright): aviso de conexión del panel
+1) login dueño correcto
+2) servidor caído al cambiar de sección: "No pudimos conectar con el servidor. Probá de nuevo en unos segundos." | sigue en el panel: true
+   desborde horizontal en 390px con el aviso: false
+3) reintento con error 500: el aviso muestra "No se pudo completar la operación."
+4) reintento con el servidor bien: el aviso desaparece
+5) cambio rápido de sección (solicitud cancelada): aparece aviso? false
+6) 401 sigue volviendo al login: true
+7) empleado en escritorio: aviso visible
+errores JS de página: 0 []
+Del paso 2) al 7) la respuesta de /api/auth/sesion se simuló en el navegador (falla de red, 500, demora o 401) para provocar cada caso; el login y las demás solicitudes usan la API real.

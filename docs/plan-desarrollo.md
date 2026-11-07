@@ -159,9 +159,9 @@ Se priorizan comportamientos importantes y errores posibles; no se agrega un tes
 
 ## Registro de avance y continuidad
 
-**Estado actual:** etapa 1 cerrada (instalación de Nazareno del 30/10 sobre `501810c`; ver [revisión](implementacion/revision-etapa-1.md)). Etapa 2 implementada por Nazareno con Claude el 05/11 y pendiente de revisión: login, sesión, navegación por rol y controles de acceso, con 25 pruebas de lógica/HTTP y 7 de integración correctas en el entorno de Claude. Ver [etapa 2](implementacion/etapa-2.md). El ensayo de despliegue sigue pendiente. Las etapas 3 a 7 siguen pendientes.
+**Estado actual:** etapa 1 cerrada (instalación de Nazareno del 30/10 sobre `501810c`; ver [revisión](implementacion/revision-etapa-1.md)). Etapa 2 implementada por Nazareno con Claude el 05/11 (login, sesión, navegación por rol y controles de acceso), revisada por Tomás con Codex el 06/11 y corregida el 07/11: 26 pruebas de lógica/HTTP y 7 de integración correctas en el entorno de Claude. Falta que Nazareno repita las pruebas, que Tomás confirme las correcciones y unir la rama `etapa-2-acceso` a `main`. Ver [etapa 2](implementacion/etapa-2.md). El ensayo de despliegue sigue pendiente. Las etapas 3 a 7 siguen pendientes.
 
-**Siguiente acción:** Nazareno ejecuta las pruebas en su equipo y comparte el commit; Tomás y Codex revisan la etapa 2 antes de iniciar la etapa 3. Git lo ejecutan los integrantes.
+**Siguiente acción:** Nazareno ejecuta las pruebas con las correcciones y las sube a la rama `etapa-2-acceso`; Tomás y Codex confirman las correcciones y se une la rama a `main` antes de iniciar la etapa 3. Git lo ejecutan los integrantes.
 
 **Datos externos pendientes:** disponibilidad y acceso al comercio piloto; cuentas y condiciones del hosting. No se necesitan para redactar o probar toda la lógica local.
 
