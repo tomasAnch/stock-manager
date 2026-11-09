@@ -995,7 +995,7 @@ En el entorno de Claude no se pudo descargar el motor de migraciones de Prisma, 
 
 **Claude** escribió el código del backend y del frontend, las pruebas y la documentación de la etapa, ejecutó las pruebas en una copia aislada y aplicó las correcciones de la revisión.
 
-**Tomás** coordinó la revisión con Codex y transmitió sus observaciones y la aprobación final. **Codex** leyó el código, ejecutó las pruebas, reprodujo los dos problemas y verificó las correcciones. El aporte personal de Tomás en esta etapa se completa en el [registro de participación](docs/participacion-y-defensa.md#etapa-2--acceso-y-permisos-1).
+**Tomás** coordinó la revisión con Codex, le transmitió a Nazareno las observaciones y la aprobación final, y ejecutó los comandos de Git para traer a su equipo las versiones a revisar y la versión integrada. **Codex** leyó el código, ejecutó las pruebas automatizadas y el recorrido en el navegador, reprodujo los dos problemas y verificó las correcciones. Detalle en el [registro de participación](docs/participacion-y-defensa.md#etapa-2--acceso-y-permisos-1).
 
 El código no lo escribieron los estudiantes. Lo que cada uno tiene que poder hacer en la defensa es explicarlo, justificar las decisiones y mostrar dónde está cada cosa.
 
@@ -1050,7 +1050,7 @@ Después cada uno agrega qué hizo personalmente y qué hizo el compañero.
    JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
    ```
    Tiene que mostrar `sub`, `iat` y `exp`, y nada de rol ni comercio.
-5. **Romper el token.** En Session Storage, cambiar una letra del token y cambiar de sección. Tiene que volver al login con «La sesión no es válida».
+5. **Romper el token.** En Session Storage, cambiar una letra del token y recargar la página (F5). Tiene que volver al login con «La sesión no es válida». Si en vez de recargar se cambia de sección, no pasa nada: el panel sigue usando el token que React guardó en memoria al iniciar sesión. Recién al recargar, `App` vuelve a leer sessionStorage y manda el token modificado.
 6. **Desactivar una cuenta con la sesión abierta.** Seguir los pasos de [Cómo probarlo a mano](docs/implementacion/etapa-2.md#cómo-probarlo-a-mano) y explicar por qué el token todavía vigente no alcanza. Después reactivar la cuenta.
 7. **Ver una prueba fallar.** En `acceso.service.js`, borrar `|| !usuario.activo` de la condición del login y ejecutar `npm test`: tiene que fallar la prueba de cuenta inactiva. Explicar por qué, y después deshacer el cambio con `git restore backend/src/modules/acceso/acceso.service.js`.
 
