@@ -4,6 +4,8 @@ Acuerdo del 04/11/2026. Este registro acompaña la [hoja de ruta](plan-desarroll
 
 ## Reparto acordado
 
+La [guía de preparación de la defensa oral](../preparacion-defensa-oral.md), en la raíz, desarrolla las explicaciones para estudiar. Al cerrar cada etapa se completa tanto esa guía como la ficha de participación de este registro.
+
 | Etapa | Responsable de llevarla adelante | Apoyo de IA | Revisión |
 |---|---|---|---|
 | 1. Entorno, base de datos y aplicación mínima | Tomás | Codex | Nazareno con Claude; terminada |
