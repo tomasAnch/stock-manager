@@ -1085,7 +1085,142 @@ Cada estudiante marca las casillas después de practicar.
 
 ### Etapa 3 — Catálogo
 
-Pendiente. Tomás con Codex explicarán categorías, proveedores, productos, bajas, validaciones y la operación transaccional de alta con stock inicial. Nazareno con Claude revisarán.
+Implementada por Codex a pedido de Tomás el 09/11/2026. Pendiente de revisión de Nazareno con Claude. [Informe y evidencias](docs/implementacion/etapa-3.md).
+
+#### Qué problema resuelve
+
+Antes del catálogo se podía entrar al sistema, pero no cargar la mercadería. Ahora el dueño crea categorías, proveedores y productos desde la pantalla. El empleado consulta sin poder modificarlos. Categoría agrupa productos (por ejemplo, Alimentos); proveedor identifica a quién pedirlos (Distribuidora Sur). Cada producto tiene uno de cada uno.
+
+ABM significa alta, baja y modificación. Acá la baja no borra: cambia `activo` a false. La información sigue existiendo y podrá usarse en el historial. Esto evita perder la explicación de cómo se llegó al stock actual.
+
+No están hechos todavía los formularios habituales de entradas/salidas ni la pantalla del historial. Solo se registra el ingreso inicial desde el alta. La operación interna de Inventario que lo permite queda preparada para la etapa 4.
+
+#### Archivos para seguir el recorrido
+
+| Archivo | Qué hace |
+|---|---|
+| frontend/src/features/catalogo/Catalogo.jsx | Muestra listas y formularios, reúne datos, envía solicitudes y presenta errores |
+| frontend/src/features/acceso/Panel.jsx | Abre Catálogo dentro de la sesión autenticada |
+| frontend/src/services/api.js | Agrega token, envía JSON y traduce fallas de red/HTTP |
+| backend/src/modules/catalogo/catalogo.routes.js | Declara las rutas y los controles de acceso |
+| backend/src/modules/catalogo/catalogo.service.js | Valida, consulta y modifica dentro de transacciones |
+| backend/src/modules/inventario/movimientos.service.js | Actualiza saldo y registra movimiento juntos |
+| backend/tests/unit/catalogo.test.js | Prueba datos válidos e intentos de enviar campos prohibidos |
+| backend/tests/integration/database.test.js | Comprueba operaciones reales, permisos y concurrencia en PostgreSQL |
+
+#### Ejemplo completo: alta de harina
+
+El dueño carga código HAR001, nombre Harina, unidad KG, categoría Alimentos, proveedor Sur, mínimo 2, objetivo 5 e inicial 0,250.
+
+1. React conserva los campos en `editor`, su estado local. Cada cambio actualiza ese objeto y vuelve a mostrar el formulario.
+2. Al guardar se cancela el envío HTML habitual y se hace una solicitud `POST /api/catalogo/productos`. La coma decimal pasa a punto: se envía la cadena `"0.250"`, no un número aproximado.
+3. `requireAuth` comprueba la sesión; `requireRole('DUENO')` impide que un empleado cree el producto. El comercio sale de la cuenta, no del formulario.
+4. `validarProducto` verifica campos permitidos, código, nombre, unidad y cantidades. No se acepta `stockActual` ni `comercioId` enviados por el cliente.
+5. Se abre una transacción. Se bloquean la categoría y el proveedor del comercio para comprobar que siguen activos hasta confirmar.
+6. Se crea el producto con saldo cero y se llama a `registrarMovimiento` pasando **la misma transacción**, cantidad 0.250, ingreso y motivo STOCK_INICIAL.
+7. Inventario bloquea el producto, valida cantidad y responsable, incrementa el saldo y guarda el movimiento.
+8. Si todo salió bien, se confirma y responde el producto. React cierra el formulario y vuelve a consultar el listado. Si algo falla, se revierte todo: no queda un producto sin su ingreso inicial.
+
+Una transacción es un grupo de escrituras que se confirma entero o se deshace entero. No significa que los pasos no existan por separado: significa que no se confirma solo una parte.
+
+Fragmento clave de Catálogo, simplificado:
+
+```js
+return db.$transaction(async tx => {
+  const producto = await tx.producto.create(...);
+  await registrarMovimiento(tx, auth, datosMovimiento, { permitirInicial: true });
+  return producto;
+});
+```
+
+`tx` es el cliente ligado a esa transacción. Si Inventario usara otra conexión independiente para guardar, podría confirmar el movimiento aunque el alta fallara después. Por eso recibe `tx`. El código real también controla el caso de inicial cero: no crea un movimiento de cantidad cero.
+
+#### Por qué bloquear filas
+
+Imaginemos dos ventanas: una asigna el proveedor Sur a un producto; la otra desactiva Sur. Si ambas miran primero y escriben después sin coordinación, podrían aprobarse las dos y dejar un producto activo con proveedor inactivo.
+
+`SELECT ... FOR UPDATE` toma un bloqueo de la fila hasta terminar la transacción. La otra operación que quiera bloquear esa fila espera. Cuando puede continuar, consulta el estado vigente y decide. No se bloquea toda la base.
+
+El orden acordado es producto existente, categoría y proveedor. La baja de una referencia bloquea esa referencia y cuenta productos activos; no bloquea después esos productos. Mantener este orden reduce las situaciones donde dos operaciones se esperan mutuamente. Los conflictos se informan; no se repite automáticamente una escritura cuyo resultado pueda ser incierto.
+
+En Prisma se usa `$queryRaw` con parámetros. El ID no se concatena como código SQL; se envía como un valor. Los nombres de las tablas se seleccionan de una lista fija interna.
+
+#### Por qué el saldo no se edita
+
+Saldo e historial deben explicar lo mismo. Si había 10 y alguien cambia el saldo a 7 directamente, faltarían tres unidades sin explicación. Por eso la edición permite código, nombre, referencias, unidad cuando corresponde y umbrales, pero no saldo. Más adelante un ajuste del dueño registrará la diferencia con su motivo.
+
+Inventario actualiza aritméticamente en la base:
+
+```js
+stockActual: { increment: cantidad }
+```
+
+Para una salida usa `decrement` y exige saldo suficiente en el filtro. No calcula un saldo nuevo con una lectura vieja. Dos retiros de 3 sobre stock 3 no pueden dejar -3: uno confirma y el otro se rechaza. Si falla el registro del movimiento, tampoco queda descontado el saldo.
+
+La prueba de dos salidas verifica la operación interna preparada para la etapa 4. No significa que la pantalla de movimientos ya esté implementada.
+
+#### Identificadores, duplicados y cantidades
+
+- El código se recorta y pasa a mayúsculas. ` har001 ` y `HAR001` son el mismo código dentro de un comercio; otro comercio puede tener HAR001.
+- Categoría y proveedor tienen nombre visible y nombre normalizado. Se conservan tildes; espacios repetidos se reducen y el normalizado pasa a minúsculas. La restricción única de PostgreSQL resuelve también dos altas simultáneas del mismo nombre. El error se convierte en 409 con un mensaje entendible.
+- Los inactivos también reservan código/nombre: se reactiva el registro existente en lugar de crear otro que haga ambiguo el historial.
+- UNIDAD exige enteros; KG admite tres decimales. Mínimo no negativo, objetivo mayor o igual al mínimo. El stock puede superar el objetivo.
+- Prisma Decimal permite cálculos decimales exactos. Se envían cadenas en JSON porque usar números de punto flotante para el saldo puede introducir aproximaciones. No se redondea silenciosamente lo que excede tres decimales.
+
+#### Edición, baja y reactivación
+
+PUT modifica los datos completos del formulario. PATCH de actividad cambia solo `activo`. Separarlas evita que una edición active involuntariamente un producto. No hay DELETE.
+
+Un producto inactivo puede tener saldo; darlo de baja no registra una venta. Su saldo e historial permanecen. Si su proveedor también quedó inactivo, reactivarlo exige primero reactivar ese proveedor o editar el producto para asignarle otro activo. La pantalla explica el rechazo y permite la reasignación.
+
+Una categoría o proveedor no puede desactivarse si hay productos activos asociados. Una unidad no puede cambiar con movimientos, aun con saldo cero: sumar movimientos viejos en kg como si fueran unidades no tendría sentido. Sin movimientos sí puede cambiar, respetando los umbrales de la nueva unidad.
+
+#### Consultas e interfaz
+
+GET devuelve hasta 25 registros, cantidad total y páginas. Se ordena por nombre e ID para estabilizar el orden de nombres iguales. La búsqueda por código/nombre y el filtro activos/inactivos/todos se ejecutan en el servidor, siempre limitados al comercio.
+
+El formulario de producto carga todas las páginas de referencias, así no desaparecen proveedores después del número 25. Las referencias inactivas se muestran identificadas y no se pueden elegir como nuevas asignaciones.
+
+`cargando` informa que hay una consulta en curso; `ocupado` desactiva controles mientras se guarda. Una consulta anterior se cancela si cambian los filtros. Un fallo de sesión devuelve al login; un error de validación conserva el formulario para corregirlo. No se reintentan escrituras automáticamente.
+
+#### Qué probamos y quién lo hizo
+
+Codex ejecutó 30 pruebas unitarias/HTTP simuladas y 13 de integración real en una base temporal exclusiva; compiló el frontend y recorrió la interfaz en Edge con dueño y empleado. Las salidas y límites están en el informe. Estas tareas no se atribuyen a Tomás como ejecución manual.
+
+Las pruebas nuevas comprueban normalización, cantidades, campos prohibidos, alta con y sin movimiento inicial, reversión, unidad estable, referencias inactivas/ajenas, permisos y solicitudes concurrentes. Navegador comprueba alta real con coma decimal, rechazo de unidad con historial, baja/reactivación, categoría, consulta de empleado y ancho móvil.
+
+No prueban todavía despliegue, piloto, rendimiento bajo carga ni los endpoints futuros. Naza y Claude deben hacer la revisión cruzada. La aprobación de esta etapa no se marca antes de recibirla.
+
+#### Preguntas para practicar
+
+**¿Por qué no guardar stock inicial directamente?** Porque sería un saldo sin movimiento que lo explique. Se parte de cero y se registra un ingreso; así la suma del historial coincide.
+
+**¿Qué pasa si falla el ingreso después de crear el producto?** La transacción revierte el alta también. Se probó forzando un responsable inválido y comprobando que el producto no quedó.
+
+**¿Por qué hay que validar en el backend si el formulario ya valida?** Se puede enviar una solicitud fuera de la pantalla. El servidor decide permisos, comercio y datos válidos sin confiar en el navegador.
+
+**¿Por qué no basta consultar si el proveedor está activo?** Otra solicitud podría desactivarlo antes de guardar. El bloqueo mantiene la comprobación válida durante la operación.
+
+**¿Quién administra y quién consulta?** El dueño administra; el empleado consulta. Ocultar botones ayuda a usar la pantalla, pero el rechazo real está en las rutas del servidor.
+
+**¿Dar de baja equivale a dejar saldo cero?** No: impide operar y conserva saldo e historial. No debe inventar una salida que no ocurrió.
+
+**¿El objetivo es un máximo permitido de stock?** No; es una referencia de reposición. Puede haber más existencias que el objetivo.
+
+#### Actividades y comprensión personal
+
+En una base de desarrollo con datos de prueba:
+
+1. Crear un producto con inicial cero y otro con inicial positivo. Explicar por qué solo el segundo tiene movimiento.
+2. Seguir en los archivos el clic Guardar hasta `registrarMovimiento`; señalar dónde comienza la transacción y dónde se comparte `tx`.
+3. Intentar desactivar una categoría usada por un producto activo. Explicar el rechazo antes de mirar el mensaje.
+4. Desactivar un producto, buscarlo entre inactivos y comprobar que conserva el saldo.
+5. Entrar como empleado, observar el catálogo y explicar por qué no alcanza con mostrar/ocultar botones.
+6. Leer la prueba concurrente y contar qué significan sus dos resultados: una operación confirmada y otra rechazada.
+
+Cada uno debe poder explicar con sus palabras: alta atómica, bloqueo de referencias, baja lógica, unidad estable, permisos y una prueba que detectaría un error. Todavía no se registra esa comprensión como adquirida.
+
+**Resumen de repaso:** Catálogo administra datos; Inventario explica los cambios del saldo. Se comparten una transacción, se bloquean las referencias para evitar carreras, se aplican permisos en servidor y se conservan los registros mediante bajas lógicas.
 
 ### Etapa 4 — Movimientos e historial
 
@@ -1120,3 +1255,4 @@ Cada capítulo debe contener lo siguiente:
 9. **Preparación oral.** Resumen para practicar, preguntas con respuestas razonadas y ejercicios para ubicar lo explicado en el código.
 
 La explicación debe cubrir las decisiones que afectan comportamiento, arquitectura, datos, seguridad, pruebas o mantenimiento. Los detalles de sintaxis se explican cuando hacen falta para seguir el flujo. Las razones que no estén registradas se plantean como interpretación o duda, sin atribuirlas al equipo ni a la tutora.
+

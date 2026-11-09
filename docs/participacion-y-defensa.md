@@ -133,3 +133,14 @@ Copiar esta ficha para las etapas 2 a 7. Usar frases cortas y enlaces a los docu
 - **Revisión cruzada:** Tomás revisó con Codex el 06/11: una observación bloqueante (el login aceptaba texto agregado después de los 72 bytes que compara bcrypt) y tres sugerencias (exigir el vencimiento del token, avisar los errores de conexión en el panel y no prometer tiempos idénticos en la documentación). Las cuatro se resolvieron el 07/11, cada una con su prueba, y Codex verificó las correcciones y aprobó integrar la etapa; detalle en [etapa 2](implementacion/etapa-2.md#revisión-cruzada).
 - **Para explicar en la defensa:** la diferencia entre identificar (login, `requireAuth`) y autorizar (`requireRole`, filtro por comercio); por qué cambiar el rol en el navegador no sirve; el ejemplo del empleado desactivado con un token todavía vigente; el problema de los 72 bytes. Material de estudio en la [guía de la defensa](../preparacion-defensa-oral.md#etapa-2--problema-estado-y-alcance).
 - **Comprensión pendiente de practicar:** que ambos expliquen con sus palabras el recorrido del login y el de una solicitud protegida, y completen la comprobación personal de la guía. No se marca como adquirida hasta practicarla.
+
+## Etapa 3 — Catálogo (09/11/2026)
+
+- Estado: implementada en etapa-3-catalogo, pendiente de revisión cruzada e integración.
+- Responsable: Tomás con Codex. Revisión prevista: Nazareno con Claude, aún no realizada.
+- Aporte registrado de Tomás: trajo la versión compartida, creó la rama y solicitó la implementación siguiendo la hoja de ruta.
+- Asistencia de IA: Codex implementó backend/frontend, operación compartida de Inventario, pruebas y documentación. Ejecutó pruebas automatizadas y navegador; no son pruebas manuales de Tomás.
+- Resultado: catálogo con permisos y aislamiento, altas con stock inicial atómico, bajas lógicas, reactivación y validaciones de unidad/referencias.
+- Evidencias: [informe de implementación](implementacion/etapa-3.md), 30/30 unitarias, 13/13 integración, build y recorrido de navegador. Sin despliegue ni piloto.
+- Para estudiar: capítulo etapa 3 de la guía raíz. Comprensión individual pendiente de practicar.
+- Siguiente paso: compartir el commit para revisión; no se inventa un hash antes de que el integrante lo cree.

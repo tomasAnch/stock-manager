@@ -81,12 +81,12 @@ RF-01 y RF-02; RN-01 y RN-15.
 
 RF-03 a RF-06; RN-02 a RN-05, RN-07, RN-09 a RN-11.
 
-- [ ] Implementar categorías y proveedores: alta, consulta, edición, normalización, bajas y reactivaciones.
-- [ ] Implementar productos: alta, búsqueda, detalle, edición de datos y umbrales, baja lógica y reactivación.
-- [ ] Crear el stock inicial usando una operación de Inventario dentro de la misma transacción del alta. Esa operación se reutilizará en la etapa siguiente.
-- [ ] Mantener saldos e historial fuera de la edición directa del producto; respetar referencias activas, del mismo comercio, y unidad estable cuando existe historial.
-- [ ] Probar duplicados, normalización, precisión y rango, permisos, referencias ajenas/inactivas y reversión completa si falla el ingreso inicial.
-- [ ] Verificar bajas y asignaciones concurrentes de referencias según la estrategia del diseño.
+- [x] Implementar categorías y proveedores: alta, consulta, edición, normalización, bajas y reactivaciones.
+- [x] Implementar productos: alta, búsqueda, detalle, edición de datos y umbrales, baja lógica y reactivación.
+- [x] Crear el stock inicial usando una operación de Inventario dentro de la misma transacción del alta. Esa operación se reutilizará en la etapa siguiente.
+- [x] Mantener saldos e historial fuera de la edición directa del producto; respetar referencias activas, del mismo comercio, y unidad estable cuando existe historial.
+- [x] Probar duplicados, normalización, precisión y rango, permisos, referencias ajenas/inactivas y reversión completa si falla el ingreso inicial.
+- [x] Verificar bajas y asignaciones concurrentes de referencias según la estrategia del diseño.
 
 **Terminada cuando:** el dueño puede cargar y mantener un catálogo real desde la pantalla, el empleado puede consultarlo y los casos inválidos se rechazan sin dejar registros parciales.
 
@@ -159,9 +159,9 @@ Se priorizan comportamientos importantes y errores posibles; no se agrega un tes
 
 ## Registro de avance y continuidad
 
-**Estado actual:** etapa 1 cerrada (instalación de Nazareno del 30/10 sobre `501810c`; ver [revisión](implementacion/revision-etapa-1.md)). Etapa 2 implementada por Nazareno con Claude el 05/11 (login, sesión, navegación por rol y controles de acceso), revisada por Tomás con Codex el 06/11, corregida el 07/11 y aprobada por Codex (comunicado el 09/11): 26 pruebas de lógica/HTTP y 7 de integración correctas. Explicación de estudio en la [guía de la defensa](../preparacion-defensa-oral.md#etapa-2--problema-estado-y-alcance). Integrada a `main` el 09/11 (`51e1853`); etapa cerrada. Ver [etapa 2](implementacion/etapa-2.md). El ensayo de despliegue sigue pendiente. Las etapas 3 a 7 siguen pendientes.
+**Estado actual:** etapas 1 y 2 cerradas. Etapa 3 implementada el 09/11 por Codex para Tomás en etapa-3-catalogo, pendiente de revisión de Nazareno con Claude y de integración a main. Pruebas: 30/30 unitarias, 13/13 integración, build y recorrido de navegador correctos. Ver [informe de etapa 3](implementacion/etapa-3.md). Etapas 4 a 7 pendientes; ensayo online y piloto pendientes.
 
-**Siguiente acción:** Tomás y Codex inician la etapa 3 (catálogo) desde `main`, aplicando `requireAuth`, `requireRole` y el filtro por comercio en todas sus rutas; Nazareno y Claude la revisan. Pendiente de la etapa 2: el ensayo de despliegue. Git lo ejecutan los integrantes.
+**Siguiente acción:** compartir la etapa 3 para revisión cruzada. Git lo ejecutan los integrantes. No comenzar la etapa 4 hasta resolver las observaciones.
 
 **Datos externos pendientes:** disponibilidad y acceso al comercio piloto; cuentas y condiciones del hosting. No se necesitan para redactar o probar toda la lógica local.
 
@@ -175,3 +175,4 @@ Al cerrar una sesión, actualizar aquí:
 - Próxima tarea concreta para retomar sin reconstruir todo el contexto.
 
 Para compartir con Claude, enviar una versión identificable del cambio y el resultado de sus pruebas. Conviene revisar hitos completos, en especial inventario y cierre de integración, para que ambos revisores evalúen el mismo código y no dos versiones distintas. Las observaciones se resuelven en el repositorio y se vuelven a verificar.
+

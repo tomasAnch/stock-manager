@@ -1,5 +1,3 @@
 # Catálogo
 
-Permitirá buscar productos y consultar existencias, unidad y umbrales. El dueño tendrá formularios de productos, categorías y proveedores, además de acciones de baja y reactivación. La edición no permitirá cambiar directamente el saldo.
-
-Estado: carpeta creada; componentes y conexión con la API pendientes. Corresponde a RF-03 a RF-06 de [requerimientos](../../../../docs/segunda_entrega/01-requerimientos.md).
+Catalogo.jsx ofrece productos, categorías y proveedores, búsqueda, paginación, formularios y actividad. El empleado consulta; el dueño administra. El backend vuelve a autorizar cada solicitud. Cantidades: cadenas decimales; la coma del formulario se convierte a punto antes de enviar. Ver docs/implementacion/etapa-3.md desde la raíz.

@@ -403,3 +403,12 @@ button.link:hover:not(:disabled) {
   margin:0;
   flex:1 1 220px;
 }
+.catalogo h1 { font-size:clamp(28px,4vw,44px); }
+.catalogo-actions { display:flex; flex-wrap:wrap; gap:12px; align-items:end; margin:18px 0; }
+.catalogo label { display:flex; flex-direction:column; gap:6px; font-size:14px; }
+.catalogo input,.catalogo select { padding:10px; border:1px solid #b9c9be; border-radius:6px; font:inherit; max-width:100%; background:white; color:#173e37; }
+.catalogo-form { background:#fff; border:1px solid #dce3da; border-radius:12px; padding:20px; }
+.catalogo fieldset { border:0; padding:0; display:grid; gap:14px; min-width:0; }
+.catalogo-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr)); gap:16px; }
+.catalogo-grid article { padding:20px; background:#fff; border:1px solid #dce3da; border-radius:12px; overflow-wrap:anywhere; }
+.catalogo h2 { font-size:20px; }.catalogo dl { display:grid; grid-template-columns:1fr 1fr; gap:8px; }.catalogo dd { margin:0; }

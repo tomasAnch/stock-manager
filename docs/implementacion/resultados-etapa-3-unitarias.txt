@@ -1,0 +1,46 @@
+
+> stock-manager@0.1.0 test
+> npm run test -w backend
+
+
+> @stock-manager/backend@0.1.0 test
+> tsx --test tests/unit/*.test.js
+
+✔ login correcto devuelve token y datos públicos, sin el hash (97.7261ms)
+✔ contraseña incorrecta, correo inexistente y cuenta inactiva responden igual (255.9194ms)
+✔ login sin datos o con tipos inválidos responde 400 (13.2732ms)
+✔ contraseñas de más de 72 bytes se rechazan antes de consultar la base (18.322ms)
+✔ sesión: sin token, encabezado mal formado, otra firma, otro algoritmo, sin firma, sin vencimiento o vencido se rechazan (15.3761ms)
+✔ un token vigente deja de servir si el usuario se desactiva o ya no existe (12.8152ms)
+✔ rol y comercio salen de la base aunque el token diga otra cosa (4.1599ms)
+✔ requireRole: el empleado recibe 403 y el dueño pasa (8.6958ms)
+✔ filtro por comercio: reemplaza el comercio enviado y no consulta IDs inválidos (1.0043ms)
+✔ configuración: exige un secreto largo y un vencimiento válido, sin mostrar el secreto (0.4025ms)
+✔ CORS permite el encabezado Authorization desde el frontend configurado (5.1322ms)
+✔ catálogo: códigos normalizados y cantidades exactas (3.7115ms)
+✔ catálogo: no acepta escribir saldo, comercio ni actividad por el alta (0.6351ms)
+✔ catálogo: edición no admite otro stock inicial (0.2352ms)
+✔ catálogo: rechaza unidad fraccionaria, precisión excesiva y objetivo menor al mínimo (0.6494ms)
+✔ diagnóstico conserva tipo, código y ubicación, pero no mensaje, metadatos ni ruta completa (2.454ms)
+✔ 500 registra diagnóstico controlado sin filtrar el error ni la solicitud (0.7578ms)
+✔ seed requiere habilitación exacta y producción siempre prevalece (0.9308ms)
+✔ seed informa contraseñas inválidas antes de consultar la base (0.9346ms)
+✔ health devuelve disponibilidad sin exponer datos del comercio (64.9742ms)
+✔ base no disponible responde 503 y no filtra errores internos (15.5032ms)
+✔ 404, JSON mal formado y cuerpos excesivos tienen errores JSON controlados (42.8854ms)
+✔ la app no arranca sin configuración de autenticación (0.9266ms)
+✔ preflight acepta base sin tablas y base migrada sin datos de negocio (1.2527ms)
+✔ preflight rechaza datos conocidos, tablas ajenas y relaciones fuera de public (0.9663ms)
+✔ nunca usa desarrollo como base de pruebas por omisión o alias localhost (11.6345ms)
+✔ normaliza espacios y Unicode, conservando mayúsculas y tildes visibles (4.7289ms)
+✔ cantidades decimales exactas y serialización como texto (1.3425ms)
+✔ rechaza redondeos, notación científica, tipos y rangos inválidos (0.3921ms)
+✔ configuración inválida falla sin imprimir credenciales (0.4413ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1189.9672

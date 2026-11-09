@@ -142,3 +142,97 @@ test('acceso con PostgreSQL: permisos por rol y registros de otro comercio', asy
     });
   });
 });
+
+// Etapa 3: servicios reales, API y concurrencia sobre PostgreSQL.
+const { guardar, cambiarActividad } = await import('../../src/modules/catalogo/catalogo.service.js');
+const { registrarMovimiento } = await import('../../src/modules/inventario/movimientos.service.js');
+async function contextoCatalogo() {
+  const user = await prisma.usuario.findUniqueOrThrow({ where: { correo: 'dueno.a@example.invalid' } });
+  const categoria = await prisma.categoria.findFirstOrThrow({ where: { comercioId: user.comercioId, activo: true } });
+  const proveedor = await prisma.proveedor.findFirstOrThrow({ where: { comercioId: user.comercioId, activo: true } });
+  return { identidad: { usuarioId: user.id, comercioId: user.comercioId, rol: user.rol }, datos: { codigo: 'TEST', nombre: 'Producto test', unidad: 'UNIDAD', categoriaId: categoria.id, proveedorId: proveedor.id, stockMinimo: '2', stockObjetivo: '5', stockInicial: '3' } };
+}
+test('catálogo: alta atómica, baja conserva saldo y unidad con historial estable', async () => {
+  const { identidad, datos } = await contextoCatalogo();
+  const p = await guardar(prisma, 'producto', identidad, { ...datos, codigo: ' ini001 ' });
+  assert.equal(p.codigo, 'INI001'); assert.equal(p.stockActual.toString(), '3');
+  const movimientos = await prisma.movimientoStock.findMany({ where: { productoId: p.id } });
+  assert.equal(movimientos.length, 1); assert.equal(movimientos[0].motivo, 'STOCK_INICIAL');
+  assert.equal(movimientos[0].usuarioId, identidad.usuarioId);
+  const { stockInicial, ...edicion } = datos;
+  await assert.rejects(guardar(prisma, 'producto', identidad, { ...edicion, unidad: 'KG' }, p.id), /unidad/);
+  await cambiarActividad(prisma, 'producto', identidad, p.id, { activo: false });
+  assert.equal((await prisma.producto.findUnique({ where: { id: p.id } })).stockActual.toString(), '3');
+  await cambiarActividad(prisma, 'producto', identidad, p.id, { activo: true });
+  await assert.rejects(guardar(prisma, 'producto', identidad, { ...datos, codigo: 'INI001' }), e => e.status === 409);
+});
+test('catálogo: cero sin movimiento, kg exactos y reversión si falla el movimiento inicial', async () => {
+  const { identidad, datos } = await contextoCatalogo();
+  const cero = await guardar(prisma, 'producto', identidad, { ...datos, codigo: 'CERO', stockInicial: '0' });
+  assert.equal(await prisma.movimientoStock.count({ where: { productoId: cero.id } }), 0);
+  const { stockInicial, ...edicion } = datos;
+  await guardar(prisma, 'producto', identidad, { ...edicion, codigo: 'CERO', unidad: 'KG' }, cero.id);
+  const kg = await guardar(prisma, 'producto', identidad, { ...datos, codigo: 'PESO', unidad: 'KG', stockInicial: '0.250' });
+  assert.equal(kg.stockActual.toString(), '0.25');
+  await assert.rejects(guardar(prisma, 'producto', { ...identidad, usuarioId: '00000000-0000-4000-8000-000000000000' }, { ...datos, codigo: 'ROLLBACK' }));
+  assert.equal(await prisma.producto.count({ where: { codigo: 'ROLLBACK' } }), 0);
+  for (const cambios of [{ stockInicial: '0.5' }, { stockObjetivo: '1' }, { stockActual: '999' }, { codigo: 'CON ESPACIO' }, { stockInicial: '0.0001', unidad: 'KG' }]) await assert.rejects(guardar(prisma, 'producto', identidad, { ...datos, ...cambios }));
+});
+test('catálogo: normalización, referencias inactivas y reactivación con reasignación', async () => {
+  const { identidad, datos } = await contextoCatalogo();
+  const categoria = await guardar(prisma, 'categoria', identidad, { nombre: '  Secos   Únicos ' });
+  assert.equal(categoria.nombreNormalizado, 'secos únicos');
+  await assert.rejects(guardar(prisma, 'categoria', identidad, { nombre: 'SECOS ÚNICOS' }), e => e.status === 409);
+  const p = await guardar(prisma, 'producto', identidad, { ...datos, codigo: 'REFERENCIAS', categoriaId: categoria.id });
+  await assert.rejects(cambiarActividad(prisma, 'categoria', identidad, categoria.id, { activo: false }), e => e.status === 409);
+  await cambiarActividad(prisma, 'producto', identidad, p.id, { activo: false });
+  await cambiarActividad(prisma, 'categoria', identidad, categoria.id, { activo: false });
+  await assert.rejects(cambiarActividad(prisma, 'producto', identidad, p.id, { activo: true }), e => e.status === 409);
+  const { stockInicial, ...edicion } = datos;
+  await guardar(prisma, 'producto', identidad, { ...edicion, codigo: 'REFERENCIAS' }, p.id);
+  await cambiarActividad(prisma, 'producto', identidad, p.id, { activo: true });
+});
+test('catálogo: alta y baja concurrentes no dejan referencias inactivas en productos activos', async () => {
+  const { identidad, datos } = await contextoCatalogo();
+  for (const modelo of ['categoria', 'proveedor']) {
+    const ref = await guardar(prisma, modelo, identidad, { nombre: `Carrera ${modelo}` });
+    const results = await Promise.allSettled([
+      guardar(prisma, 'producto', identidad, { ...datos, codigo: `CARRERA-${modelo}`, [modelo === 'categoria' ? 'categoriaId' : 'proveedorId']: ref.id }),
+      cambiarActividad(prisma, modelo, identidad, ref.id, { activo: false }),
+    ]);
+    assert.equal(results.filter(r => r.status === 'fulfilled').length, 1);
+    const actual = await prisma[modelo].findUnique({ where: { id: ref.id } });
+    const productos = await prisma.producto.count({ where: { activo: true, [modelo === 'categoria' ? 'categoriaId' : 'proveedorId']: ref.id } });
+    assert(actual.activo || productos === 0);
+  }
+});
+test('inventario compartido: dos salidas simultáneas solo descuentan una y un fallo posterior revierte saldo', async () => {
+  const { identidad, datos } = await contextoCatalogo();
+  const p = await guardar(prisma, 'producto', identidad, { ...datos, codigo: 'CONCURRENCIA' });
+  const movimiento = { productoId: p.id, tipo: 'EGRESO', motivo: 'SALIDA', cantidad: '3' };
+  const results = await Promise.allSettled([1, 2].map(() => prisma.$transaction(tx => registrarMovimiento(tx, identidad, movimiento))));
+  assert.equal(results.filter(r => r.status === 'fulfilled').length, 1);
+  assert.equal((await prisma.producto.findUnique({ where: { id: p.id } })).stockActual.toString(), '0');
+  await assert.rejects(prisma.$transaction(async tx => { await registrarMovimiento(tx, identidad, { ...movimiento, tipo: 'INGRESO', motivo: 'REPOSICION' }); throw new Error('Fallo posterior'); }));
+  assert.equal((await prisma.producto.findUnique({ where: { id: p.id } })).stockActual.toString(), '0');
+  assert.equal(await prisma.movimientoStock.count({ where: { productoId: p.id } }), 2);
+});
+test('API catálogo: empleado consulta sin editar; comercio ajeno no se lee ni se asigna; validaciones HTTP', async () => {
+  const { identidad, datos } = await contextoCatalogo();
+  await withServer(createApp({ prisma, auth }), async url => {
+    const owner = await (await login(url, 'dueno.a@example.invalid', 'solo-test-dueno-123')).json();
+    const employee = await (await login(url, 'empleado.a@example.invalid', 'solo-test-empleado-456')).json();
+    const request = (path, method = 'GET', body, token = owner.token) => fetch(`${url}/api/catalogo/${path}`, { method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) });
+    const res = await request('productos?estado=todos', 'GET', undefined, employee.token);
+    assert.equal(res.status, 200); const listado = await res.json();
+    assert(listado.items.every(p => p.comercioId === identidad.comercioId));
+    assert.equal(typeof listado.items[0].stockActual, 'string');
+    for (const recurso of ['productos', 'categorias', 'proveedores']) assert.equal((await request(recurso, 'POST', { nombre: 'No permitido' }, employee.token)).status, 403);
+    const ajena = await prisma.categoria.findFirstOrThrow({ where: { comercioId: demoStores[1].id } });
+    assert.equal((await request('productos', 'POST', { ...datos, codigo: 'AJENO', categoriaId: ajena.id })).status, 404);
+    assert.equal((await request(`categorias/${ajena.id}`, 'PUT', { nombre: 'Alterada' })).status, 404);
+    assert.equal((await request('productos', 'POST', { ...datos, stockActual: '4' })).status, 400);
+    assert.equal((await request('productos?pagina=0')).status, 400);
+    assert.equal((await request('productos?q=INI001')).status, 200);
+  });
+});

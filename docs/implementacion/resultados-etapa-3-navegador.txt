@@ -1,0 +1,5 @@
+OK alta desde UI: codigo normalizado, coma decimal y movimiento inicial real.
+OK unidad con historial rechazada en pantalla.
+OK baja y reactivacion.
+OK alta de categoria normalizada.
+OK empleado consulta, sin escrituras; movil sin desborde; sin excepciones JS.
