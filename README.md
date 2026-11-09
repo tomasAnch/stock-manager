@@ -19,7 +19,7 @@ El MVP contempla uno o dos comercios piloto, con datos separados por comercio y 
 |---|---|---|
 | Entrega 1: propuesta y viabilidad | Aprobada por la tutora | 01/09/2026 (aprobación) |
 | Entrega 2: diseño y módulos | Aprobada por la tutora; habilitada la implementación | 27/09/2026 (entrega); correcciones del 29/09 |
-| Implementación y entrega final | Etapa 1 cerrada; etapa 2 (acceso y permisos) revisada y aprobada, pendiente de integrar a `main`; catálogo, movimientos y reposición pendientes | 14/11/2026 (fecha límite) |
+| Implementación y entrega final | Etapa 1 cerrada; etapa 2 (acceso y permisos) cerrada; catálogo, movimientos y reposición pendientes | 14/11/2026 (fecha límite) |
 
 El proyecto ya tiene una base ejecutable: frontend React, servidor Express, cliente Prisma, migración inicial y seed de desarrollo. Desde la etapa 2 se ingresa con usuario y contraseña, y cada rol ve su menú; el backend verifica la sesión, el rol y el comercio en cada solicitud protegida. Catálogo, movimientos y reposición se implementarán en las etapas siguientes; la descripción funcional de abajo corresponde al MVP completo previsto.
 
@@ -165,6 +165,10 @@ npm run test:integration
 Si hay conexiones abiertas, PostgreSQL rechazará el borrado; cerralas antes de reintentar. No usar `--force` ni cambiar el nombre por `stock_manager`. La nueva ejecución vuelve a aplicar la migración. Ejecutar las pruebas de a una sobre esa base dedicada; no compartirla con una aplicación en uso.
 
 ## Registro de cambios
+
+### 09/11/2026 — Cierre de la etapa 2
+
+- Codex verificó las correcciones y aprobó la etapa. Se integra a `main` junto con su capítulo en la [guía de la defensa](preparacion-defensa-oral.md#etapa-2--problema-estado-y-alcance). Nazareno repitió las pruebas en `main` en su equipo: 26/26 y 7/7 ([salida](docs/implementacion/resultados-etapa-2-naza-2026-11-09.txt)). El ensayo de despliegue sigue pendiente.
 
 ### 07/11/2026 — Etapa 2: correcciones de la revisión
 

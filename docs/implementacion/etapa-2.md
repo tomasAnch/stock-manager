@@ -1,6 +1,6 @@
 # Etapa 2 — Acceso y permisos
 
-05/11/2026 · Responsable: Nazareno, con Claude. Revisión: Tomás, con Codex. Estado: **revisada y aprobada; pendiente de integrar a `main`**. Las correcciones del 07/11 están en `5ce7c91` y Codex las verificó (comunicado por Tomás el 09/11). Parte de la etapa 1 cerrada (commit `41bf10a`); la revisión se hizo sobre `e6f0ce4` (rama `etapa-2-acceso`). Referencias: RF-01, RF-02, RN-01 y RN-15.
+05/11/2026 · Responsable: Nazareno, con Claude. Revisión: Tomás, con Codex. Estado: **cerrada, integrada a `main` el 09/11 (`51e1853`)**. Las correcciones del 07/11 están en `5ce7c91` y Codex las verificó (comunicado por Tomás el 09/11). Parte de la etapa 1 cerrada (commit `41bf10a`); la revisión se hizo sobre `e6f0ce4` (rama `etapa-2-acceso`). Referencias: RF-01, RF-02, RN-01 y RN-15.
 
 ## Qué funciona
 
@@ -55,7 +55,7 @@
 | API en marcha (07/11) | Contraseña de 73 bytes y de 37 «ñ» → 400; token bien firmado sin vencimiento → 401 | Correcto |
 | Pruebas con errores introducidos a propósito | Se quitó el control de usuario activo, se dejó que el cliente eligiera el comercio y se aceptó otro algoritmo (05/11); se volvió al límite de 200 caracteres, se contaron caracteres en lugar de bytes y se dejó de exigir el vencimiento (07/11). En cada caso falló la prueba correspondiente | Las pruebas detectan esos errores |
 
-Estas ejecuciones las hizo Claude en una copia aislada (Linux, Node 24.22.1, PostgreSQL 18.4). Salidas: [05/11](resultados-etapa-2-claude-2026-11-05.txt) y [07/11, después de la revisión](resultados-etapa-2-claude-2026-11-07.txt). Nazareno repitió las del 05/11 en su equipo (Windows): 25/25 y 7/7, más el recorrido manual con ambos roles ([salida](resultados-etapa-2-naza-2026-11-05.txt)). Falta que repita las del 07/11.
+Estas ejecuciones las hizo Claude en una copia aislada (Linux, Node 24.22.1, PostgreSQL 18.4). Salidas: [05/11](resultados-etapa-2-claude-2026-11-05.txt) y [07/11, después de la revisión](resultados-etapa-2-claude-2026-11-07.txt). Nazareno repitió las del 05/11 en su equipo (Windows): 25/25 y 7/7, más el recorrido manual con ambos roles ([salida](resultados-etapa-2-naza-2026-11-05.txt)). El 09/11 repitió las pruebas con las correcciones, ya integradas en `main`: 26/26 y 7/7 ([salida](resultados-etapa-2-naza-2026-11-09.txt)).
 
 ## Revisión cruzada
 

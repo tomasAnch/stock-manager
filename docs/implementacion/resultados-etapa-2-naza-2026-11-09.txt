@@ -1,0 +1,90 @@
+Etapa 2 - Salida de la terminal de Nazareno en su equipo (Windows, PowerShell), 09/11/2026.
+Versión: main en 51e1853 (etapa 2 integrada, con las correcciones de la revisión). Copiada tal cual.
+
+PS C:\Users\Usuario\Desktop\naza carrera\CUARTO CUATRIMESTRE\Trabajo Final\stock-manager> npm test
+
+> stock-manager@0.1.0 test
+> npm run test -w backend
+
+
+> @stock-manager/backend@0.1.0 test
+> tsx --test tests/unit/*.test.js
+
+✔ login correcto devuelve token y datos públicos, sin el hash (96.2379ms)
+✔ contraseña incorrecta, correo inexistente y cuenta inactiva responden igual (259.3205ms)
+✔ login sin datos o con tipos inválidos responde 400 (10.4178ms)
+✔ contraseñas de más de 72 bytes se rechazan antes de consultar la base (15.9587ms)
+✔ sesión: sin token, encabezado mal formado, otra firma, otro algoritmo, sin firma, sin vencimiento o vencido se rechazan (16.0901ms)
+✔ un token vigente deja de servir si el usuario se desactiva o ya no existe (10.6974ms)
+✔ rol y comercio salen de la base aunque el token diga otra cosa (4.8231ms)
+✔ requireRole: el empleado recibe 403 y el dueño pasa (6.8732ms)
+✔ filtro por comercio: reemplaza el comercio enviado y no consulta IDs inválidos (1.1446ms)
+✔ configuración: exige un secreto largo y un vencimiento válido, sin mostrar el secreto (0.5334ms)
+✔ CORS permite el encabezado Authorization desde el frontend configurado (4.116ms)
+✔ diagnóstico conserva tipo, código y ubicación, pero no mensaje, metadatos ni ruta completa (2.2402ms)
+✔ 500 registra diagnóstico controlado sin filtrar el error ni la solicitud (0.5817ms)
+✔ seed requiere habilitación exacta y producción siempre prevalece (0.6043ms)
+✔ seed informa contraseñas inválidas antes de consultar la base (0.6937ms)
+✔ health devuelve disponibilidad sin exponer datos del comercio (58.4458ms)
+✔ base no disponible responde 503 y no filtra errores internos (14.0053ms)
+✔ 404, JSON mal formado y cuerpos excesivos tienen errores JSON controlados (32.75ms)
+✔ la app no arranca sin configuración de autenticación (0.4785ms)
+✔ preflight acepta base sin tablas y base migrada sin datos de negocio (0.9844ms)
+✔ preflight rechaza datos conocidos, tablas ajenas y relaciones fuera de public (0.7775ms)
+✔ nunca usa desarrollo como base de pruebas por omisión o alias localhost (2.0293ms)
+✔ normaliza espacios y Unicode, conservando mayúsculas y tildes visibles (1.8326ms)
+✔ cantidades decimales exactas y serialización como texto (1.2665ms)
+✔ rechaza redondeos, notación científica, tipos y rangos inválidos (0.4636ms)
+✔ configuración inválida falla sin imprimir credenciales (0.5377ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 999.7771
+PS C:\Users\Usuario\Desktop\naza carrera\CUARTO CUATRIMESTRE\Trabajo Final\stock-manager> npm run test:integration
+
+> stock-manager@0.1.0 test:integration
+> npm run test:integration -w backend
+
+
+> @stock-manager/backend@0.1.0 test:integration
+> tsx tests/run-integration.js
+
+Preflight correcto: sin datos ni objetos ajenos. Se pueden aplicar migraciones.
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "stock_manager_test", schema "public" at "localhost:5432"
+
+1 migration found in prisma/migrations
+
+
+┌─────────────────────────────────────────────────────────┐
+│  Update available 7.10.1 -> 8.0.0-rc.33                 │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+No pending migrations to apply.
+✔ migración instala seis tablas y siete CHECK validados (133.1263ms)
+✔ seed repetible, hashes válidos, referencias en dos comercios y sin restablecer cuentas (1218.9362ms)
+✔ escritura y lectura con cliente generado y rollback real (4.4501ms)
+✔ restricción de stock rechaza escritura inválida desde Prisma (68.7762ms)
+✔ HTTP consulta PostgreSQL mediante el cliente generado (44.1048ms)
+✔ acceso con PostgreSQL: login, sesión y rechazo inmediato al desactivar la cuenta (790.1121ms)
+✔ acceso con PostgreSQL: permisos por rol y registros de otro comercio (252.044ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2962.9591

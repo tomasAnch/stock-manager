@@ -8,7 +8,7 @@ Documento de estudio compartido. Creado el 06/11/2026. La defensa será individu
 
 Primero leer el problema y el recorrido general. Después estudiar una etapa junto con sus archivos. Al terminar, intentar responder las preguntas sin mirar y mostrar en el código dónde ocurre lo explicado. Si una respuesta todavía cuesta, anotarla como pendiente de practicar.
 
-Las etapas 0 y 1 se explican a partir del código local y los registros de ejecución de octubre. La etapa 1 está cerrada por el equipo. La etapa 2 se explica a partir de la rama `etapa-2-acceso` con las correcciones de la revisión (`5ce7c91`), aprobada por Codex y todavía no integrada a `main`. Las explicaciones sobre futuras funciones se identifican como diseño previsto.
+Las etapas 0 y 1 se explican a partir del código local y los registros de ejecución de octubre. La etapa 1 está cerrada por el equipo. La etapa 2 se explica a partir de la versión con las correcciones de la revisión (`5ce7c91`), aprobada por Codex e integrada a `main` el 09/11 (`51e1853`). Las explicaciones sobre futuras funciones se identifican como diseño previsto.
 
 Los ejemplos orales son una guía para practicar. Cada integrante debe ajustarlos a las tareas que realmente realizó. El registro de participación permite identificar responsables y evidencias. [Registro de participación](docs/participacion-y-defensa.md).
 
@@ -506,9 +506,9 @@ Nazareno llevó adelante la etapa con Claude; Tomás la revisó con Codex. La ve
 | 05/11 | Claude implementó la etapa y ejecutó las pruebas. Nazareno agregó `JWT_SECRET` a su `.env`, ejecutó las pruebas en su equipo y recorrió la app con ambos roles. |
 | 06/11 | Tomás revisó con Codex: una observación bloqueante y tres sugerencias. |
 | 07/11 | Claude aplicó las cuatro correcciones y repitió las pruebas. Nazareno las subió a la rama. |
-| 09/11 | Codex verificó las correcciones y aprobó integrar la etapa a `main`. |
+| 09/11 | Codex verificó las correcciones y aprobó integrar la etapa. Nazareno unió la rama a `main` (`51e1853`), junto con este capítulo. |
 
-**Pendiente:** unir la rama a `main` y registrar el cierre, el ensayo de despliegue y que Nazareno repita en su equipo las pruebas con las correcciones (no consta esa salida). [Documentación técnica de la etapa](docs/implementacion/etapa-2.md).
+**Pendiente:** el ensayo de despliegue. [Documentación técnica de la etapa](docs/implementacion/etapa-2.md).
 
 ### Qué problema resuelve
 
@@ -540,7 +540,6 @@ Además de lo visible, la etapa deja controles reutilizables: `requireAuth`, `re
 
 ### Qué sigue pendiente
 
-- **Integración a `main`** y registro del cierre de la etapa.
 - **Ensayo de despliegue:** depende de elegir el alojamiento. Todo lo probado es local.
 - **Límite de intentos de login:** no hay. Alguien podría probar muchas contraseñas seguidas. Conviene evaluarlo al desplegar.
 - **Revocar un token puntual:** no se puede. Para cortar el acceso de alguien se desactiva su cuenta (RN-15 lo deja fuera de esta versión).
@@ -975,6 +974,7 @@ Una prueba que nunca falla no sirve. Para comprobar que estas pruebas detectan e
 | 06/11 | Codex, para Tomás | 25/25, 7/7, compilación y navegador; reprodujo los dos problemas de la revisión. |
 | 07/11 | Claude, después de las correcciones | 26/26, 7/7 dos veces, comprobaciones contra la API y 7 pasos de navegador del aviso de conexión. [Salida](docs/implementacion/resultados-etapa-2-claude-2026-11-07.txt) |
 | Verificación final | Codex, para Tomás | 26/26, 7/7 y navegador: login, falla de conexión, error 500, «Reintentar», móvil y desactivación. |
+| 09/11 | Nazareno, en su equipo, sobre `main` (`51e1853`) | 26/26 y 7/7. [salida](docs/implementacion/resultados-etapa-2-naza-2026-11-09.txt) |
 
 En el entorno de Claude no se pudo descargar el motor de migraciones de Prisma, así que la migración se aplicó con el mismo SQL y se ejecutó el mismo archivo de pruebas; está aclarado en cada salida. En el navegador, Claude simuló las caídas del servidor interceptando las solicitudes. Los resultados de Codex los informó Tomás; no se conservan sus salidas en el repositorio.
 
@@ -991,7 +991,7 @@ En el entorno de Claude no se pudo descargar el motor de migraciones de Prisma, 
 
 ### Qué hizo cada integrante según el registro
 
-**Nazareno** pidió la implementación y la revisión a Claude, y coordinó con Tomás el envío a revisión y las correcciones. En su equipo agregó `JWT_SECRET` al `.env`, ejecutó `npm ci`, `npm run generate`, las pruebas (25/25 y 7/7) y recorrió la app con ambos roles el 05/11. Creó la rama `etapa-2-acceso`, hizo los commits y los push, y trajo la guía de `main` a su rama. No consta que haya vuelto a correr las pruebas después de las correcciones.
+**Nazareno** pidió la implementación y la revisión a Claude, y coordinó con Tomás el envío a revisión y las correcciones. En su equipo agregó `JWT_SECRET` al `.env`, ejecutó `npm ci`, `npm run generate`, las pruebas (25/25 y 7/7) y recorrió la app con ambos roles el 05/11. Creó la rama `etapa-2-acceso`, hizo los commits y los push, y trajo la guía de `main` a su rama. El 09/11, ya integrada la etapa, repitió las pruebas en `main` en su equipo: 26/26 y 7/7.
 
 **Claude** escribió el código del backend y del frontend, las pruebas y la documentación de la etapa, ejecutó las pruebas en una copia aislada y aplicó las correcciones de la revisión.
 
@@ -1079,7 +1079,7 @@ Cada estudiante marca las casillas después de practicar.
 - **Permisos:** `requireRole` da 403; el filtro por comercio da 404 genérico. Ocultar botones es solo comodidad.
 - **Corrección clave:** bcrypt ignora lo que pasa de 72 bytes; ahora esas contraseñas se rechazan con 400.
 - **Pruebas:** 11 de acceso con base simulada, 2 con PostgreSQL real, recorridos en navegador y errores introducidos a propósito.
-- **Pendiente:** integrar a `main`, despliegue, límite de intentos de login, revocación de tokens y que las etapas 3 a 5 apliquen los controles en sus rutas.
+- **Pendiente:** despliegue, límite de intentos de login, revocación de tokens y que las etapas 3 a 5 apliquen los controles en sus rutas.
 
 ## Etapas siguientes
 
