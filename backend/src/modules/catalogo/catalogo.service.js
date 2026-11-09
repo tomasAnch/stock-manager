@@ -31,22 +31,33 @@ function texto(value, max, campo, opcional = false) {
   if (!result || [...result].length > max) throw new ValidationError(`${campo}: entre 1 y ${max} caracteres.`);
   return result;
 }
+function cantidadCampo(value, unidad, campo) {
+  try { return parseQuantity(value, unidad, { allowZero: true }); }
+  catch (error) {
+    if (error instanceof ValidationError) throw new ValidationError(`${campo}: ${error.message}`);
+    throw error;
+  }
+}
 export function validarProducto(body, alta) {
   datosEntrada(body, ['codigo', 'nombre', 'unidad', 'categoriaId', 'proveedorId', 'stockMinimo', 'stockObjetivo', ...(alta ? ['stockInicial'] : [])]);
   if (typeof body.codigo !== 'string') throw new ValidationError('Ingresá un código.');
   const codigo = body.codigo.trim().toUpperCase();
   if (!codigo || [...codigo].length > 50 || /\s/u.test(codigo)) throw new ValidationError('Código inválido: hasta 50 caracteres, sin espacios internos.');
   const nombre = texto(body.nombre, 160, 'Nombre');
-  const stockMinimo = parseQuantity(body.stockMinimo, body.unidad, { allowZero: true });
-  const stockObjetivo = parseQuantity(body.stockObjetivo, body.unidad, { allowZero: true });
+  for (const [campo, etiqueta] of [['categoriaId', 'categoría'], ['proveedorId', 'proveedor']]) {
+    if (typeof body[campo] !== 'string' || !body[campo].trim()) throw new ValidationError(`Seleccioná ${etiqueta}.`);
+  }
+  const stockMinimo = cantidadCampo(body.stockMinimo, body.unidad, 'Stock mínimo');
+  const stockObjetivo = cantidadCampo(body.stockObjetivo, body.unidad, 'Stock objetivo');
   if (stockObjetivo.lt(stockMinimo)) throw new ValidationError('El objetivo no puede ser menor al mínimo.');
-  const stockInicial = alta ? parseQuantity(body.stockInicial ?? '0', body.unidad, { allowZero: true }) : null;
+  const stockInicial = alta ? cantidadCampo(body.stockInicial ?? '0', body.unidad, 'Stock inicial') : null;
   return { codigo, nombre, unidad: body.unidad, categoriaId: body.categoriaId, proveedorId: body.proveedorId, stockMinimo, stockObjetivo, stockInicial };
 }
 async function referencias(tx, data, auth) {
   const categoria = await bloquear(tx, 'categoria', data.categoriaId, auth);
   const proveedor = await bloquear(tx, 'proveedor', data.proveedorId, auth);
-  if (!categoria.activo || !proveedor.activo) throw conflicto('La categoría y el proveedor deben estar activos.');
+  if (!categoria.activo) throw conflicto('La categoría está inactiva. Reactivala o seleccioná otra activa.');
+  if (!proveedor.activo) throw conflicto('El proveedor está inactivo. Reactivalo o seleccioná otro activo.');
 }
 const incluir = { categoria: { select: { id: true, nombre: true, activo: true } }, proveedor: { select: { id: true, nombre: true, activo: true } } };
 export async function listar(db, modelo, auth, query) {

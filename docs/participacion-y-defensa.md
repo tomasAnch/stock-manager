@@ -144,3 +144,7 @@ Copiar esta ficha para las etapas 2 a 7. Usar frases cortas y enlaces a los docu
 - Evidencias: [informe de implementación](implementacion/etapa-3.md), 30/30 unitarias, 13/13 integración, build y recorrido de navegador. Sin despliegue ni piloto.
 - Para estudiar: capítulo etapa 3 de la guía raíz. Comprensión individual pendiente de practicar.
 - Siguiente paso: compartir el commit para revisión; no se inventa un hash antes de que el integrante lo cree.
+
+### Revisión de etapa 3 — correcciones
+
+Nazareno compartió la revisión de Claude sobre d8c97e2. Tomás la transmitió a Codex y coordinó la corrección. Codex corrigió B1 y S1-S4, reforzó pruebas y agregó un recorrido reproducible de navegador. El recorrido original no detectaba la vuelta entre pestañas; se documenta esa limitación. Queda pendiente la verificación de Claude. Ver [informe](implementacion/etapa-3.md#correcciones-después-de-la-revisión-cruzada-0911).

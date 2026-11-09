@@ -1,0 +1,39 @@
+
+> stock-manager@0.1.0 test:integration
+> npm run test:integration -w backend
+
+
+> @stock-manager/backend@0.1.0 test:integration
+> tsx tests/run-integration.js
+
+Preflight correcto: sin datos ni objetos ajenos. Se pueden aplicar migraciones.
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "stock_manager_test", schema "public" at "127.0.0.1:55435"
+
+1 migration found in prisma/migrations
+
+
+No pending migrations to apply.
+✔ migración instala seis tablas y siete CHECK validados (94.0405ms)
+✔ seed repetible, hashes válidos, referencias en dos comercios y sin restablecer cuentas (1166.0015ms)
+✔ escritura y lectura con cliente generado y rollback real (5.8293ms)
+✔ restricción de stock rechaza escritura inválida desde Prisma (164.1053ms)
+✔ HTTP consulta PostgreSQL mediante el cliente generado (34.4044ms)
+✔ acceso con PostgreSQL: login, sesión y rechazo inmediato al desactivar la cuenta (706.5252ms)
+✔ acceso con PostgreSQL: permisos por rol y registros de otro comercio (238.6576ms)
+✔ catálogo: alta atómica, baja conserva saldo y unidad con historial estable (42.9768ms)
+✔ catálogo: cero sin movimiento, kg exactos y reversión si falla el movimiento inicial (34.3781ms)
+✔ catálogo: normalización, referencias inactivas y reactivación con reasignación (31.4289ms)
+✔ catálogo: alta y baja concurrentes no dejan referencias inactivas en productos activos (38.471ms)
+✔ inventario compartido: dos salidas simultáneas solo descuentan una y un fallo posterior revierte saldo (23.0178ms)
+✔ API catálogo: empleado consulta sin editar; comercio ajeno no se lee ni se asigna; validaciones HTTP (648.4835ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3638.9053

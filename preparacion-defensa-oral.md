@@ -30,6 +30,7 @@ Los ejemplos orales son una guía para practicar. Cada integrante debe ajustarlo
 - [Etapa 2 — Pruebas](#etapa-2--pruebas)
 - [Etapa 2 — Aportes y práctica oral](#etapa-2--aportes-y-práctica-oral)
 - [Etapa 2 — Resumen de repaso](#etapa-2--resumen-de-repaso)
+- [Etapa 3 — Catálogo](#etapa-3--catálogo)
 - [Etapas siguientes](#etapas-siguientes)
 - [Acuerdo para ampliar esta guía](#acuerdo-para-ampliar-esta-guía)
 
@@ -1081,13 +1082,11 @@ Cada estudiante marca las casillas después de practicar.
 - **Pruebas:** 11 de acceso con base simulada, 2 con PostgreSQL real, recorridos en navegador y errores introducidos a propósito.
 - **Pendiente:** despliegue, límite de intentos de login, revocación de tokens y que las etapas 3 a 5 apliquen los controles en sus rutas.
 
-## Etapas siguientes
-
-### Etapa 3 — Catálogo
+## Etapa 3 — Catálogo
 
 Implementada por Codex a pedido de Tomás el 09/11/2026. Pendiente de revisión de Nazareno con Claude. [Informe y evidencias](docs/implementacion/etapa-3.md).
 
-#### Qué problema resuelve
+### Qué problema resuelve
 
 Antes del catálogo se podía entrar al sistema, pero no cargar la mercadería. Ahora el dueño crea categorías, proveedores y productos desde la pantalla. El empleado consulta sin poder modificarlos. Categoría agrupa productos (por ejemplo, Alimentos); proveedor identifica a quién pedirlos (Distribuidora Sur). Cada producto tiene uno de cada uno.
 
@@ -1095,7 +1094,7 @@ ABM significa alta, baja y modificación. Acá la baja no borra: cambia `activo`
 
 No están hechos todavía los formularios habituales de entradas/salidas ni la pantalla del historial. Solo se registra el ingreso inicial desde el alta. La operación interna de Inventario que lo permite queda preparada para la etapa 4.
 
-#### Archivos para seguir el recorrido
+### Archivos para seguir el recorrido
 
 | Archivo | Qué hace |
 |---|---|
@@ -1108,7 +1107,7 @@ No están hechos todavía los formularios habituales de entradas/salidas ni la p
 | backend/tests/unit/catalogo.test.js | Prueba datos válidos e intentos de enviar campos prohibidos |
 | backend/tests/integration/database.test.js | Comprueba operaciones reales, permisos y concurrencia en PostgreSQL |
 
-#### Ejemplo completo: alta de harina
+### Ejemplo completo: alta de harina
 
 El dueño carga código HAR001, nombre Harina, unidad KG, categoría Alimentos, proveedor Sur, mínimo 2, objetivo 5 e inicial 0,250.
 
@@ -1135,7 +1134,7 @@ return db.$transaction(async tx => {
 
 `tx` es el cliente ligado a esa transacción. Si Inventario usara otra conexión independiente para guardar, podría confirmar el movimiento aunque el alta fallara después. Por eso recibe `tx`. El código real también controla el caso de inicial cero: no crea un movimiento de cantidad cero.
 
-#### Por qué bloquear filas
+### Por qué bloquear filas
 
 Imaginemos dos ventanas: una asigna el proveedor Sur a un producto; la otra desactiva Sur. Si ambas miran primero y escriben después sin coordinación, podrían aprobarse las dos y dejar un producto activo con proveedor inactivo.
 
@@ -1145,7 +1144,7 @@ El orden acordado es producto existente, categoría y proveedor. La baja de una 
 
 En Prisma se usa `$queryRaw` con parámetros. El ID no se concatena como código SQL; se envía como un valor. Los nombres de las tablas se seleccionan de una lista fija interna.
 
-#### Por qué el saldo no se edita
+### Por qué el saldo no se edita
 
 Saldo e historial deben explicar lo mismo. Si había 10 y alguien cambia el saldo a 7 directamente, faltarían tres unidades sin explicación. Por eso la edición permite código, nombre, referencias, unidad cuando corresponde y umbrales, pero no saldo. Más adelante un ajuste del dueño registrará la diferencia con su motivo.
 
@@ -1159,7 +1158,7 @@ Para una salida usa `decrement` y exige saldo suficiente en el filtro. No calcul
 
 La prueba de dos salidas verifica la operación interna preparada para la etapa 4. No significa que la pantalla de movimientos ya esté implementada.
 
-#### Identificadores, duplicados y cantidades
+### Identificadores, duplicados y cantidades
 
 - El código se recorta y pasa a mayúsculas. ` har001 ` y `HAR001` son el mismo código dentro de un comercio; otro comercio puede tener HAR001.
 - Categoría y proveedor tienen nombre visible y nombre normalizado. Se conservan tildes; espacios repetidos se reducen y el normalizado pasa a minúsculas. La restricción única de PostgreSQL resuelve también dos altas simultáneas del mismo nombre. El error se convierte en 409 con un mensaje entendible.
@@ -1167,7 +1166,7 @@ La prueba de dos salidas verifica la operación interna preparada para la etapa 
 - UNIDAD exige enteros; KG admite tres decimales. Mínimo no negativo, objetivo mayor o igual al mínimo. El stock puede superar el objetivo.
 - Prisma Decimal permite cálculos decimales exactos. Se envían cadenas en JSON porque usar números de punto flotante para el saldo puede introducir aproximaciones. No se redondea silenciosamente lo que excede tres decimales.
 
-#### Edición, baja y reactivación
+### Edición, baja y reactivación
 
 PUT modifica los datos completos del formulario. PATCH de actividad cambia solo `activo`. Separarlas evita que una edición active involuntariamente un producto. No hay DELETE.
 
@@ -1175,7 +1174,7 @@ Un producto inactivo puede tener saldo; darlo de baja no registra una venta. Su 
 
 Una categoría o proveedor no puede desactivarse si hay productos activos asociados. Una unidad no puede cambiar con movimientos, aun con saldo cero: sumar movimientos viejos en kg como si fueran unidades no tendría sentido. Sin movimientos sí puede cambiar, respetando los umbrales de la nueva unidad.
 
-#### Consultas e interfaz
+### Consultas e interfaz
 
 GET devuelve hasta 25 registros, cantidad total y páginas. Se ordena por nombre e ID para estabilizar el orden de nombres iguales. La búsqueda por código/nombre y el filtro activos/inactivos/todos se ejecutan en el servidor, siempre limitados al comercio.
 
@@ -1183,7 +1182,7 @@ El formulario de producto carga todas las páginas de referencias, así no desap
 
 `cargando` informa que hay una consulta en curso; `ocupado` desactiva controles mientras se guarda. Una consulta anterior se cancela si cambian los filtros. Un fallo de sesión devuelve al login; un error de validación conserva el formulario para corregirlo. No se reintentan escrituras automáticamente.
 
-#### Qué probamos y quién lo hizo
+### Qué probamos y quién lo hizo
 
 Codex ejecutó 30 pruebas unitarias/HTTP simuladas y 13 de integración real en una base temporal exclusiva; compiló el frontend y recorrió la interfaz en Edge con dueño y empleado. Las salidas y límites están en el informe. Estas tareas no se atribuyen a Tomás como ejecución manual.
 
@@ -1191,7 +1190,7 @@ Las pruebas nuevas comprueban normalización, cantidades, campos prohibidos, alt
 
 No prueban todavía despliegue, piloto, rendimiento bajo carga ni los endpoints futuros. Naza y Claude deben hacer la revisión cruzada. La aprobación de esta etapa no se marca antes de recibirla.
 
-#### Preguntas para practicar
+### Preguntas para practicar
 
 **¿Por qué no guardar stock inicial directamente?** Porque sería un saldo sin movimiento que lo explique. Se parte de cero y se registra un ingreso; así la suma del historial coincide.
 
@@ -1207,7 +1206,7 @@ No prueban todavía despliegue, piloto, rendimiento bajo carga ni los endpoints 
 
 **¿El objetivo es un máximo permitido de stock?** No; es una referencia de reposición. Puede haber más existencias que el objetivo.
 
-#### Actividades y comprensión personal
+### Actividades y comprensión personal
 
 En una base de desarrollo con datos de prueba:
 
@@ -1221,6 +1220,16 @@ En una base de desarrollo con datos de prueba:
 Cada uno debe poder explicar con sus palabras: alta atómica, bloqueo de referencias, baja lógica, unidad estable, permisos y una prueba que detectaría un error. Todavía no se registra esa comprensión como adquirida.
 
 **Resumen de repaso:** Catálogo administra datos; Inventario explica los cambios del saldo. Se comparten una transacción, se bloquean las referencias para evitar carreras, se aplican permisos en servidor y se conservan los registros mediante bajas lógicas.
+
+### Qué enseñó la revisión de esta etapa
+
+El recorrido original de navegador fue parcial: no volvió a Productos desde referencias con datos. Claude detectó que React intentaba renderizar categorías como productos y la pantalla quedaba en blanco. Cambiar el estado inicia un render antes de que el efecto cargue datos: por eso el cambio de pestaña debe limpiar la lista y marcar carga en ese mismo paso. Las respuestas de consultas canceladas también se ignoran.
+
+La nueva prueba recorre ambas vueltas con dueño y empleado, respuestas demoradas y cambios rápidos. No alcanza con probar cada pantalla aislada: también hay que probar sus transiciones. En la guía, practicar Categorías → Proveedores → Productos sin recargar; comprobar que la búsqueda y filtros se reinician. La corrección está implementada y probada por Codex; falta la verificación de Claude.
+
+Otro detalle para explicar: al editar, se bloquean las referencias nuevas que quedarán asignadas. No se bloquean las antiguas. Una baja concurrente de la referencia anterior puede ver todavía el producto asociado y rechazar la baja; si ve la edición confirmada, ya no existe esa asociación. Esto puede provocar un rechazo conservador, pero no deja un producto activo asociado a una referencia inactiva. La referencia nueva sí debe quedar protegida hasta confirmar.
+
+## Etapas siguientes
 
 ### Etapa 4 — Movimientos e historial
 
@@ -1255,4 +1264,6 @@ Cada capítulo debe contener lo siguiente:
 9. **Preparación oral.** Resumen para practicar, preguntas con respuestas razonadas y ejercicios para ubicar lo explicado en el código.
 
 La explicación debe cubrir las decisiones que afectan comportamiento, arquitectura, datos, seguridad, pruebas o mantenimiento. Los detalles de sintaxis se explican cuando hacen falta para seguir el flujo. Las razones que no estén registradas se plantean como interpretación o duda, sin atribuirlas al equipo ni a la tutora.
+
+
 

@@ -1,0 +1,8 @@
+OK alta desde UI: codigo normalizado, coma decimal y movimiento inicial real.
+OK unidad con historial rechazada en pantalla.
+OK baja y reactivacion.
+OK alta de categoria normalizada.
+OK recorrido categoria -> proveedor -> producto, sin recargar.
+OK dueno: regreso desde ambas pestanas con datos, respuestas demoradas, busqueda reiniciada y cambios rapidos.
+OK empleado: regreso desde ambas pestanas con datos, respuestas demoradas, busqueda reiniciada y cambios rapidos.
+OK empleado consulta, sin escrituras; movil sin desborde; sin excepciones JS.

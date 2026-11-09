@@ -6,3 +6,9 @@ test('catálogo: códigos normalizados y cantidades exactas', () => { const d=va
 test('catálogo: no acepta escribir saldo, comercio ni actividad por el alta', () => { for(const campo of ['stockActual','comercioId','activo']) assert.throws(()=>validarProducto({...base,[campo]:'1'},true)); });
 test('catálogo: edición no admite otro stock inicial', () => { assert.throws(()=>validarProducto(base,false)); });
 test('catálogo: rechaza unidad fraccionaria, precisión excesiva y objetivo menor al mínimo', () => { for(const cambio of [{unidad:'UNIDAD'},{stockInicial:'0.0001'},{stockObjetivo:'1'},{codigo:'DOS CODIGOS'}]) assert.throws(()=>validarProducto({...base,...cambio},true)); });
+
+test('catálogo: errores identifican cada cantidad y las referencias obligatorias', () => {
+  for (const [cambio, mensaje] of [[{stockMinimo:'abc'}, /Stock mínimo/], [{stockObjetivo:'abc'}, /Stock objetivo/], [{stockInicial:'abc'}, /Stock inicial/], [{categoriaId:''}, /Seleccioná categoría/], [{proveedorId:null}, /Seleccioná proveedor/]]) {
+    assert.throws(() => validarProducto({...base,...cambio},true), error => error.name === 'ValidationError' && mensaje.test(error.message));
+  }
+});

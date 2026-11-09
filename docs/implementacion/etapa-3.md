@@ -68,3 +68,19 @@ No equivale a una auditoría exhaustiva: no se ensayó carga sostenida, desplieg
 ## Para la revisión de Claude
 
 Revisar el orden de bloqueos, la atomicidad del alta, permisos de cada endpoint, edición de unidad y reasignación de referencias; repetir las pruebas sobre base exclusiva. No habilitar rutas de movimientos todavía. Explicación para estudiar en la guía raíz, capítulo etapa 3.
+
+## Correcciones después de la revisión cruzada (09/11)
+
+Claude revisó d8c97e2 y encontró B1: el primer render al volver de referencias a Productos usaba filas del recurso anterior. La evidencia original de navegador cubría un recorrido parcial y no detectó este caso. Se conserva como antecedente, no como prueba de ausencia de errores.
+
+- B1: cambiar de pestaña vacía la lista y activa la carga en la misma actualización que cambia el recurso. Además se ignoran respuestas canceladas. No se oculta el error con campos opcionales: se evita usar filas de otro tipo.
+- S1: al cambiar de pestaña se reinician búsqueda, estado y página. Pulsar la pestaña actual no borra sus datos ni deja una carga permanente.
+- S2: errores de cantidades indican inicial/mínimo/objetivo; referencias obligatorias ausentes responden 400 con el campo; referencias ajenas o IDs inválidos conservan 404 genérico. Los mensajes de referencias inactivas distinguen categoría/proveedor.
+- S3: rollback exige INVALID_SESSION/401 y los casos de datos inválidos exigen ValidationError con mensaje esperado. Un TypeError o fallo inesperado ya no pasa esas verificaciones.
+- S4: botones de tarjetas tienen nombre accesible con el nombre del registro; títulos del formulario en singular. No se afirma haber probado un lector de pantalla real.
+
+Se repitió el recorrido crear categoría → crear proveedor → volver a Productos, y las vueltas desde ambas pestañas con dueño/empleado, respuestas demoradas, búsqueda vacía, cambios rápidos y móvil. Resultado en [navegador corregido](resultados-etapa-3-correcciones-navegador.txt). El script reproducible es backend/tests/catalogo-browser.mjs: arranca API y Vite, usa PostgreSQL real y limpia solo sus datos si la base estaba vacía inicialmente.
+
+Para repetirlo desde la raíz: definir DATABASE_URL y TEST_DATABASE_URL como bases distintas (esta última exclusiva, vacía, migrada y llamada stock_manager_test), y ejecutar `node --import tsx backend/tests/catalogo-browser.mjs`. Necesita Playwright y su navegador ya disponibles: PLAYWRIGHT_MODULE puede indicar una instalación externa; BROWSER_CHANNEL admite msedge (predeterminado) o chromium para el navegador de Playwright. No se agregó Playwright a las dependencias del producto ni a npm test. En la verificación de Codex se usó la instalación de herramientas del entorno y Edge. No ejecutarlo contra una base con datos: el script la rechaza.
+
+Nuevas evidencias: [31 pruebas unitarias](resultados-etapa-3-correcciones-unitarias.txt), [13 integración](resultados-etapa-3-correcciones-integracion.txt), [build](resultados-etapa-3-correcciones-build.txt). Estas son ejecuciones de Codex, no de Tomás. Queda pendiente que Claude verifique las correcciones antes de integrar.

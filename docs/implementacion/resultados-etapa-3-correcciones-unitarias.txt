@@ -1,0 +1,47 @@
+
+> stock-manager@0.1.0 test
+> npm run test -w backend
+
+
+> @stock-manager/backend@0.1.0 test
+> tsx --test tests/unit/*.test.js
+
+✔ login correcto devuelve token y datos públicos, sin el hash (66.6451ms)
+✔ contraseña incorrecta, correo inexistente y cuenta inactiva responden igual (239.4913ms)
+✔ login sin datos o con tipos inválidos responde 400 (11.8142ms)
+✔ contraseñas de más de 72 bytes se rechazan antes de consultar la base (15.8316ms)
+✔ sesión: sin token, encabezado mal formado, otra firma, otro algoritmo, sin firma, sin vencimiento o vencido se rechazan (14.7889ms)
+✔ un token vigente deja de servir si el usuario se desactiva o ya no existe (8.9701ms)
+✔ rol y comercio salen de la base aunque el token diga otra cosa (4.4704ms)
+✔ requireRole: el empleado recibe 403 y el dueño pasa (6.3824ms)
+✔ filtro por comercio: reemplaza el comercio enviado y no consulta IDs inválidos (0.65ms)
+✔ configuración: exige un secreto largo y un vencimiento válido, sin mostrar el secreto (0.3701ms)
+✔ CORS permite el encabezado Authorization desde el frontend configurado (4.373ms)
+✔ catálogo: códigos normalizados y cantidades exactas (2.2531ms)
+✔ catálogo: no acepta escribir saldo, comercio ni actividad por el alta (0.5515ms)
+✔ catálogo: edición no admite otro stock inicial (0.2623ms)
+✔ catálogo: rechaza unidad fraccionaria, precisión excesiva y objetivo menor al mínimo (0.6456ms)
+✔ catálogo: errores identifican cada cantidad y las referencias obligatorias (0.8766ms)
+✔ diagnóstico conserva tipo, código y ubicación, pero no mensaje, metadatos ni ruta completa (2.3017ms)
+✔ 500 registra diagnóstico controlado sin filtrar el error ni la solicitud (0.6495ms)
+✔ seed requiere habilitación exacta y producción siempre prevalece (0.8043ms)
+✔ seed informa contraseñas inválidas antes de consultar la base (0.7296ms)
+✔ health devuelve disponibilidad sin exponer datos del comercio (46.6698ms)
+✔ base no disponible responde 503 y no filtra errores internos (11.306ms)
+✔ 404, JSON mal formado y cuerpos excesivos tienen errores JSON controlados (24.9448ms)
+✔ la app no arranca sin configuración de autenticación (0.4375ms)
+✔ preflight acepta base sin tablas y base migrada sin datos de negocio (0.7288ms)
+✔ preflight rechaza datos conocidos, tablas ajenas y relaciones fuera de public (0.5261ms)
+✔ nunca usa desarrollo como base de pruebas por omisión o alias localhost (1.8667ms)
+✔ normaliza espacios y Unicode, conservando mayúsculas y tildes visibles (1.577ms)
+✔ cantidades decimales exactas y serialización como texto (0.7785ms)
+✔ rechaza redondeos, notación científica, tipos y rangos inválidos (0.2532ms)
+✔ configuración inválida falla sin imprimir credenciales (0.3032ms)
+ℹ tests 31
+ℹ suites 0
+ℹ pass 31
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 862.3113

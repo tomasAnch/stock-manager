@@ -10,6 +10,7 @@ import express from 'express';
 import { requireAuth, requireRole } from '../../src/middlewares/autenticacion.js';
 import { errorHandler } from '../../src/middlewares/error-handler.js';
 import { buscarDelComercio } from '../../src/modules/acceso/comercio.js';
+import { ValidationError } from '../../src/lib/validation.js';
 
 // El runner ya reemplazó DATABASE_URL después de comprobar que era distinta.
 const prisma = createPrisma(requireTestDatabase({ TEST_DATABASE_URL: process.env.TEST_DATABASE_URL }));
@@ -174,9 +175,9 @@ test('catálogo: cero sin movimiento, kg exactos y reversión si falla el movimi
   await guardar(prisma, 'producto', identidad, { ...edicion, codigo: 'CERO', unidad: 'KG' }, cero.id);
   const kg = await guardar(prisma, 'producto', identidad, { ...datos, codigo: 'PESO', unidad: 'KG', stockInicial: '0.250' });
   assert.equal(kg.stockActual.toString(), '0.25');
-  await assert.rejects(guardar(prisma, 'producto', { ...identidad, usuarioId: '00000000-0000-4000-8000-000000000000' }, { ...datos, codigo: 'ROLLBACK' }));
+  await assert.rejects(guardar(prisma, 'producto', { ...identidad, usuarioId: '00000000-0000-4000-8000-000000000000' }, { ...datos, codigo: 'ROLLBACK' }), e => e.status === 401 && e.code === 'INVALID_SESSION');
   assert.equal(await prisma.producto.count({ where: { codigo: 'ROLLBACK' } }), 0);
-  for (const cambios of [{ stockInicial: '0.5' }, { stockObjetivo: '1' }, { stockActual: '999' }, { codigo: 'CON ESPACIO' }, { stockInicial: '0.0001', unidad: 'KG' }]) await assert.rejects(guardar(prisma, 'producto', identidad, { ...datos, ...cambios }));
+  for (const [cambios, mensaje] of [[{ stockInicial: '0.5' }, /Stock inicial/], [{ stockObjetivo: '1' }, /objetivo no puede/], [{ stockActual: '999' }, /campos no permitidos/], [{ codigo: 'CON ESPACIO' }, /Código inválido/], [{ stockInicial: '0.0001', unidad: 'KG' }, /Stock inicial/]]) await assert.rejects(guardar(prisma, 'producto', identidad, { ...datos, ...cambios }), e => e instanceof ValidationError && mensaje.test(e.message));
 });
 test('catálogo: normalización, referencias inactivas y reactivación con reasignación', async () => {
   const { identidad, datos } = await contextoCatalogo();
@@ -232,6 +233,13 @@ test('API catálogo: empleado consulta sin editar; comercio ajeno no se lee ni s
     assert.equal((await request('productos', 'POST', { ...datos, codigo: 'AJENO', categoriaId: ajena.id })).status, 404);
     assert.equal((await request(`categorias/${ajena.id}`, 'PUT', { nombre: 'Alterada' })).status, 404);
     assert.equal((await request('productos', 'POST', { ...datos, stockActual: '4' })).status, 400);
+    for (const [campo, mensaje] of [['categoriaId', /Seleccioná categoría/], ['proveedorId', /Seleccioná proveedor/], ['stockMinimo', /Stock mínimo/], ['stockObjetivo', /Stock objetivo/], ['stockInicial', /Stock inicial/]]) {
+      const response = await request('productos', 'POST', { ...datos, [campo]: '' });
+      assert.equal(response.status, 400);
+      const body = await response.json();
+      assert.equal(body.error.code, 'VALIDATION_ERROR');
+      assert.match(body.error.message, mensaje);
+    }
     assert.equal((await request('productos?pagina=0')).status, 400);
     assert.equal((await request('productos?q=INI001')).status, 200);
   });

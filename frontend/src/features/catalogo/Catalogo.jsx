@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { apiRequest } from '../../services/api.js';
 
 const titulos = { productos: 'Productos', categorias: 'Categorías', proveedores: 'Proveedores' };
+const singular = { productos: 'producto', categorias: 'categoría', proveedores: 'proveedor' };
 const vacio = { nombre: '', codigo: '', unidad: 'UNIDAD', categoriaId: '', proveedorId: '', stockInicial: '0', stockMinimo: '0', stockObjetivo: '0', telefono: '', correo: '' };
 export default function Catalogo({ token, usuario, onSesionInvalida }) {
   const [tipo, setTipo] = useState('productos');
@@ -23,10 +24,17 @@ export default function Catalogo({ token, usuario, onSesionInvalida }) {
   useEffect(() => {
     const controller = new AbortController(); setCargando(true); setError('');
     api(`${tipo}?${new URLSearchParams({ estado, q, pagina })}`, { signal: controller.signal })
-      .then(setLista).catch(e => { if (!controller.signal.aborted) fallo(e); })
+      .then(data => { if (!controller.signal.aborted) setLista(data); }).catch(e => { if (!controller.signal.aborted) fallo(e); })
       .finally(() => { if (!controller.signal.aborted) setCargando(false); });
     return () => controller.abort();
   }, [tipo, estado, q, pagina, revision, token]);
+  function cambiarPestana(key) {
+    if (key === tipo) return;
+    // React renderiza antes de ejecutar el efecto: no interpretar filas del recurso anterior.
+    setLista({ items: [], paginas: 1, total: 0 }); setCargando(true);
+    setTipo(key); setPagina(1); setQ(''); setBusqueda(''); setEstado('activos');
+    setEditor(null); setAviso(''); setError('');
+  }
   async function abrir(item) {
     setError(''); setAviso(''); setOcupado(true);
     try {
@@ -63,10 +71,10 @@ export default function Catalogo({ token, usuario, onSesionInvalida }) {
   }
   return <section className="catalogo">
     <h1>Catálogo</h1><p>Productos, existencias y datos de reposición de tu comercio.</p>
-    <div className="catalogo-actions">{Object.entries(titulos).map(([key, label]) => <button disabled={ocupado} key={key} aria-pressed={tipo === key} className={tipo === key ? '' : 'secondary'} onClick={() => { setTipo(key); setPagina(1); setEditor(null); setAviso(''); }}>{label}</button>)}</div>
+    <div className="catalogo-actions">{Object.entries(titulos).map(([key, label]) => <button disabled={ocupado} key={key} aria-pressed={tipo === key} className={tipo === key ? '' : 'secondary'} onClick={() => cambiarPestana(key)}>{label}</button>)}</div>
     {error && <p role="alert" className="form-error">{error}</p>}{aviso && <p role="status">{aviso}</p>}
     {editor && dueno ? <form className="catalogo-form" onSubmit={guardar}>
-      <h2>{editor.id ? 'Editar' : 'Crear'} {titulos[tipo].toLowerCase()}</h2>
+      <h2>{editor.id ? 'Editar' : 'Crear'} {singular[tipo]}</h2>
       <fieldset disabled={ocupado}>
         {campo('nombre', 'Nombre', { required: true, maxLength: tipo === 'productos' ? 160 : 120 })}
         {tipo === 'productos' && <>
@@ -92,7 +100,7 @@ export default function Catalogo({ token, usuario, onSesionInvalida }) {
         <div className="catalogo-grid">{lista.items.map(item => <article key={item.id}>
           <h2>{item.nombre}</h2><p>{item.activo ? 'Activo' : 'Inactivo'}</p>
           {tipo === 'productos' ? <><p>Código: {item.codigo} · {item.unidad === 'KG' ? 'kg' : 'unidades'}</p><dl><dt>Stock actual</dt><dd>{item.stockActual}</dd><dt>Mínimo / objetivo</dt><dd>{item.stockMinimo} / {item.stockObjetivo}</dd><dt>Categoría</dt><dd>{item.categoria.nombre}</dd><dt>Proveedor</dt><dd>{item.proveedor.nombre}</dd></dl></> : tipo === 'proveedores' && <p>{item.telefono || 'Sin teléfono'} · {item.correo || 'Sin correo'}</p>}
-          {dueno && <div className="catalogo-actions"><button disabled={ocupado} onClick={() => abrir(item)}>Editar</button><button disabled={ocupado} className="secondary" onClick={() => actividad(item)}>{item.activo ? 'Desactivar' : 'Reactivar'}</button></div>}
+          {dueno && <div className="catalogo-actions"><button aria-label={`Editar ${item.nombre}`} disabled={ocupado} onClick={() => abrir(item)}>Editar</button><button aria-label={`${item.activo ? 'Desactivar' : 'Reactivar'} ${item.nombre}`} disabled={ocupado} className="secondary" onClick={() => actividad(item)}>{item.activo ? 'Desactivar' : 'Reactivar'}</button></div>}
         </article>)}</div>
         <div className="catalogo-actions"><button disabled={pagina <= 1 || ocupado} onClick={() => setPagina(n => n - 1)}>Anterior</button><button disabled={pagina >= lista.paginas || ocupado} onClick={() => setPagina(n => n + 1)}>Siguiente</button></div>
       </>}

@@ -159,7 +159,7 @@ Se priorizan comportamientos importantes y errores posibles; no se agrega un tes
 
 ## Registro de avance y continuidad
 
-**Estado actual:** etapas 1 y 2 cerradas. Etapa 3 implementada el 09/11 por Codex para Tomás en etapa-3-catalogo, pendiente de revisión de Nazareno con Claude y de integración a main. Pruebas: 30/30 unitarias, 13/13 integración, build y recorrido de navegador correctos. Ver [informe de etapa 3](implementacion/etapa-3.md). Etapas 4 a 7 pendientes; ensayo online y piloto pendientes.
+**Estado actual:** etapas 1 y 2 cerradas. Etapa 3 implementada el 09/11 por Codex para Tomás en etapa-3-catalogo, pendiente de revisión de Nazareno con Claude y de integración a main. Correcciones B1 y S1-S4 aplicadas tras revisión de Claude; pendiente su verificación. Pruebas: 31/31 unitarias, 13/13 integración, build y recorrido de navegador correctos. Ver [informe de etapa 3](implementacion/etapa-3.md). Etapas 4 a 7 pendientes; ensayo online y piloto pendientes.
 
 **Siguiente acción:** compartir la etapa 3 para revisión cruzada. Git lo ejecutan los integrantes. No comenzar la etapa 4 hasta resolver las observaciones.
 
@@ -175,4 +175,5 @@ Al cerrar una sesión, actualizar aquí:
 - Próxima tarea concreta para retomar sin reconstruir todo el contexto.
 
 Para compartir con Claude, enviar una versión identificable del cambio y el resultado de sus pruebas. Conviene revisar hitos completos, en especial inventario y cierre de integración, para que ambos revisores evalúen el mismo código y no dos versiones distintas. Las observaciones se resuelven en el repositorio y se vuelven a verificar.
+
 
