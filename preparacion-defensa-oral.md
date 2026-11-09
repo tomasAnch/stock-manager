@@ -8,7 +8,7 @@ Documento de estudio compartido. Creado el 06/11/2026. La defensa será individu
 
 Primero leer el problema y el recorrido general. Después estudiar una etapa junto con sus archivos. Al terminar, intentar responder las preguntas sin mirar y mostrar en el código dónde ocurre lo explicado. Si una respuesta todavía cuesta, anotarla como pendiente de practicar.
 
-Las etapas 0 y 1 se explican a partir del código local y los registros de ejecución de octubre. La etapa 1 está cerrada por el equipo. Nazareno informó la implementación de la etapa 2 en `etapa-2-acceso`; su explicación y revisión se incorporarán cuando se consulte esa versión. Las explicaciones sobre futuras funciones se identifican como diseño previsto.
+Las etapas 0 y 1 se explican a partir del código local y los registros de ejecución de octubre. La etapa 1 está cerrada por el equipo. La etapa 2 se explica a partir de la rama `etapa-2-acceso` con las correcciones de la revisión (`5ce7c91`), aprobada por Codex y todavía no integrada a `main`. Las explicaciones sobre futuras funciones se identifican como diseño previsto.
 
 Los ejemplos orales son una guía para practicar. Cada integrante debe ajustarlos a las tareas que realmente realizó. El registro de participación permite identificar responsables y evidencias. [Registro de participación](docs/participacion-y-defensa.md).
 
@@ -21,6 +21,15 @@ Los ejemplos orales son una guía para practicar. Cada integrante debe ajustarlo
 - [Etapa 1 — Seed y contraseñas](#etapa-1--seed-y-contraseñas)
 - [Etapa 1 — Configuración, errores y pruebas](#etapa-1--configuración-errores-y-pruebas)
 - [Etapa 1 — Aportes y práctica oral](#etapa-1--aportes-y-práctica-oral)
+- [Etapa 2 — Problema, estado y alcance](#etapa-2--problema-estado-y-alcance)
+- [Etapa 2 — Conceptos desde cero](#etapa-2--conceptos-desde-cero)
+- [Etapa 2 — Recorrido completo del login](#etapa-2--recorrido-completo-del-login)
+- [Etapa 2 — Archivos y responsabilidades](#etapa-2--archivos-y-responsabilidades)
+- [Etapa 2 — Decisiones y motivos](#etapa-2--decisiones-y-motivos)
+- [Etapa 2 — Ejemplos concretos](#etapa-2--ejemplos-concretos)
+- [Etapa 2 — Pruebas](#etapa-2--pruebas)
+- [Etapa 2 — Aportes y práctica oral](#etapa-2--aportes-y-práctica-oral)
+- [Etapa 2 — Resumen de repaso](#etapa-2--resumen-de-repaso)
 - [Etapas siguientes](#etapas-siguientes)
 - [Acuerdo para ampliar esta guía](#acuerdo-para-ampliar-esta-guía)
 
@@ -486,13 +495,593 @@ Estas casillas se marcan por cada estudiante después de practicar, sin necesida
 | Explicar un test de lógica, uno de integración y sus límites | [ ] | [ ] |
 | Describir mi aporte, el del compañero y la asistencia de IA | [ ] | [ ] |
 
+## Etapa 2 — Problema, estado y alcance
+
+### Estado y responsables
+
+Nazareno llevó adelante la etapa con Claude; Tomás la revisó con Codex. La versión que se explica es la de la rama `etapa-2-acceso` con las correcciones de la revisión (`5ce7c91`). Codex verificó esas correcciones y dio el visto bueno; Tomás lo comunicó el 09/11.
+
+| Momento | Qué pasó |
+|---|---|
+| 05/11 | Claude implementó la etapa y ejecutó las pruebas. Nazareno agregó `JWT_SECRET` a su `.env`, ejecutó las pruebas en su equipo y recorrió la app con ambos roles. |
+| 06/11 | Tomás revisó con Codex: una observación bloqueante y tres sugerencias. |
+| 07/11 | Claude aplicó las cuatro correcciones y repitió las pruebas. Nazareno las subió a la rama. |
+| 09/11 | Codex verificó las correcciones y aprobó integrar la etapa a `main`. |
+
+**Pendiente:** unir la rama a `main` y registrar el cierre, el ensayo de despliegue y que Nazareno repita en su equipo las pruebas con las correcciones (no consta esa salida). [Documentación técnica de la etapa](docs/implementacion/etapa-2.md).
+
+### Qué problema resuelve
+
+Hasta la etapa 1 la aplicación no sabía quién la estaba usando. Cualquiera que abriera la página veía lo mismo. Pero el sistema maneja datos de comercios distintos y tiene dos roles con permisos diferentes: el dueño administra y el empleado opera. Sin acceso controlado, un empleado podría hacer tareas del dueño, o alguien de un comercio podría ver datos de otro.
+
+La etapa 2 resuelve dos preguntas que el resto del sistema necesita contestar en cada operación: **quién está haciendo la solicitud** y **qué puede hacer**. Las reglas vienen del diseño aprobado:
+
+- **RF-01:** solo se accede con credenciales válidas de una cuenta activa; cerrar sesión elimina la credencial del navegador.
+- **RF-02:** se rechazan las solicitudes sin permiso o de otro comercio, aunque se envíen por fuera de la interfaz. Cada solicitud protegida verifica al usuario en la base.
+- **RN-01:** el comercio sale de la identidad verificada, nunca de lo que mande el navegador. Un registro de otro comercio se rechaza sin revelar sus datos.
+- **RN-15:** token firmado con vencimiento; en cada solicitud se consulta al usuario, que debe existir y estar activo. Desactivar una cuenta bloquea sus solicitudes siguientes aunque el token no haya vencido.
+
+[Requerimientos](docs/segunda_entrega/01-requerimientos.md), [reglas RN-01 y RN-15](docs/segunda_entrega/02-reglas-de-negocio.md).
+
+### Qué puede hacer ahora una persona
+
+- Entrar con correo y contraseña. Si se equivoca, ve «Correo o contraseña incorrectos.», el mismo mensaje sea cual sea el error.
+- Ver arriba su nombre, su rol y su comercio, y un menú según el rol: el dueño ve «Alertas y reposición» y el empleado, «Alertas».
+- Recargar la página sin perder la sesión, mientras la pestaña siga abierta y el token no haya vencido (8 horas).
+- Cerrar sesión y volver al login.
+- Si la cuenta se desactiva mientras está adentro, al cambiar de sección vuelve al login.
+- Si el servidor no responde al cambiar de sección, ve un aviso con «Reintentar» y no pierde la sesión.
+
+Las secciones Catálogo, Inventario y Alertas todavía muestran «Pendiente de implementación». Se completan en las etapas 3 a 5.
+
+### Qué deja preparado para las etapas siguientes
+
+Además de lo visible, la etapa deja controles reutilizables: `requireAuth`, `requireRole` y el filtro por comercio (`delComercio` y `buscarDelComercio`). **Hoy solo los usan las rutas de acceso y las pruebas**, porque todavía no existen rutas de catálogo ni de inventario. Cada etapa siguiente tiene que aplicarlos en todas sus lecturas y escrituras. Si una ruta futura se olvida de usarlos, esta etapa no lo impide.
+
+### Qué sigue pendiente
+
+- **Integración a `main`** y registro del cierre de la etapa.
+- **Ensayo de despliegue:** depende de elegir el alojamiento. Todo lo probado es local.
+- **Límite de intentos de login:** no hay. Alguien podría probar muchas contraseñas seguidas. Conviene evaluarlo al desplegar.
+- **Revocar un token puntual:** no se puede. Para cortar el acceso de alguien se desactiva su cuenta (RN-15 lo deja fuera de esta versión).
+- **Gestión de cuentas:** no hay registro público, cambio de contraseña ni pantalla para crear usuarios. Las cuentas de prueba las crea el seed.
+
+## Etapa 2 — Conceptos desde cero
+
+La etapa 1 ya explicó frontend, backend, API, HTTP, endpoint, JSON y middleware (ver [El proyecto y las palabras básicas](#el-proyecto-y-las-palabras-básicas) y [Controles comunes del servidor](#controles-comunes-del-servidor)). Acá se repasan con lo que agrega el acceso.
+
+### Una solicitud HTTP tiene partes
+
+Cuando el navegador habla con el servidor manda una **solicitud** con:
+
+- **Método y ruta:** qué operación pide. `POST /api/auth/login` envía datos para iniciar sesión; `GET /api/auth/sesion` consulta la sesión.
+- **Encabezados:** datos sobre la solicitud. El que importa en esta etapa es `Authorization`, donde viaja la credencial.
+- **Cuerpo:** los datos enviados, en JSON. En el login: `{ "correo": "...", "contrasena": "..." }`.
+
+El servidor contesta con un **código de estado** y un cuerpo JSON. Los códigos nuevos de esta etapa:
+
+| Código | Significado en el proyecto | Ejemplo |
+|---|---|---|
+| 200 | Salió bien | Login correcto |
+| 400 | Los datos enviados no sirven | Falta el correo, o la contraseña supera los 72 bytes |
+| 401 | No sabemos quién sos, o tu sesión ya no vale | Contraseña incorrecta, token vencido, cuenta desactivada |
+| 403 | Sabemos quién sos, pero tu rol no puede hacer esto | Un empleado en una ruta de dueño |
+| 404 | No existe, o no es de tu comercio | Una categoría de otro comercio |
+
+La diferencia entre 401 y 403 es la misma que entre los dos conceptos que siguen.
+
+### Autenticación y autorización
+
+**Autenticar** es comprobar quién es alguien. **Autorizar** es decidir qué puede hacer. En un comercio: mostrar el DNI en la puerta es autenticarse; que el encargado te deje entrar al depósito o solo a la zona de ventas es autorización.
+
+En el código están separadas: el login y `requireAuth` autentican; `requireRole` y el filtro por comercio autorizan. Por eso un error de autenticación es 401 y uno de autorización es 403 (o 404, si el registro es de otro comercio).
+
+### Middleware, de nuevo
+
+Un middleware es una función que Express ejecuta antes de la ruta final. Puede dejar pasar la solicitud (`next()`), agregarle información o cortarla con un error. Se encadenan en orden:
+
+```js
+router.get('/sesion', requireAuth({ prisma, auth }), (req, res) => { ... });
+```
+
+Primero corre `requireAuth`; si no corta la solicitud, recién entonces corre la función que responde. Es como pasar por controles en fila: si uno falla, no llegás al siguiente.
+
+### Hash y bcrypt
+
+Un **hash** transforma un texto en otro de forma que no se puede volver atrás. La base no guarda la contraseña, guarda su hash. Para verificar un login no se "desencripta" nada: se calcula si la contraseña escrita corresponde a ese hash. Eso lo hace `bcrypt.compare`.
+
+bcrypt es lento a propósito (factor de costo 12, elegido en la etapa 1) para que probar millones de contraseñas contra un hash robado sea caro. Tiene un límite importante: **solo usa los primeros 72 bytes** de la contraseña. Más adelante se explica por qué eso importó.
+
+Un **byte** es la unidad de almacenamiento. Las letras comunes ocupan 1 byte en UTF-8, pero la «ñ» o las vocales con tilde ocupan 2. Por eso «72 bytes» no es lo mismo que «72 caracteres».
+
+### Token y JWT
+
+Después del login, el servidor no quiere pedir la contraseña en cada clic. Entrega un **token**: un texto que el navegador muestra en cada solicitud siguiente, como una pulsera de un evento que te ponen en la entrada.
+
+Usamos **JWT** (JSON Web Token), que es lo que preveía RN-15. Un JWT tiene tres partes separadas por puntos:
+
+```
+eyJhbGciOiJIUzI1NiIs...  .  eyJzdWIiOiIyMDAwMDAw...  .  Xk3f9...
+      encabezado                  contenido                firma
+```
+
+- El **encabezado** dice con qué algoritmo se firmó (HS256).
+- El **contenido** (*payload*) lleva datos. El nuestro tiene solo tres: `sub` (el ID del usuario), `iat` (cuándo se emitió) y `exp` (cuándo vence).
+- La **firma** se calcula con el contenido y un secreto que solo conoce el servidor (`JWT_SECRET`).
+
+Dos ideas clave:
+
+1. **El contenido no está cifrado.** Cualquiera puede leerlo (está en Base64, una forma de escribir datos como texto). Por eso no ponemos datos sensibles ni el rol.
+2. **No se puede modificar sin romper la firma.** Si alguien cambia el ID o agrega `"rol": "DUENO"`, la firma ya no coincide y el servidor lo rechaza. Para fabricar una firma válida haría falta el secreto.
+
+El **vencimiento** (`exp`) hace que un token robado no sirva para siempre. Lo configuramos en 8 horas, un turno de trabajo.
+
+### sessionStorage
+
+El navegador tiene lugares para guardar datos de una página. **sessionStorage** guarda datos mientras la pestaña esté abierta: sobrevive a recargar, pero se borra al cerrarla. **localStorage** dura hasta que alguien lo borre. Una **cookie** la manda el navegador automáticamente en cada solicitud al mismo sitio.
+
+Guardamos el token en sessionStorage. La sección de decisiones explica por qué.
+
+## Etapa 2 — Recorrido completo del login
+
+Este es el recorrido que conviene saber contar de punta a punta, desde que se aprieta «Ingresar» hasta la primera solicitud protegida.
+
+```mermaid
+sequenceDiagram
+    participant L as LoginPage (React)
+    participant A as api.js
+    participant E as Express /api/auth
+    participant S as acceso.service.js
+    participant B as PostgreSQL
+    L->>A: login(correo, contraseña)
+    A->>E: POST /api/auth/login
+    E->>S: iniciarSesion()
+    S->>S: leerCredenciales (validar, límite 72 bytes)
+    S->>B: buscar usuario por correo
+    B-->>S: usuario con hash (o nada)
+    S->>S: bcrypt.compare + ¿activo?
+    S->>S: firmarToken(id)
+    S-->>A: 200 { token, usuario }
+    A-->>L: token y usuario
+    L->>L: App guarda el token en sessionStorage
+    Note over L,A: Más tarde, al cambiar de sección
+    A->>E: GET /api/auth/sesion + Authorization: Bearer token
+    E->>E: requireAuth: verificar firma y vencimiento
+    E->>B: buscar usuario por id
+    B-->>E: rol, comercio, activo
+    E-->>A: 200 { usuario } o 401
+```
+
+### 1. El formulario
+
+`LoginPage.jsx` guarda lo que se escribe en dos estados de React y, al enviar, llama a `login`:
+
+```jsx
+async function enviar(event) {
+  event.preventDefault();
+  if (enviando) return; // evita doble envío
+  ...
+  const { token, usuario } = await login(correo, contrasena);
+  onLogin(token, usuario);
+```
+
+`preventDefault()` evita que el navegador recargue la página, que es lo que haría un formulario HTML común. El estado `enviando` desactiva el botón para que dos clics rápidos no manden dos logins. Si falla, se muestra el mensaje del servidor y se borra el campo de contraseña.
+
+### 2. La solicitud
+
+`services/api.js` concentra toda la comunicación con el backend. `login` hace un `POST` con el correo y la contraseña en el cuerpo. Si no hay respuesta en 8 segundos, o no hay red, se convierte en un error con un mensaje para mostrar.
+
+### 3. La ruta en Express
+
+`app.js` monta las rutas de acceso bajo `/api/auth`, y `acceso.routes.js` define el login:
+
+```js
+router.post('/login', async (req, res) => {
+  res.json(await iniciarSesion(prisma, req.body, auth));
+});
+```
+
+La ruta no tiene lógica propia: se la delega al servicio. Si el servicio lanza un error, Express 5 lo pasa automáticamente al manejador de errores de la etapa 1, que responde con el código y el mensaje.
+
+### 4. Validar los datos
+
+Antes de tocar la base, `leerCredenciales` revisa lo recibido:
+
+```js
+if (typeof correo !== 'string' || typeof contrasena !== 'string' || !correo.trim() || !contrasena) {
+  throw new ValidationError('Ingresá correo y contraseña.');
+}
+if (correo.length > 254 || Buffer.byteLength(contrasena, 'utf8') > MAX_BYTES_CONTRASENA) {
+  throw new ValidationError('El correo o la contraseña superan el largo permitido.');
+}
+return { correo: correo.trim().toLowerCase(), contrasena };
+```
+
+El correo se pasa a minúsculas porque así se guardan (RN-02): `Dueno.A@Example.Invalid` encuentra la misma cuenta. La contraseña se mide en bytes por el límite de bcrypt.
+
+### 5. Buscar al usuario y comparar la contraseña
+
+```js
+const usuario = await prisma.usuario.findUnique({
+  where: { correo },
+  select: { ...camposUsuario, passwordHash: true },
+});
+const coincide = await bcrypt.compare(contrasena, usuario?.passwordHash ?? HASH_FICTICIO);
+if (!usuario || !coincide || !usuario.activo) throw CREDENCIALES_INVALIDAS();
+```
+
+- `findUnique` busca por correo, que es único.
+- `usuario?.passwordHash ?? HASH_FICTICIO`: si el usuario no existe, se compara igual contra un hash ficticio. Así bcrypt trabaja en los dos casos y la diferencia de tiempo se achica (ver decisiones).
+- Las tres fallas (no existe, contraseña mal, cuenta inactiva) lanzan **el mismo error**: 401 «Correo o contraseña incorrectos.».
+
+### 6. Firmar el token
+
+```js
+export function firmarToken(usuarioId, { secret, expiresIn }) {
+  return jwt.sign({}, secret, { algorithm: ALGORITHM, subject: usuarioId, expiresIn });
+}
+```
+
+El primer argumento es un objeto vacío: no agregamos datos propios. `subject` se guarda como `sub` y `expiresIn` como `exp`. La respuesta es `{ token, usuario }`, donde `usuario` tiene id, nombre, correo, rol y comercio, nunca el hash.
+
+### 7. Guardar el token en el navegador
+
+`App.jsx` recibe el token y lo guarda con `token-guardado.js`:
+
+```js
+const CLAVE = 'stock-manager.token';
+export function guardarToken(token) {
+  try { sessionStorage.setItem(CLAVE, token); } catch { /* sin almacenamiento */ }
+}
+```
+
+El `try/catch` cubre navegadores donde el almacenamiento está bloqueado: la sesión funciona igual hasta recargar. Después, `App` pasa a la fase `autenticado` y muestra el `Panel`.
+
+### 8. Una solicitud protegida
+
+Cada vez que se cambia de sección, `Panel.jsx` llama a `obtenerSesion(token)`. `api.js` agrega el token en el encabezado:
+
+```js
+if (token) headers.Authorization = `Bearer ${token}`;
+```
+
+«Bearer» significa "portador": quien presenta este token es tratado como su dueño. Por eso hay que cuidarlo.
+
+### 9. requireAuth verifica todo de nuevo
+
+```js
+const match = /^Bearer\s+(\S+)$/i.exec(req.get('authorization') ?? '');
+if (!match) throw new HttpError(401, 'AUTH_REQUIRED', 'Iniciá sesión para continuar.');
+
+const usuarioId = verificarToken(match[1], auth);
+const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId }, select: camposUsuario });
+if (!usuario || !usuario.activo) {
+  throw new HttpError(401, 'INVALID_SESSION', 'La sesión ya no es válida. Iniciá sesión nuevamente.');
+}
+req.auth = { usuarioId: usuario.id, rol: usuario.rol, comercioId: usuario.comercio.id, usuario: datosPublicos(usuario) };
+next();
+```
+
+1. La expresión regular extrae el token del encabezado. Si no hay encabezado o no empieza con `Bearer`, responde 401.
+2. `verificarToken` comprueba firma, algoritmo y vencimiento, y devuelve el ID.
+3. **Se consulta al usuario en la base.** Si ya no existe o está inactivo, responde 401 aunque el token sea válido.
+4. Guarda en `req.auth` el rol y el comercio **leídos de la base**. Las rutas siguientes usan esto, nunca lo que diga el token o el cuerpo de la solicitud.
+
+### 10. Recargar y cerrar sesión
+
+**Al recargar**, React pierde todo lo que tenía en memoria. `App.jsx` arranca leyendo sessionStorage: si hay un token, entra en la fase `verificando` y consulta `/api/auth/sesion`. Con 200 muestra el panel; con 401 vuelve al login con el motivo; si no hay conexión, muestra un error con «Reintentar».
+
+**Al cerrar sesión**, `App` borra el token de sessionStorage y vuelve al login con «Cerraste la sesión.». No hay una ruta en el servidor para esto: el token deja de existir en el navegador, aunque técnicamente seguiría siendo válido hasta vencer si alguien lo hubiera copiado. Es el límite que RN-15 acepta para esta versión.
+
+## Etapa 2 — Archivos y responsabilidades
+
+| Archivo | Responsabilidad |
+|---|---|
+| `backend/src/modules/acceso/acceso.routes.js` | Define `POST /api/auth/login` y `GET /api/auth/sesion`. No tiene lógica propia. |
+| `backend/src/modules/acceso/acceso.service.js` | Valida credenciales, compara con bcrypt, decide el error y arma la respuesta pública del usuario. |
+| `backend/src/modules/acceso/token.js` | Firma y verifica el JWT. Fija el algoritmo y exige vencimiento. |
+| `backend/src/middlewares/autenticacion.js` | `requireAuth` (quién sos) y `requireRole` (qué rol tenés). |
+| `backend/src/modules/acceso/comercio.js` | `delComercio` y `buscarDelComercio`: limitan las consultas al comercio autenticado. |
+| `backend/src/lib/http-error.js` | Clase `HttpError`: un error que ya sabe su código HTTP y su mensaje. |
+| `backend/src/lib/config.js` | `authConfig` lee `JWT_SECRET` y `JWT_EXPIRES_IN`. Sin un secreto de 32 caracteres o más, el servidor no arranca. |
+| `backend/src/app.js` | Monta las rutas de acceso. Exige la configuración de autenticación al crear la app. |
+| `frontend/src/services/api.js` | Única función que habla con el backend; agrega el token y traduce los errores. |
+| `frontend/src/features/acceso/LoginPage.jsx` | Formulario de login. |
+| `frontend/src/features/acceso/token-guardado.js` | Lee, guarda y borra el token en sessionStorage. |
+| `frontend/src/features/acceso/Panel.jsx` | Barra de sesión, menú por rol, revalidación al cambiar de sección y aviso de conexión. |
+| `frontend/src/features/acceso/secciones.js` | Qué secciones ve cada rol. |
+| `frontend/src/app/App.jsx` | Estado general: verificando, sin sesión, autenticado o sin conexión. |
+| `backend/tests/unit/acceso.test.js` | Pruebas del acceso con una base simulada. |
+| `backend/tests/integration/database.test.js` | Las dos últimas pruebas usan PostgreSQL real para el acceso. |
+
+### Fragmentos que conviene saber leer
+
+**El error con código (`http-error.js`).** Cualquier parte del backend puede lanzar `new HttpError(401, 'INVALID_TOKEN', 'La sesión no es válida...')`. El manejador de errores de la etapa 1 lo reconoce y responde con ese estado y ese mensaje. Así cada control dice qué pasó sin armar la respuesta él mismo.
+
+**La verificación del token (`token.js`).**
+
+```js
+payload = jwt.verify(token, secret, { algorithms: [ALGORITHM] });
+...
+if (!isUuid(payload.sub) || typeof payload.exp !== 'number') throw tokenInvalido();
+```
+
+`algorithms: ['HS256']` hace que se rechace un token firmado con otro algoritmo, aunque use el mismo secreto. La librería también rechaza tokens sin firma. Si el token venció, el error es distinto (`SESSION_EXPIRED`) para que la pantalla pueda decir «La sesión venció». La última línea exige que el ID tenga formato UUID y que el token traiga vencimiento.
+
+**El control de rol (`autenticacion.js`).**
+
+```js
+export function requireRole(...roles) {
+  return (req, _res, next) => {
+    if (!req.auth || !roles.includes(req.auth.rol)) {
+      throw new HttpError(403, 'FORBIDDEN', 'Tu rol no tiene permiso para esta operación.');
+    }
+    next();
+  };
+}
+```
+
+Se usa después de `requireAuth`, porque necesita `req.auth`. Una ruta de dueño se declararía así: `requireAuth(deps), requireRole('DUENO'), manejador`.
+
+**El filtro por comercio (`comercio.js`).**
+
+```js
+export function delComercio(auth, where = {}) {
+  return { ...where, comercioId: auth.comercioId };
+}
+```
+
+`...where` copia el filtro recibido y después `comercioId` lo pisa con el comercio de la sesión. Si alguien manda `comercioId` de otro comercio, se ignora. `buscarDelComercio` usa este filtro para buscar un registro por ID y responde 404 tanto si no existe como si es de otro comercio.
+
+**La revalidación en el panel (`Panel.jsx`).**
+
+```js
+obtenerSesion(token, controller.signal)
+  .then(data => { setAvisoConexion(''); onUsuario(data.usuario); })
+  .catch(error => {
+    if (controller.signal.aborted) return;
+    if (error.status === 401) onSesionInvalida(error.message);
+    else setAvisoConexion(error.message);
+  });
+```
+
+Corre dentro de un `useEffect` cada vez que cambia la sección. Con 200 actualiza los datos del usuario (si le cambiaron el rol en la base, el menú cambia). Con 401 vuelve al login. Con cualquier otro error muestra el aviso. Si se cambia de sección antes de que llegue la respuesta, la solicitud vieja se cancela y no muestra nada.
+
+## Etapa 2 — Decisiones y motivos
+
+Estas son las decisiones que más probablemente pregunten. Ninguna es la única opción posible; se explica por qué se eligió y qué costo tiene.
+
+### Contraseñas con hash y un mismo mensaje para todas las fallas
+
+La base guarda hashes bcrypt desde la etapa 1; la etapa 2 los usa con `bcrypt.compare`. Correo inexistente, contraseña incorrecta y cuenta inactiva responden igual. Si respondieran distinto («ese correo no existe»), alguien podría averiguar qué correos tienen cuenta. CU-01 pide no exponer detalles de otras cuentas.
+
+Cuando el correo no existe se compara contra un **hash ficticio**, para que bcrypt trabaje igual que con una cuenta real. Es una **mitigación**: achica la diferencia de tiempo entre los casos, pero no garantiza que tarden exactamente lo mismo. La primera versión de la documentación decía «mismo tiempo de respuesta» y la revisión cruzada lo corrigió.
+
+**Costo:** el mensaje genérico es menos claro para quien se equivocó de correo.
+
+### El límite de 72 bytes (corrección de la revisión)
+
+**El problema.** bcrypt solo usa los primeros 72 bytes y descarta el resto sin avisar. La primera versión del login aceptaba contraseñas de hasta 200 caracteres. Codex armó una cuenta con una contraseña de exactamente 72 letras «a» y probó entrar con esas 72 «a» seguidas de `INVALIDA`: **entró**. Para bcrypt eran la misma contraseña.
+
+No era un agujero grave, porque igual había que conocer los primeros 72 bytes. Pero el login aceptaba una contraseña distinta de la registrada, y una contraseña larga daba una falsa sensación de seguridad.
+
+**La solución.** Rechazar con 400 cualquier contraseña de más de 72 bytes, antes de consultar la base. Se cuenta en bytes (`Buffer.byteLength(contrasena, 'utf8')`) porque 36 «ñ» ya son 72 bytes. El seed de la etapa 1 tenía ese mismo límite al crear cuentas, así que ninguna cuenta puede tener una contraseña más larga.
+
+**Por qué 400 y no 401.** El rechazo no depende del correo, así que no revela nada de ninguna cuenta. Responder 401 también hubiera sido válido; el 400 explica mejor por qué falla.
+
+**Cómo se comprobó.** Una prueba nueva muestra primero el problema (bcrypt acepta las 72 «a» + `INVALIDA` contra el hash), y después que el login responde 200 justo en el límite y 400 con un byte de más, tanto con texto común como con «ñ». También verifica que esos rechazos no consulten la base. Claude cambió el código a propósito para volver al límite viejo y para contar caracteres en vez de bytes: en los dos casos la prueba falló, que es lo que tenía que pasar. Codex verificó la corrección.
+
+### Token firmado, algoritmo fijo y vencimiento obligatorio
+
+RN-15 ya preveía un JWT firmado con vencimiento. La implementación agrega:
+
+- **Algoritmo fijo (HS256).** Se rechaza un token firmado con otro algoritmo, aunque use el mismo secreto. La librería también rechaza los tokens sin firma (`alg: none`). Las dos cosas están probadas.
+- **Secreto obligatorio de 32 caracteres o más.** Si falta o es corto, el servidor no arranca y lo dice. Un secreto corto se podría adivinar probando.
+- **Vencimiento de 8 horas**, configurable con `JWT_EXPIRES_IN`. Cubre un turno sin pedir login a cada rato. **Costo:** un token robado sirve hasta 8 horas, salvo que se desactive la cuenta.
+- **Vencimiento exigido (corrección de la revisión).** La librería controla `exp` solo si el token lo trae. Un token bien firmado sin `exp` serviría para siempre. Los que firma la app siempre lo llevan, así que exigirlo cuesta una línea. Hay una prueba con un token así que espera 401.
+
+**Alternativa:** sesiones guardadas en una tabla de la base, con un ID aleatorio en una cookie. Permiten cerrar una sesión puntual desde el servidor. Como igual consultamos al usuario en cada solicitud, también hubiera funcionado; elegimos el JWT que preveía el diseño, que no necesita otra tabla.
+
+### El token solo dice quién sos; rol, comercio y estado salen de la base
+
+El token lleva solo el ID. En cada solicitud protegida se consulta al usuario y de ahí salen el rol, el comercio y si está activo.
+
+**Por qué:** RN-15 pide que desactivar una cuenta tenga efecto inmediato. Si el rol y el estado viajaran en el token, un cambio en la base recién se notaría cuando el token venciera, hasta 8 horas después.
+
+**Costo:** una consulta a la base por cada solicitud protegida. Para el tamaño de este sistema es aceptable; no se midió el rendimiento.
+
+### Token en sessionStorage y en el encabezado `Authorization`
+
+**Por qué sessionStorage:** se borra al cerrar la pestaña. En la compu compartida del mostrador, la sesión no queda abierta para la próxima persona si alguien se olvida de salir. Sobrevive a recargar la página.
+
+**Por qué el encabezado y no una cookie:** el frontend y el backend probablemente se publiquen en dominios distintos. Con el encabezado funciona igual en local y publicado. Una cookie entre dominios distintos necesita configuraciones extra (`SameSite=None`) y depende de que el navegador acepte cookies de terceros.
+
+**Alternativa y su ventaja:** una cookie `httpOnly` no la puede leer el código JavaScript de la página. Si alguien lograra inyectar código malicioso en la página (un ataque llamado XSS), podría leer sessionStorage pero no esa cookie. React reduce ese riesgo porque escapa el texto que muestra, pero no lo elimina. Es un costo asumido.
+
+### Cerrar sesión sin ruta en el servidor
+
+Cerrar sesión borra el token del navegador. No hay una "lista negra" de tokens. Si alguien copió el token antes, le seguiría sirviendo hasta que venza. Para cortar el acceso de inmediato se desactiva la cuenta, y `requireAuth` lo rechaza en la siguiente solicitud. RN-15 deja la revocación individual fuera de esta versión.
+
+### Ocultar botones no es autorizar
+
+`secciones.js` decide qué secciones ve cada rol, pero el comentario del archivo lo dice: ocultar es solo comodidad. Cualquiera puede mandar solicitudes a la API sin usar la interfaz, por ejemplo desde la consola del navegador o con un programa. Por eso el control real está en el backend (`requireRole` y el filtro por comercio), y RF-02 exige que se rechace "aun si se envía fuera de la interfaz".
+
+### Otro comercio responde 404, no 403
+
+Si un usuario del comercio A pide una categoría del B, `buscarDelComercio` responde 404 «No se encontró el registro.», igual que si el ID no existiera. Con un 403 estaría confirmando que ese ID existe en otro comercio. Además, un ID con formato inválido se rechaza sin consultar la base.
+
+## Etapa 2 — Ejemplos concretos
+
+Las cuentas de prueba vienen del seed: `dueno.a@example.invalid` y `empleado.a@example.invalid` (comercio A), y sus equivalentes del comercio B.
+
+| Situación | Qué pasa | Dónde ocurre |
+|---|---|---|
+| **El dueño entra** | 200. Ve su nombre, la etiqueta «Dueño», su comercio y el menú con «Alertas y reposición». | `iniciarSesion` → `firmarToken` → `Panel` con `seccionesDelRol('DUENO')` |
+| **El empleado entra** | 200. Ve «Empleado» y el menú con «Alertas». Si intentara una operación de dueño (cuando existan), recibiría 403. | `seccionesDelRol('EMPLEADO')`; `requireRole('DUENO')` |
+| **Contraseña incorrecta** | 401 «Correo o contraseña incorrectos.». El campo de contraseña se vacía. Lo mismo con un correo inexistente o una cuenta inactiva. | `iniciarSesion` |
+| **Contraseña de 73 bytes** | 400 «El correo o la contraseña superan el largo permitido.», sin consultar la base. | `leerCredenciales` |
+| **Usuario desactivado con la sesión abierta** | Su token todavía no venció, pero al cambiar de sección `requireAuth` lo encuentra inactivo: 401 y vuelve al login con «La sesión ya no es válida». | `requireAuth` → `Panel` → `App.cerrarSesion` |
+| **Token vencido** | 401 con código `SESSION_EXPIRED`. Vuelve al login con «La sesión venció. Iniciá sesión nuevamente.». | `verificarToken` |
+| **Token modificado a mano** (por ejemplo, para cambiar el ID) | La firma no coincide: 401 `INVALID_TOKEN`. | `verificarToken` |
+| **Pedir un dato de otro comercio** | 404 genérico, igual que un ID inexistente. Hoy se comprueba en una prueba con una categoría del comercio B, porque todavía no hay rutas de catálogo. | `buscarDelComercio` |
+| **Servidor apagado al recargar** | Pantalla «No pudimos conectar con el servidor» con «Reintentar» y «Volver al login». | `App.jsx`, fase `sinConexion` |
+| **Servidor apagado al cambiar de sección** | Aviso con «Reintentar» arriba del contenido. La sesión no se cierra; al reintentar con el servidor bien, el aviso desaparece. | `Panel.jsx` |
+
+## Etapa 2 — Pruebas
+
+### Tres tipos de prueba, tres cosas distintas
+
+| Tipo | Con qué trabaja | Qué aporta | Qué no puede demostrar |
+|---|---|---|---|
+| **Con datos simulados** (`acceso.test.js`) | Express real, pero la base es un objeto en memoria con tres usuarios inventados | Rápidas y precisas: se puede fabricar cualquier caso, como un token sin firma o un usuario que desaparece | Que las consultas funcionen contra PostgreSQL de verdad |
+| **Con PostgreSQL real** (2 pruebas de integración) | La base de pruebas con la migración y el seed | Que login, consulta del usuario y filtro por comercio funcionan con el cliente Prisma y la base reales | El comportamiento de la pantalla |
+| **En el navegador** | La app completa en Chromium, o una persona usándola | Lo que ve y hace quien usa la app: mensajes, menús, recarga, cierre de sesión | Todos los casos raros de la API; para eso están las anteriores |
+
+### Las pruebas de acceso con datos simulados
+
+Son 11 en `backend/tests/unit/acceso.test.js`. Agrupadas:
+
+| Qué comprueban | Qué error detectarían |
+|---|---|
+| Login correcto: devuelve token y datos públicos, sin el hash; el token no lleva rol ni comercio | Que se filtre el hash o que alguien agregue el rol al token |
+| Contraseña incorrecta, correo inexistente y cuenta inactiva dan exactamente la misma respuesta | Que un mensaje distinto revele qué correos existen |
+| Datos faltantes o de tipo incorrecto dan 400 | Que el servidor falle con 500 ante un cuerpo raro |
+| Contraseñas de más de 72 bytes (ASCII y «ñ») dan 400 sin consultar la base | Volver al límite viejo o contar caracteres en vez de bytes |
+| Se rechazan: sin token, encabezado mal formado, otra firma, otro algoritmo, sin firma, sin vencimiento y vencido | Aceptar tokens falsificados o eternos |
+| Un token vigente deja de servir si el usuario se desactiva o se borra | Olvidar el control de `activo` (RN-15) |
+| Rol y comercio salen de la base aunque el token diga otra cosa | Confiar en datos agregados al token |
+| `requireRole`: empleado 403, dueño 200, sin sesión 401 | Un control de rol que deje pasar a todos |
+| El filtro por comercio pisa el comercio enviado y no consulta IDs inválidos | Que el cliente pueda elegir el comercio |
+| La configuración exige un secreto largo y un vencimiento válido, sin mostrar el secreto en el error | Arrancar con un secreto débil o filtrarlo en un mensaje |
+| CORS permite el encabezado `Authorization` desde el frontend | Que el navegador bloquee el token |
+
+Además, `http.test.js` comprueba que la app no arranca sin configuración de autenticación. Con las 14 de la etapa 1 suman **26**.
+
+### Las dos pruebas con PostgreSQL real
+
+1. **Login y desactivación.** Login con contraseña equivocada (401) y correcta (200, con el correo en mayúsculas). Consulta la sesión (200). Desactiva la cuenta **directamente en la base**: la sesión da 401 `INVALID_SESSION` y el login también falla. La reactiva y el mismo token vuelve a servir. Es el ejemplo de RN-15 con datos reales.
+2. **Rol y comercio.** Un empleado del comercio A pide una ruta de prueba de solo dueño (403), una categoría de su comercio (200) y una del comercio B (404 con el mensaje genérico).
+
+### Pruebas con errores introducidos a propósito
+
+Una prueba que nunca falla no sirve. Para comprobar que estas pruebas detectan errores reales, Claude rompió el código a propósito seis veces y verificó que fallara la prueba correspondiente: sacó el control de usuario activo, dejó que el cliente eligiera el comercio, aceptó otro algoritmo, volvió al límite de 200 caracteres, contó caracteres en vez de bytes y dejó de exigir el vencimiento. En todos los casos falló la prueba esperada, y después se restauró el código.
+
+### Quién ejecutó qué
+
+| Fecha | Quién | Resultado |
+|---|---|---|
+| 05/11 | Claude, en una copia aislada | 25/25, 7/7 dos veces, compilación y 11 pasos en el navegador. [Salida](docs/implementacion/resultados-etapa-2-claude-2026-11-05.txt) |
+| 05/11 | Nazareno, en su equipo (Windows) | 25/25 y 7/7. Recorrió a mano login, recarga y cierre de sesión con ambos roles. [Salida](docs/implementacion/resultados-etapa-2-naza-2026-11-05.txt) |
+| 06/11 | Codex, para Tomás | 25/25, 7/7, compilación y navegador; reprodujo los dos problemas de la revisión. |
+| 07/11 | Claude, después de las correcciones | 26/26, 7/7 dos veces, comprobaciones contra la API y 7 pasos de navegador del aviso de conexión. [Salida](docs/implementacion/resultados-etapa-2-claude-2026-11-07.txt) |
+| Verificación final | Codex, para Tomás | 26/26, 7/7 y navegador: login, falla de conexión, error 500, «Reintentar», móvil y desactivación. |
+
+En el entorno de Claude no se pudo descargar el motor de migraciones de Prisma, así que la migración se aplicó con el mismo SQL y se ejecutó el mismo archivo de pruebas; está aclarado en cada salida. En el navegador, Claude simuló las caídas del servidor interceptando las solicitudes. Los resultados de Codex los informó Tomás; no se conservan sus salidas en el repositorio.
+
+### Qué no demuestran estas pruebas
+
+- Que las rutas de catálogo e inventario apliquen los controles: todavía no existen. Cada etapa tiene que probarlo en sus rutas.
+- Que funcione publicado: no hubo despliegue.
+- Resistencia a muchos intentos de login seguidos: no hay límite implementado.
+- Que los tiempos de respuesta sean iguales para cuentas existentes e inexistentes: no se midió.
+- Protección ante código inyectado en la página (XSS): no se probó.
+- Uso con personas reales del comercio: corresponde al piloto.
+
+## Etapa 2 — Aportes y práctica oral
+
+### Qué hizo cada integrante según el registro
+
+**Nazareno** pidió la implementación y la revisión a Claude, y coordinó con Tomás el envío a revisión y las correcciones. En su equipo agregó `JWT_SECRET` al `.env`, ejecutó `npm ci`, `npm run generate`, las pruebas (25/25 y 7/7) y recorrió la app con ambos roles el 05/11. Creó la rama `etapa-2-acceso`, hizo los commits y los push, y trajo la guía de `main` a su rama. No consta que haya vuelto a correr las pruebas después de las correcciones.
+
+**Claude** escribió el código del backend y del frontend, las pruebas y la documentación de la etapa, ejecutó las pruebas en una copia aislada y aplicó las correcciones de la revisión.
+
+**Tomás** coordinó la revisión con Codex y transmitió sus observaciones y la aprobación final. **Codex** leyó el código, ejecutó las pruebas, reprodujo los dos problemas y verificó las correcciones. El aporte personal de Tomás en esta etapa se completa en el [registro de participación](docs/participacion-y-defensa.md#etapa-2--acceso-y-permisos-1).
+
+El código no lo escribieron los estudiantes. Lo que cada uno tiene que poder hacer en la defensa es explicarlo, justificar las decisiones y mostrar dónde está cada cosa.
+
+### Una explicación de un minuto para practicar
+
+«En la etapa 2 agregamos el acceso. La persona escribe correo y contraseña; el backend busca el usuario y compara la contraseña con el hash guardado usando bcrypt. Si está bien y la cuenta está activa, firma un token JWT que solo lleva el ID del usuario y vence en ocho horas. El navegador lo guarda en sessionStorage y lo manda en cada solicitud. En el servidor, un middleware verifica la firma y el vencimiento y vuelve a buscar al usuario en la base: de ahí salen el rol y el comercio, y si la cuenta se desactivó, la rechaza en el momento. Otro control decide qué puede hacer cada rol, y un filtro limita todo al comercio del usuario. Ocultar botones en la pantalla es solo comodidad; el control real está en el backend. En la revisión, mi compañero encontró que bcrypt ignoraba lo que pasaba de 72 bytes, y lo corregimos rechazando esas contraseñas.»
+
+Después cada uno agrega qué hizo personalmente y qué hizo el compañero.
+
+### Preguntas que pueden hacer y cómo razonarlas
+
+**¿Cuál es la diferencia entre autenticación y autorización?** Autenticar es saber quién sos (login y `requireAuth`, error 401). Autorizar es decidir qué podés hacer (`requireRole` y el filtro por comercio, error 403 o 404). Un empleado está autenticado, pero no autorizado a hacer ajustes.
+
+**¿Por qué no guardan la contraseña y la comparan directamente?** Si alguien obtiene la base, tendría todas las contraseñas. Con el hash no puede revertirlas. bcrypt además es lento a propósito para que probar contraseñas sea caro.
+
+**¿Qué tiene adentro el token? ¿Está cifrado?** Tiene el ID del usuario (`sub`), cuándo se emitió (`iat`) y cuándo vence (`exp`). No está cifrado: cualquiera puede leerlo. Lo que no se puede es modificarlo, porque la firma dejaría de coincidir.
+
+**¿Qué pasa si un empleado edita el token y le pone `rol: DUENO`?** La firma no coincide y el servidor responde 401. Y aunque lograra firmarlo, el rol se lee de la base, no del token. Hay una prueba con exactamente ese caso.
+
+**¿Y si manda `comercioId` de otro comercio en el cuerpo?** `delComercio` lo pisa con el comercio de la sesión. El comercio siempre sale del usuario consultado en la base (RN-01).
+
+**Si el token ya trae el ID, ¿para qué consultan la base en cada solicitud?** Para cumplir RN-15: saber si el usuario sigue activo y cuál es su rol ahora. Si lo desactivan, la siguiente solicitud se rechaza aunque el token no haya vencido. El costo es una consulta por solicitud.
+
+**¿Qué pasa al cerrar sesión? ¿El token deja de servir?** Se borra del navegador. Si alguien lo hubiera copiado antes, le serviría hasta que venza. Para cortar el acceso de inmediato se desactiva la cuenta. Es un límite aceptado en RN-15.
+
+**¿Por qué sessionStorage y no localStorage?** Porque se borra al cerrar la pestaña, útil en una compu compartida del mostrador. localStorage quedaría guardado hasta que alguien lo borre.
+
+**¿Es seguro guardar el token donde JavaScript lo puede leer?** Tiene un riesgo: si alguien inyectara código malicioso en la página, podría leerlo. Una cookie `httpOnly` lo evitaría, pero complica el uso con frontend y backend en dominios distintos. Elegimos el encabezado y lo dejamos documentado como costo.
+
+**¿Por qué el mismo mensaje para correo inexistente y contraseña incorrecta?** Para no revelar qué correos tienen cuenta (CU-01). El hash ficticio achica la diferencia de tiempo, pero no la elimina del todo.
+
+**¿Qué era el problema de los 72 bytes?** bcrypt solo mira los primeros 72 bytes. Una contraseña correcta de 72 bytes con texto agregado al final entraba igual. Ahora el login rechaza con 400 cualquier contraseña más larga, medida en bytes porque la «ñ» ocupa dos. Lo encontró la revisión cruzada y quedó cubierto con una prueba.
+
+**¿Por qué 404 y no 403 cuando el registro es de otro comercio?** Con 403 estaríamos confirmando que ese ID existe en otro comercio. Con 404 la respuesta es igual a la de un ID inexistente.
+
+**Si el menú del empleado no muestra «Alertas y reposición», ¿no alcanza?** No. Cualquiera puede mandar solicitudes a la API sin pasar por la interfaz. El menú es comodidad; el control está en `requireRole` en el backend.
+
+**¿Qué pasa si el servidor se cae mientras alguien usa la app?** Al cambiar de sección aparece un aviso con «Reintentar» y la sesión no se cierra. Si el error es 401, sí vuelve al login, porque significa que la sesión ya no vale.
+
+**¿Qué pasa si falta `JWT_SECRET` en el `.env`?** El backend no arranca y avisa que el secreto debe tener al menos 32 caracteres. Es preferible a arrancar firmando con un secreto vacío o débil.
+
+**¿Qué demuestran las pruebas y qué no?** Demuestran los rechazos de credenciales y tokens, la desactivación inmediata, el control por rol y el filtro por comercio, con base simulada y con PostgreSQL real. No demuestran que las rutas de las etapas 3 a 5 usen esos controles, ni el funcionamiento publicado, ni resistencia a muchos intentos de login.
+
+### Actividades para comprobar que se entiende
+
+1. **Seguir el login en los archivos.** Abrir `LoginPage.jsx` y seguir la llamada: `login` en `api.js` → la ruta en `acceso.routes.js` → `iniciarSesion` en `acceso.service.js` → `firmarToken` en `token.js`. En cada archivo, decir en voz alta qué hace esa parte.
+2. **Seguir una solicitud protegida.** Desde el `useEffect` de `Panel.jsx` hasta `requireAuth` en `autenticacion.js`. Señalar la línea donde se lee el rol de la base.
+3. **Ver el token.** Con la app corriendo, iniciar sesión, abrir las herramientas del navegador (F12) → Aplicación → Session Storage y encontrar `stock-manager.token`. En la pestaña Red, cambiar de sección y buscar el encabezado `Authorization` en la solicitud a `/api/auth/sesion`.
+4. **Leer el contenido del token.** En la consola del navegador:
+   ```js
+   const t = sessionStorage.getItem('stock-manager.token');
+   JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
+   ```
+   Tiene que mostrar `sub`, `iat` y `exp`, y nada de rol ni comercio.
+5. **Romper el token.** En Session Storage, cambiar una letra del token y cambiar de sección. Tiene que volver al login con «La sesión no es válida».
+6. **Desactivar una cuenta con la sesión abierta.** Seguir los pasos de [Cómo probarlo a mano](docs/implementacion/etapa-2.md#cómo-probarlo-a-mano) y explicar por qué el token todavía vigente no alcanza. Después reactivar la cuenta.
+7. **Ver una prueba fallar.** En `acceso.service.js`, borrar `|| !usuario.activo` de la condición del login y ejecutar `npm test`: tiene que fallar la prueba de cuenta inactiva. Explicar por qué, y después deshacer el cambio con `git restore backend/src/modules/acceso/acceso.service.js`.
+
+### Comprobación personal de comprensión
+
+Cada estudiante marca las casillas después de practicar.
+
+| Puedo hacer esto con mis palabras y mostrar dónde está | Tomás | Nazareno |
+|---|---|---|
+| Explicar la diferencia entre autenticación y autorización, con los códigos 401 y 403 | [ ] | [ ] |
+| Contar el recorrido del login, desde el formulario hasta el token guardado | [ ] | [ ] |
+| Explicar qué tiene un JWT, por qué no se puede modificar y por qué vence | [ ] | [ ] |
+| Explicar por qué el rol y el comercio se leen de la base en cada solicitud | [ ] | [ ] |
+| Explicar el problema de los 72 bytes y cómo se resolvió | [ ] | [ ] |
+| Justificar sessionStorage y el encabezado `Authorization`, con su costo | [ ] | [ ] |
+| Explicar por qué ocultar un botón no alcanza | [ ] | [ ] |
+| Explicar una prueba simulada, una con PostgreSQL y qué no demuestran | [ ] | [ ] |
+| Describir mi aporte, el del compañero y la asistencia de IA en esta etapa | [ ] | [ ] |
+
+## Etapa 2 — Resumen de repaso
+
+- **Qué resuelve:** quién usa la app (autenticación) y qué puede hacer (autorización por rol y por comercio). RF-01, RF-02, RN-01, RN-15.
+- **Login:** correo en minúsculas, contraseña de hasta 72 bytes, `bcrypt.compare` contra el hash; mismo 401 para cualquier falla.
+- **Token:** JWT HS256 con `sub`, `iat` y `exp` (8 h). Se puede leer, pero no modificar sin el secreto. Se guarda en sessionStorage y viaja en `Authorization: Bearer`.
+- **Cada solicitud protegida:** `requireAuth` verifica el token y consulta al usuario; si no existe o está inactivo, 401. Rol y comercio salen de la base.
+- **Permisos:** `requireRole` da 403; el filtro por comercio da 404 genérico. Ocultar botones es solo comodidad.
+- **Corrección clave:** bcrypt ignora lo que pasa de 72 bytes; ahora esas contraseñas se rechazan con 400.
+- **Pruebas:** 11 de acceso con base simulada, 2 con PostgreSQL real, recorridos en navegador y errores introducidos a propósito.
+- **Pendiente:** integrar a `main`, despliegue, límite de intentos de login, revocación de tokens y que las etapas 3 a 5 apliquen los controles en sus rutas.
+
 ## Etapas siguientes
-
-### Etapa 2 — Acceso y permisos
-
-Nazareno informó que la implementación está en `etapa-2-acceso`. Pendiente de incorporar aquí la explicación basada en esos archivos y la revisión cruzada. Claude debe completar el capítulo antes del cierre, siguiendo el formato de abajo. El código de esa rama todavía no estaba disponible en la copia local consultada al redactar esta guía.
-
-Temas a explicar con el código real: login, verificación de contraseña, JWT y vencimiento, consulta del usuario en cada solicitud, permisos, filtro por comercio, almacenamiento y eliminación de la credencial en el navegador, errores y pruebas. Las decisiones concretas de esa implementación se completan al leerla.
 
 ### Etapa 3 — Catálogo
 

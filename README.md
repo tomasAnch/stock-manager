@@ -19,7 +19,7 @@ El MVP contempla uno o dos comercios piloto, con datos separados por comercio y 
 |---|---|---|
 | Entrega 1: propuesta y viabilidad | Aprobada por la tutora | 01/09/2026 (aprobación) |
 | Entrega 2: diseño y módulos | Aprobada por la tutora; habilitada la implementación | 27/09/2026 (entrega); correcciones del 29/09 |
-| Implementación y entrega final | Etapa 1 cerrada; etapa 2 (acceso y permisos) implementada y en revisión; catálogo, movimientos y reposición pendientes | 14/11/2026 (fecha límite) |
+| Implementación y entrega final | Etapa 1 cerrada; etapa 2 (acceso y permisos) revisada y aprobada, pendiente de integrar a `main`; catálogo, movimientos y reposición pendientes | 14/11/2026 (fecha límite) |
 
 El proyecto ya tiene una base ejecutable: frontend React, servidor Express, cliente Prisma, migración inicial y seed de desarrollo. Desde la etapa 2 se ingresa con usuario y contraseña, y cada rol ve su menú; el backend verifica la sesión, el rol y el comercio en cada solicitud protegida. Catálogo, movimientos y reposición se implementarán en las etapas siguientes; la descripción funcional de abajo corresponde al MVP completo previsto.
 

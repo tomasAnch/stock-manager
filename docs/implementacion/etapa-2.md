@@ -1,6 +1,6 @@
 # Etapa 2 — Acceso y permisos
 
-05/11/2026 · Responsable: Nazareno, con Claude. Revisión: Tomás, con Codex. Estado: **revisada; correcciones aplicadas el 07/11, pendientes de confirmación de Tomás**. Parte de la etapa 1 cerrada (commit `41bf10a`); la revisión se hizo sobre `e6f0ce4` (rama `etapa-2-acceso`). Referencias: RF-01, RF-02, RN-01 y RN-15.
+05/11/2026 · Responsable: Nazareno, con Claude. Revisión: Tomás, con Codex. Estado: **revisada y aprobada; pendiente de integrar a `main`**. Las correcciones del 07/11 están en `5ce7c91` y Codex las verificó (comunicado por Tomás el 09/11). Parte de la etapa 1 cerrada (commit `41bf10a`); la revisión se hizo sobre `e6f0ce4` (rama `etapa-2-acceso`). Referencias: RF-01, RF-02, RN-01 y RN-15.
 
 ## Qué funciona
 
@@ -70,7 +70,7 @@ Consideró correctos los controles centrales: RN-15 consulta usuario, estado, ro
 | El panel ignoraba en silencio los errores distintos de 401 al revalidar la sesión | Sugerencia, aceptada | Aviso con el mensaje y botón «Reintentar», sin cerrar la sesión. Un 401 sigue llevando al login y una solicitud cancelada por cambiar de sección no muestra aviso | 7 pasos en el navegador |
 | La documentación prometía «el mismo tiempo de respuesta» | Sugerencia, aceptada | Se describe como mitigación en las decisiones y en el comentario del código | — |
 
-Queda pendiente que Tomás confirme estas correcciones antes de unir la rama a `main`. Sin verificar, según la revisión: despliegue real, las escrituras de las etapas siguientes y el uso con usuarios reales.
+Codex verificó las correcciones sobre la rama: según el informe de Tomás, confirmó las cuatro resoluciones, ejecutó 26/26 y 7/7 con una base temporal aislada y recorrió en el navegador el login, la falla de conexión, el error 500, «Reintentar», la vista móvil y la desactivación. Aprobó integrar la etapa a `main`. Sus salidas no se conservan en el repositorio. Sin verificar, según la revisión: despliegue real, las escrituras de las etapas siguientes y el uso con usuarios reales. La explicación para estudiar está en la [guía de la defensa](../../preparacion-defensa-oral.md#etapa-2--problema-estado-y-alcance).
 
 ## Límites y pendientes
 
