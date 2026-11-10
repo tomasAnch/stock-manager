@@ -244,3 +244,240 @@ test('API catálogo: empleado consulta sin editar; comercio ajeno no se lee ni s
     assert.equal((await request('productos?q=INI001')).status, 200);
   });
 });
+
+// Etapa 4: movimientos e historial con la API real y PostgreSQL.
+const { crearMovimiento } = await import('../../src/modules/inventario/movimientos.service.js');
+async function identidadDe(correo) {
+  const u = await prisma.usuario.findUniqueOrThrow({ where: { correo } });
+  return { usuarioId: u.id, comercioId: u.comercioId, rol: u.rol };
+}
+async function productoDePrueba(codigo, cambios = {}, correo = 'dueno.a@example.invalid') {
+  const identidad = await identidadDe(correo);
+  const categoria = await prisma.categoria.findFirstOrThrow({ where: { comercioId: identidad.comercioId, activo: true } });
+  const proveedor = await prisma.proveedor.findFirstOrThrow({ where: { comercioId: identidad.comercioId, activo: true } });
+  return guardar(prisma, 'producto', identidad, { codigo, nombre: `Producto ${codigo}`, unidad: 'UNIDAD', categoriaId: categoria.id, proveedorId: proveedor.id, stockMinimo: '0', stockObjetivo: '0', stockInicial: '0', ...cambios });
+}
+const saldo = async id => (await prisma.producto.findUniqueOrThrow({ where: { id } })).stockActual.toString();
+const contar = id => prisma.movimientoStock.count({ where: { productoId: id } });
+async function conInventario(callback) {
+  await withServer(createApp({ prisma, auth }), async url => {
+    const tokens = {
+      dueno: (await (await login(url, 'dueno.a@example.invalid', 'solo-test-dueno-123')).json()).token,
+      empleado: (await (await login(url, 'empleado.a@example.invalid', 'solo-test-empleado-456')).json()).token,
+    };
+    const api = async (path, method = 'GET', body, quien = 'dueno') => {
+      const res = await fetch(`${url}/api/inventario/${path}`, { method, headers: { Authorization: `Bearer ${tokens[quien]}`, 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) });
+      return { status: res.status, body: await res.json() };
+    };
+    await callback(api);
+  });
+}
+const esperarError = (res, status, code, mensaje) => {
+  assert.equal(res.status, status, JSON.stringify(res.body));
+  assert.equal(res.body.error.code, code);
+  if (mensaje) assert.match(res.body.error.message, mensaje);
+};
+
+test('API inventario: reposición y salida para ambos roles, ajuste solo del dueño con explicación', async () => {
+  const p = await productoDePrueba('MOV-ROLES', { stockInicial: '5' });
+  const empleado = await identidadDe('empleado.a@example.invalid');
+  await conInventario(async api => {
+    let res = await api('movimientos', 'POST', { productoId: p.id, tipo: 'INGRESO', motivo: 'REPOSICION', cantidad: '2' }, 'empleado');
+    assert.equal(res.status, 201);
+    assert.equal(res.body.producto.stockActual, '7');
+    assert.deepEqual(Object.keys(res.body.movimiento).sort(), ['cantidad', 'creadoEn', 'id', 'motivo', 'observacion', 'tipo', 'usuario']);
+    assert.deepEqual(res.body.movimiento.usuario, { nombre: 'empleado de prueba A' });
+    assert.equal((await prisma.movimientoStock.findUniqueOrThrow({ where: { id: res.body.movimiento.id } })).usuarioId, empleado.usuarioId);
+    res = await api('movimientos', 'POST', { productoId: p.id, tipo: 'EGRESO', motivo: 'SALIDA', cantidad: '1' }, 'empleado');
+    assert.equal(res.status, 201); assert.equal(res.body.producto.stockActual, '6');
+
+    esperarError(await api('movimientos', 'POST', { productoId: p.id, tipo: 'INGRESO', motivo: 'AJUSTE', cantidad: '1', observacion: 'Conteo' }, 'empleado'), 403, 'FORBIDDEN', /Solo el dueño/);
+    esperarError(await api('movimientos', 'POST', { productoId: p.id, tipo: 'EGRESO', motivo: 'AJUSTE', cantidad: '1' }), 400, 'VALIDATION_ERROR', /requiere una explicación/);
+    esperarError(await api('movimientos', 'POST', { productoId: p.id, tipo: 'EGRESO', motivo: 'AJUSTE', cantidad: '1', observacion: '  \n ' }), 400, 'VALIDATION_ERROR', /requiere una explicación/);
+    assert.equal(await saldo(p.id), '6');
+    res = await api('movimientos', 'POST', { productoId: p.id, tipo: 'EGRESO', motivo: 'AJUSTE', cantidad: '2', observacion: '  Conteo físico: faltaban 2  ' });
+    assert.equal(res.status, 201); assert.equal(res.body.producto.stockActual, '4');
+    assert.equal(res.body.movimiento.observacion, 'Conteo físico: faltaban 2');
+    res = await api('movimientos', 'POST', { productoId: p.id, tipo: 'INGRESO', motivo: 'AJUSTE', cantidad: '1', observacion: 'Apareció en depósito' });
+    assert.equal(res.status, 201); assert.equal(res.body.producto.stockActual, '5');
+
+    esperarError(await api('movimientos', 'POST', { productoId: p.id, tipo: 'INGRESO', motivo: 'STOCK_INICIAL', cantidad: '1' }), 400, 'VALIDATION_ERROR', /solo se registra al crear el producto/);
+    esperarError(await api('movimientos', 'POST', { productoId: p.id, tipo: 'EGRESO', motivo: 'REPOSICION', cantidad: '1' }), 400, 'VALIDATION_ERROR', /incompatibles/);
+    esperarError(await api('movimientos', 'POST', { productoId: p.id, tipo: 'INGRESO', motivo: 'SALIDA', cantidad: '1' }, 'empleado'), 400, 'VALIDATION_ERROR', /incompatibles/);
+    esperarError(await api('movimientos', 'POST', { productoId: p.id, tipo: 'INGRESO', motivo: 'VENTA', cantidad: '1' }), 400, 'VALIDATION_ERROR', /Motivo inválido/);
+    for (const campo of ['usuarioId', 'creadoEn', 'stockActual', 'comercioId']) {
+      esperarError(await api('movimientos', 'POST', { productoId: p.id, tipo: 'INGRESO', motivo: 'REPOSICION', cantidad: '1', [campo]: empleado.usuarioId }), 400, 'VALIDATION_ERROR', /campos no permitidos/);
+    }
+    esperarError(await api('movimientos', 'POST', { tipo: 'INGRESO', motivo: 'REPOSICION', cantidad: '1' }), 400, 'VALIDATION_ERROR', /Seleccioná un producto/);
+    // Los movimientos no se editan ni se borran: no existen esas rutas.
+    for (const method of ['PUT', 'PATCH', 'DELETE']) esperarError(await api(`movimientos/${res.body.movimiento.id}`, method, {}), 404, 'NOT_FOUND', /Ruta no encontrada/);
+    assert.equal(await saldo(p.id), '5');
+    assert.equal(await contar(p.id), 5);
+  });
+});
+
+test('API inventario: cantidades exactas, rango, saldo insuficiente y producto inactivo', async () => {
+  const u = await productoDePrueba('MOV-UNIDAD', { stockInicial: '5' });
+  const kg = await productoDePrueba('MOV-KG', { unidad: 'KG', stockInicial: '1.5' });
+  const lleno = await productoDePrueba('MOV-LLENO', { unidad: 'KG', stockInicial: '999999999.999' });
+  const baja = await productoDePrueba('MOV-BAJA', { stockInicial: '4' });
+  await cambiarActividad(prisma, 'producto', await identidadDe('dueno.a@example.invalid'), baja.id, { activo: false });
+  await conInventario(async api => {
+    const mover = (producto, cantidad, extra = {}) => api('movimientos', 'POST', { productoId: producto.id, tipo: 'INGRESO', motivo: 'REPOSICION', cantidad, ...extra }, 'empleado');
+    for (const cantidad of ['1.5', '2.001', '0', '-1', '1e3', '1,5', '', '1234567890', 2]) esperarError(await mover(u, cantidad), 400, 'VALIDATION_ERROR', /Cantidad: ingresá un número entero mayor a cero/);
+    for (const cantidad of ['0.0001', '0', '-0.5']) esperarError(await mover(kg, cantidad), 400, 'VALIDATION_ERROR', /Cantidad: ingresá un número mayor a cero, con hasta 9 enteros y 3 decimales/);
+    let res = await mover(u, '2.000');
+    assert.equal(res.status, 201); assert.equal(res.body.producto.stockActual, '7');
+    res = await mover(kg, '0.250');
+    assert.equal(res.status, 201); assert.equal(res.body.producto.stockActual, '1.75');
+    res = await api('movimientos', 'POST', { productoId: kg.id, tipo: 'EGRESO', motivo: 'SALIDA', cantidad: '1.75' }, 'empleado');
+    assert.equal(res.status, 201); assert.equal(res.body.producto.stockActual, '0');
+    esperarError(await mover(lleno, '0.001'), 400, 'VALIDATION_ERROR', /saldo máximo/);
+    esperarError(await api('movimientos', 'POST', { productoId: u.id, tipo: 'EGRESO', motivo: 'SALIDA', cantidad: '8' }, 'empleado'), 409, 'CONFLICT', /No hay stock suficiente. Saldo disponible: 7 unidades/);
+    esperarError(await mover(baja, '1'), 409, 'CONFLICT', /inactivo/);
+    esperarError(await api('movimientos', 'POST', { productoId: baja.id, tipo: 'EGRESO', motivo: 'AJUSTE', cantidad: '1', observacion: 'x' }), 409, 'CONFLICT', /inactivo/);
+    assert.deepEqual([await saldo(u.id), await saldo(kg.id), await saldo(lleno.id), await saldo(baja.id)], ['7', '0', '999999999.999', '4']);
+  });
+});
+
+test('API inventario: otro comercio no se mueve ni se consulta, con la misma respuesta que un ID inexistente', async () => {
+  const ajeno = await productoDePrueba('MOV-AJENO', { stockInicial: '3' }, 'dueno.b@example.invalid');
+  await conInventario(async api => {
+    const inexistente = '30000000-0000-4000-8000-000000000099';
+    for (const id of [ajeno.id, inexistente, 'no-es-un-id']) {
+      const mov = await api('movimientos', 'POST', { productoId: id, tipo: 'EGRESO', motivo: 'SALIDA', cantidad: '1' }, 'empleado');
+      assert.equal(mov.status, 404); assert.deepEqual(mov.body, { error: { code: 'NOT_FOUND', message: 'No se encontró el producto.' } });
+      const hist = await api(`productos/${id}/movimientos`, 'GET', undefined, 'empleado');
+      assert.equal(hist.status, 404); assert.deepEqual(hist.body, { error: { code: 'NOT_FOUND', message: 'No se encontró el producto.' } });
+    }
+  });
+  assert.equal(await saldo(ajeno.id), '3');
+  assert.equal(await contar(ajeno.id), 1);
+});
+
+test('API inventario: dos egresos simultáneos de 3 sobre saldo 3 confirman uno solo', async () => {
+  for (let ronda = 0; ronda < 5; ronda++) {
+    const p = await productoDePrueba(`MOV-CARRERA-${ronda}`, { stockInicial: '3' });
+    await conInventario(async api => {
+      const salida = { productoId: p.id, tipo: 'EGRESO', motivo: 'SALIDA', cantidad: '3' };
+      const res = await Promise.all([api('movimientos', 'POST', salida, 'dueno'), api('movimientos', 'POST', salida, 'empleado')]);
+      assert.deepEqual(res.map(r => r.status).sort(), [201, 409]);
+      esperarError(res.find(r => r.status === 409), 409, 'CONFLICT', /No hay stock suficiente. Saldo disponible: 0/);
+    });
+    assert.equal(await saldo(p.id), '0');
+    assert.equal(await contar(p.id), 2);
+  }
+});
+
+test('inventario: si falla la inserción del movimiento después de actualizar el saldo, se revierte todo', async () => {
+  const p = await productoDePrueba('MOV-FALLO', { stockInicial: '4' });
+  const identidad = await identidadDe('dueno.a@example.invalid');
+  let saldoDentroDeLaTransaccion;
+  // El insert recibe un responsable inexistente: PostgreSQL rechaza la clave foránea (P2003)
+  // cuando el saldo ya fue descontado dentro de la transacción.
+  await assert.rejects(prisma.$transaction(async tx => {
+    const roto = new Proxy(tx, {
+      get(target, key) {
+        if (key === 'movimientoStock') return { create: async args => {
+          saldoDentroDeLaTransaccion = (await target.producto.findUniqueOrThrow({ where: { id: p.id } })).stockActual.toString();
+          return target.movimientoStock.create({ ...args, data: { ...args.data, usuarioId: '00000000-0000-4000-8000-000000000000' } });
+        } };
+        const value = target[key];
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+    await registrarMovimiento(roto, identidad, { productoId: p.id, tipo: 'EGRESO', motivo: 'SALIDA', cantidad: '3' });
+  }), error => error.code === 'P2003');
+  assert.equal(saldoDentroDeLaTransaccion, '1');
+  assert.equal(await saldo(p.id), '4');
+  assert.equal(await contar(p.id), 1);
+});
+
+test('inventario: el bloqueo del producto coordina movimientos con la baja y el cambio de unidad', async () => {
+  const identidad = await identidadDe('empleado.a@example.invalid');
+  const dueno = await identidadDe('dueno.a@example.invalid');
+  // Una transacción toma el producto, espera y lo cambia; el movimiento simultáneo debe esperar y ver el cambio.
+  async function conProductoTomado(id, cambio, movimiento) {
+    let avisar; const tomado = new Promise(resolve => { avisar = resolve; });
+    const retencion = prisma.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM productos WHERE id = ${id}::uuid FOR UPDATE`;
+      avisar(); await new Promise(resolve => setTimeout(resolve, 400));
+      await tx.producto.update({ where: { id }, data: cambio });
+    });
+    await tomado;
+    const inicio = Date.now();
+    const resultado = await crearMovimiento(prisma, identidad, movimiento).then(r => ({ ok: r }), error => ({ error }));
+    await retencion;
+    return { ...resultado, espera: Date.now() - inicio };
+  }
+  const sinHistorial = await productoDePrueba('MOV-UNIDAD-CAMBIA');
+  let r = await conProductoTomado(sinHistorial.id, { unidad: 'KG' }, { productoId: sinHistorial.id, tipo: 'INGRESO', motivo: 'REPOSICION', cantidad: '1.5' });
+  assert(r.espera >= 300, `el movimiento no esperó el bloqueo (${r.espera} ms)`);
+  assert.equal(r.ok.producto.unidad, 'KG'); assert.equal(r.ok.producto.stockActual.toString(), '1.5');
+
+  const conSaldo = await productoDePrueba('MOV-BAJA-SIMULTANEA', { stockInicial: '4' });
+  r = await conProductoTomado(conSaldo.id, { activo: false }, { productoId: conSaldo.id, tipo: 'EGRESO', motivo: 'SALIDA', cantidad: '1' });
+  assert(r.espera >= 300);
+  assert.equal(r.error.status, 409); assert.match(r.error.message, /inactivo/);
+  assert.equal(await saldo(conSaldo.id), '4');
+
+  // Carreras reales con las operaciones de Catálogo: nunca un error inesperado ni un estado inválido.
+  for (let ronda = 0; ronda < 5; ronda++) {
+    const p = await productoDePrueba(`MOV-RACE-U-${ronda}`);
+    const [edicion, mov] = await Promise.allSettled([
+      guardar(prisma, 'producto', dueno, { codigo: p.codigo, nombre: p.nombre, unidad: 'KG', categoriaId: p.categoriaId, proveedorId: p.proveedorId, stockMinimo: '0', stockObjetivo: '0' }, p.id),
+      crearMovimiento(prisma, identidad, { productoId: p.id, tipo: 'INGRESO', motivo: 'REPOSICION', cantidad: '2' }),
+    ]);
+    assert.equal(mov.status, 'fulfilled');
+    if (edicion.status === 'rejected') { assert.equal(edicion.reason.status, 409); assert.match(edicion.reason.message, /unidad/); }
+    assert.equal((await prisma.producto.findUniqueOrThrow({ where: { id: p.id } })).unidad, edicion.status === 'fulfilled' ? 'KG' : 'UNIDAD');
+    const q = await productoDePrueba(`MOV-RACE-B-${ronda}`, { stockInicial: '2' });
+    const [bajaQ, salida] = await Promise.allSettled([
+      cambiarActividad(prisma, 'producto', dueno, q.id, { activo: false }),
+      crearMovimiento(prisma, identidad, { productoId: q.id, tipo: 'EGRESO', motivo: 'SALIDA', cantidad: '1' }),
+    ]);
+    assert.equal(bajaQ.status, 'fulfilled');
+    if (salida.status === 'rejected') { assert.equal(salida.reason.status, 409); assert.match(salida.reason.message, /inactivo/); }
+    assert.equal(await saldo(q.id), salida.status === 'fulfilled' ? '1' : '2');
+  }
+});
+
+test('API inventario: historial paginado, ordenado, con productos inactivos y sin datos de más', async () => {
+  const p = await productoDePrueba('MOV-HISTORIAL', { stockInicial: '1' });
+  const empleado = await identidadDe('empleado.a@example.invalid');
+  for (let i = 0; i < 24; i++) await crearMovimiento(prisma, empleado, { productoId: p.id, tipo: 'INGRESO', motivo: 'REPOSICION', cantidad: '1', observacion: `Carga ${i + 1}` });
+  await cambiarActividad(prisma, 'producto', await identidadDe('dueno.a@example.invalid'), p.id, { activo: false });
+  await conInventario(async api => {
+    const pag1 = await api(`productos/${p.id}/movimientos`, 'GET', undefined, 'empleado');
+    const pag2 = await api(`productos/${p.id}/movimientos?pagina=2`, 'GET', undefined, 'empleado');
+    assert.equal(pag1.status, 200); assert.equal(pag2.status, 200);
+    assert.deepEqual([pag1.body.total, pag1.body.paginas, pag1.body.items.length, pag2.body.items.length], [25, 2, 20, 5]);
+    assert.equal(pag1.body.producto.activo, false); assert.equal(pag1.body.producto.stockActual, '25');
+    const todos = [...pag1.body.items, ...pag2.body.items];
+    assert.equal(new Set(todos.map(m => m.id)).size, 25);
+    assert.equal(todos[0].observacion, 'Carga 24');
+    assert.equal(todos.at(-1).motivo, 'STOCK_INICIAL');
+    for (let i = 1; i < todos.length; i++) {
+      const [a, b] = [todos[i - 1], todos[i]];
+      assert(a.creadoEn > b.creadoEn || (a.creadoEn === b.creadoEn && a.id > b.id), 'orden por fecha descendente y desempate por id');
+    }
+    for (const m of todos) {
+      assert.deepEqual(Object.keys(m).sort(), ['cantidad', 'creadoEn', 'id', 'motivo', 'observacion', 'tipo', 'usuario']);
+      assert.deepEqual(Object.keys(m.usuario), ['nombre']);
+    }
+    assert(!/passwordHash|correo|usuarioId|comercioId/.test(JSON.stringify(pag1.body)));
+    for (const pagina of ['0', 'abc', '1.5']) esperarError(await api(`productos/${p.id}/movimientos?pagina=${pagina}`), 400, 'VALIDATION_ERROR', /Página inválida/);
+    const vacia = await api(`productos/${p.id}/movimientos?pagina=3`);
+    assert.equal(vacia.status, 200); assert.deepEqual(vacia.body.items, []);
+  });
+});
+
+test('inventario: cada saldo coincide con ingresos menos egresos de su historial', async () => {
+  const filas = await prisma.$queryRaw`
+    SELECT p.codigo, p.stock_actual::text AS saldo,
+           COALESCE(SUM(CASE WHEN m.tipo = 'INGRESO' THEN m.cantidad ELSE -m.cantidad END), 0)::text AS calculado
+    FROM productos p LEFT JOIN movimientos_stock m ON m.producto_id = p.id
+    GROUP BY p.id, p.codigo, p.stock_actual`;
+  assert(filas.length >= 15, `se esperaban los productos de las pruebas anteriores (${filas.length})`);
+  for (const fila of filas) assert.equal(Number(fila.saldo), Number(fila.calculado), `${fila.codigo}: saldo ${fila.saldo}, movimientos ${fila.calculado}`);
+});

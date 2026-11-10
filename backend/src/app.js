@@ -5,6 +5,7 @@ import { errorHandler } from './middlewares/error-handler.js';
 import { safeErrorDetails } from './lib/error-details.js';
 import { accesoRouter } from './modules/acceso/acceso.routes.js';
 import { catalogoRouter } from './modules/catalogo/catalogo.routes.js';
+import { inventarioRouter } from './modules/inventario/inventario.routes.js';
 
 // auth: { secret, expiresIn } de authConfig(). Es obligatorio para firmar y verificar sesiones.
 export function createApp({ prisma, auth, origin = 'http://localhost:5173', logger = console }) {
@@ -29,6 +30,7 @@ export function createApp({ prisma, auth, origin = 'http://localhost:5173', logg
 
   app.use('/api/auth', accesoRouter({ prisma, auth }));
   app.use('/api/catalogo', catalogoRouter({ prisma, auth }));
+  app.use('/api/inventario', inventarioRouter({ prisma, auth }));
 
   app.use((_req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Ruta no encontrada.' } }));
   app.use(errorHandler(logger));

@@ -8,7 +8,7 @@ Documento de estudio compartido. Creado el 06/11/2026. La defensa será individu
 
 Primero leer el problema y el recorrido general. Después estudiar una etapa junto con sus archivos. Al terminar, intentar responder las preguntas sin mirar y mostrar en el código dónde ocurre lo explicado. Si una respuesta todavía cuesta, anotarla como pendiente de practicar.
 
-Las etapas 0 y 1 se explican a partir del código local y los registros de ejecución de octubre. La etapa 1 está cerrada por el equipo. La etapa 2 se explica a partir de la versión con las correcciones de la revisión (`5ce7c91`), aprobada por Codex e integrada a `main` el 09/11 (`51e1853`). Las explicaciones sobre futuras funciones se identifican como diseño previsto.
+Las etapas 0 y 1 se explican a partir del código local y los registros de ejecución de octubre. La etapa 1 está cerrada por el equipo. La etapa 2 se explica a partir de la versión con las correcciones de la revisión (`5ce7c91`), aprobada por Codex e integrada a `main` el 09/11 (`51e1853`). La etapa 3 está cerrada e integrada. La etapa 4 se explica a partir de la rama `etapa-4-inventario`, implementada y pendiente de revisión cruzada. Las explicaciones sobre futuras funciones se identifican como diseño previsto.
 
 Los ejemplos orales son una guía para practicar. Cada integrante debe ajustarlos a las tareas que realmente realizó. El registro de participación permite identificar responsables y evidencias. [Registro de participación](docs/participacion-y-defensa.md).
 
@@ -31,6 +31,7 @@ Los ejemplos orales son una guía para practicar. Cada integrante debe ajustarlo
 - [Etapa 2 — Aportes y práctica oral](#etapa-2--aportes-y-práctica-oral)
 - [Etapa 2 — Resumen de repaso](#etapa-2--resumen-de-repaso)
 - [Etapa 3 — Catálogo](#etapa-3--catálogo)
+- [Etapa 4 — Movimientos e historial](#etapa-4--movimientos-e-historial)
 - [Etapas siguientes](#etapas-siguientes)
 - [Acuerdo para ampliar esta guía](#acuerdo-para-ampliar-esta-guía)
 
@@ -1229,11 +1230,213 @@ La nueva prueba recorre ambas vueltas con dueño y empleado, respuestas demorada
 
 Otro detalle para explicar: al editar, se bloquean las referencias nuevas que quedarán asignadas. No se bloquean las antiguas. Una baja concurrente de la referencia anterior puede ver todavía el producto asociado y rechazar la baja; si ve la edición confirmada, ya no existe esa asociación. Esto puede provocar un rechazo conservador, pero no deja un producto activo asociado a una referencia inactiva. La referencia nueva sí debe quedar protegida hasta confirmar.
 
+## Etapa 4 — Movimientos e historial
+
+### Estado y responsables
+
+Nazareno llevó adelante la etapa con Claude; Tomás y Codex la revisan. La versión que se explica está en la rama `etapa-4-inventario`, creada desde `main` después del cierre de la etapa 3. **Estado: implementada, pendiente de revisión cruzada, no integrada.** Detalle técnico y evidencias: [etapa 4](docs/implementacion/etapa-4.md).
+
+Claude escribió el código, las pruebas y esta documentación, y ejecutó las pruebas en una copia aislada. Nazareno pidió la implementación con el alcance y las condiciones de trabajo, y creó la rama. Todavía no ejecutó las pruebas de esta etapa en su equipo.
+
+### Qué problema resuelve
+
+Hasta la etapa 3, el saldo solo cambiaba al crear un producto con stock inicial. En un comercio el stock se mueve todo el día: llega mercadería, se vende o se retira, y a veces el conteo físico no coincide con el sistema. La etapa 4 permite registrar esos cambios y ver la historia de cada producto.
+
+| Operación | Para qué sirve | Quién | Efecto |
+|---|---|---|---|
+| **Reposición** | Llegó mercadería del proveedor. | Dueño y empleado | Suma al saldo. |
+| **Salida** | Se vendió o se retiró mercadería. | Dueño y empleado | Resta del saldo, si alcanza. |
+| **Ajuste** | El conteo físico no coincide con el sistema. | Solo el dueño, con explicación | Suma o resta, según el caso. |
+| **Historial** | Saber qué pasó con un producto, quién y cuándo. | Ambos, también para productos inactivos | Solo consulta. |
+
+El stock inicial sigue naciendo únicamente al crear el producto en Catálogo (RN-07).
+
+### Palabras nuevas
+
+- **Movimiento:** un registro que dice «a este producto le entraron o salieron tantas unidades, por tal motivo, lo hizo tal persona, en tal momento». Nunca se edita ni se borra.
+- **Tipo:** `INGRESO` (suma) o `EGRESO` (resta). **Motivo:** por qué ocurrió: `STOCK_INICIAL`, `REPOSICION`, `SALIDA` o `AJUSTE`. La base solo acepta combinaciones válidas: una reposición no puede ser egreso.
+- **Saldo** (`stockActual`): cuánto hay ahora. Debe coincidir siempre con la suma de los ingresos menos los egresos del historial. Comprobar eso se llama **conciliar**.
+- **Transacción:** un grupo de operaciones en la base que se confirman todas juntas (**commit**) o no se aplica ninguna (**rollback**). Es como una transferencia bancaria: no puede salir la plata de una cuenta sin entrar a la otra.
+- **Concurrencia:** dos personas haciendo operaciones al mismo tiempo sobre el mismo dato.
+- **Bloqueo de fila** (`SELECT … FOR UPDATE`): mientras una transacción trabaja sobre un producto, otra que quiera ese mismo producto espera su turno. No se bloquea toda la base, solo esa fila.
+
+### Recorrido completo de una salida
+
+Ejemplo: el empleado registra una salida de 1 paquete de Yerba, que tiene saldo 3.
+
+```mermaid
+sequenceDiagram
+    participant P as Inventario.jsx
+    participant R as inventario.routes.js
+    participant S as movimientos.service.js
+    participant B as PostgreSQL
+    P->>R: POST /api/inventario/movimientos (token, productoId, EGRESO, SALIDA, "1")
+    R->>R: requireAuth: usuario activo, rol y comercio desde la base
+    R->>S: crearMovimiento
+    S->>S: validarSolicitud: campos, motivo, permiso del rol
+    S->>B: BEGIN
+    S->>B: SELECT … FOR UPDATE (producto del comercio)
+    S->>S: unidad, actividad, cantidad, usuario activo
+    S->>B: UPDATE saldo = saldo − 1 WHERE … AND saldo >= 1
+    S->>B: INSERT movimiento (usuario, fecha del servidor)
+    S->>B: COMMIT
+    S-->>P: 201 { movimiento, producto con saldo 2 }
+    P->>R: GET historial (se recarga)
+```
+
+1. **Pantalla.** En `Inventario.jsx` el empleado busca «yer», elige el producto y ve «Saldo disponible: 3 unidades». Elige «Salida (egreso)», escribe 1 y aprieta Registrar. El formulario se deshabilita para que un doble clic no mande dos salidas.
+2. **API y permisos.** `requireAuth` (etapa 2) verifica el token y busca al usuario en la base: de ahí salen su rol y su comercio, no del navegador.
+3. **Validación previa.** `validarSolicitud` rechaza campos que el cliente no puede mandar (responsable, fecha, saldo, comercio), el motivo `STOCK_INICIAL` y los ajustes de un empleado. Todavía no se tocó la base.
+4. **Transacción.** `crearMovimiento` abre la transacción y llama a `registrarMovimiento`, la misma función que usa el alta de Catálogo.
+5. **Saldo y movimiento.** Se bloquea el producto, se valida con los datos vigentes, se descuenta el saldo con una condición y se inserta el movimiento. Si algo falla, rollback.
+6. **Respuesta e historial.** La pantalla muestra «Movimiento registrado… Saldo actual: 2 unidades.», actualiza el saldo y recarga el historial, donde aparece arriba «−1 unidad · Egreso por salida», con fecha y nombre del empleado.
+
+### Archivos y fragmentos importantes
+
+| Archivo | Qué hace |
+|---|---|
+| `backend/src/modules/inventario/inventario.routes.js` | Dos rutas: registrar y consultar historial. Ambas con `requireAuth`. |
+| `backend/src/modules/inventario/movimientos.service.js` | `validarSolicitud`, `registrarMovimiento` (la única que cambia el saldo), `crearMovimiento` e `historial`. |
+| `frontend/src/features/inventario/Inventario.jsx` | Selector de productos, formulario e historial. |
+| `backend/tests/integration/database.test.js` | Pruebas con PostgreSQL real (las 8 últimas). |
+| `backend/tests/inventario-browser.mjs` | Recorrido de navegador reproducible. |
+
+**El descuento condicional**, que es lo que impide el stock negativo:
+
+```js
+const result = await tx.producto.updateMany({
+  where: { id: productoId, comercioId: auth.comercioId, activo: true,
+           ...(tipo === 'EGRESO' ? { stockActual: { gte: cantidad } } : {}) },
+  data: { stockActual: { [tipo === 'INGRESO' ? 'increment' : 'decrement']: cantidad } },
+});
+if (result.count !== 1) throw conflicto('No hay stock suficiente…');
+```
+
+Se lee así: «restá `cantidad` al producto con este ID, de este comercio, activo, **y solo si su saldo es mayor o igual a la cantidad**». Si el saldo no alcanza, la base no modifica ninguna fila (`count` es 0) y se lanza el error. La resta la hace PostgreSQL con el valor que tiene en ese momento, no con uno que la aplicación leyó antes.
+
+**El bloqueo:**
+
+```js
+const rows = await tx.$queryRaw`SELECT id FROM productos
+  WHERE id = ${productoId}::uuid AND comercio_id = ${auth.comercioId}::uuid FOR UPDATE`;
+```
+
+Busca el producto **del comercio de la sesión** y lo bloquea hasta el final de la transacción. Si no aparece (no existe o es de otro comercio), responde 404 igual en los dos casos.
+
+**La inserción con la misma transacción:**
+
+```js
+const [{ ahora }] = await tx.$queryRaw`SELECT clock_timestamp() AS ahora`;
+return tx.movimientoStock.create({ data: { productoId, usuarioId: usuario.id, tipo, motivo, cantidad, observacion, creadoEn: ahora } });
+```
+
+Usa `tx`, no `prisma`: eso la mete en la misma transacción que el descuento. El responsable es el usuario leído de la base y la fecha es la del reloj de la base.
+
+### Por qué se bloquea, qué es rollback y cómo se evita el stock negativo
+
+**Ejemplo con dos empleados.** Hay 3 paquetes. Dos empleados, en dos cajas, registran al mismo tiempo una salida de 3.
+
+- **Sin control:** los dos leen «hay 3», los dos calculan «3 − 3 = 0», los dos guardan. Se registraron 6 paquetes vendidos con solo 3 en el depósito.
+- **Con este diseño:** el primero bloquea el producto; el segundo espera. El primero descuenta (3 → 0), inserta el movimiento y confirma. El segundo sigue, lee saldo 0 e intenta descontar «solo si saldo ≥ 3»: no se modifica ninguna fila y recibe «No hay stock suficiente. Saldo disponible: 0». El resultado final es saldo 0 con una salida registrada.
+
+Aunque faltara el bloqueo, la condición `saldo >= cantidad` alcanzaría para impedir el negativo. El bloqueo agrega otras garantías: que la unidad y la actividad que se validan sigan siendo las mismas hasta confirmar, y que el mensaje muestre el saldo verdadero. Además, la base tiene un `CHECK (stock_actual >= 0)` como última red.
+
+**Rollback con un ejemplo.** Hay 4 unidades y se registra una salida de 3. La base descuenta (4 → 1), pero al insertar el movimiento falla algo. Si no hubiera transacción, quedarían 1 unidad y ningún movimiento que explique la diferencia de 3. Con la transacción, el error deshace también el descuento: vuelven a ser 4 y no queda nada a medias. Hay una prueba que provoca exactamente este fallo con PostgreSQL real.
+
+**Coordinación con baja y cambio de unidad.** Catálogo también bloquea el producto al desactivarlo o editarlo. Si el dueño lo desactiva mientras un empleado registra una salida, una de las dos operaciones espera a la otra. Si gana la baja, la salida ve el producto inactivo y se rechaza. Pasa lo mismo con el cambio de unidad: la cantidad se valida con la unidad vigente después de esperar.
+
+### Por qué un ajuste agrega un movimiento en vez de corregir el anterior
+
+Se cargó una reposición de 10, pero en realidad llegaron 8. Hay dos formas de corregirlo:
+
+1. **Editar el movimiento original** de 10 a 8: el historial queda «limpio», pero se pierde que hubo un error, quién lo cometió y quién lo corrigió. Si alguien cambia números sin explicación, nadie lo puede detectar.
+2. **Agregar un ajuste de egreso de 2** con la observación «llegaron 8, se cargaron 10»: el historial muestra la carga original y la corrección, con sus responsables y fechas. El saldo queda bien y la suma de movimientos sigue coincidiendo.
+
+El sistema usa la segunda (RN-08). Por eso no existen rutas para editar ni borrar movimientos, y por eso el ajuste exige explicación: es la única forma de entender después por qué se corrigió. Solo el dueño puede hacerlo, porque un ajuste cambia el stock sin que haya entrado ni salido mercadería.
+
+### Decisiones y límites
+
+| Decisión | Motivo | Alternativa y costo |
+|---|---|---|
+| Una sola función cambia el saldo, compartida con el alta | No hay dos lógicas de saldo que puedan divergir | — |
+| `STOCK_INICIAL` rechazado en la API habitual | Solo tiene sentido al crear el producto (RN-07) | — |
+| Fecha `clock_timestamp()` tomada después del bloqueo | El valor por defecto de la base es la hora de *inicio* de la transacción. Un movimiento que esperó quedaría con hora anterior a otro confirmado antes, y el historial mostraría otro orden | Usar la hora del servidor Node: mezcla dos relojes |
+| Historial del más reciente al más antiguo, con desempate por ID | Lo último es lo que más se consulta; el desempate da un orden estable aunque dos movimientos tengan la misma fecha | — |
+| Si se pierde la conexión al registrar, no se reintenta | La operación pudo haberse confirmado; repetirla podría duplicarla | La pantalla avisa y recarga el historial para revisar |
+| Cantidades como texto con punto | Los números de JavaScript no representan exacto 0,1 + 0,2 | La pantalla convierte la coma a punto |
+
+**Límites reales:** no hay anulaciones ni aprobación de ajustes (fuera del MVP); el historial muestra el nombre *actual* del producto y del usuario; no se midió el tiempo de carga (RNF-03, se mide en el piloto).
+
+### Lo que enseñó el desarrollo de la pantalla
+
+En la etapa 3 apareció una pantalla en blanco al cambiar de pestaña porque React dibujó datos viejos con la plantilla nueva. En esta etapa aparecieron dos variantes del mismo tema, y las pruebas las cubren:
+
+- **Carga trabada.** Al apretar «Buscar» dos veces con el mismo texto, la lista se vaciaba y quedaba «Cargando…» para siempre: React no repite un efecto si sus datos no cambiaron. Ahora cada búsqueda incrementa un contador que obliga a repetir la consulta.
+- **Respuesta vieja.** Si se elige Yerba y enseguida Harina, y la respuesta de Yerba llega última, podría pisar el historial de Harina. Hay dos protecciones independientes: la consulta vieja se cancela, y además solo se dibuja un historial que pertenezca al producto elegido. Se comprobó quitando ambas: la prueba falla.
+
+### Qué probamos y quién lo hizo
+
+Todo lo de esta tabla lo **ejecutó Claude** el 10/11 en una copia aislada. Ninguna prueba es todavía manual de Nazareno ni de Tomás.
+
+| Prueba | Qué demuestra | Qué no demuestra |
+|---|---|---|
+| 5 unitarias (sin base) | Que los pedidos inválidos se rechazan antes de tocar la base | Nada sobre PostgreSQL |
+| 8 de integración (PostgreSQL real y API) | Permisos, aislamiento por comercio, cantidades, saldo insuficiente, dos salidas simultáneas, rollback real, coordinación con baja y unidad, historial y conciliación | La pantalla |
+| Navegador, 12 pasos | Que dueño y empleado pueden hacer el recorrido completo, con errores, transiciones, móvil y teclado | Edge, Windows y lectores de pantalla reales |
+| Errores introducidos a propósito | Que cada prueba importante detecta el error que dice cubrir | — |
+
+### Preguntas para practicar
+
+**¿Qué pasa si dos empleados venden el último paquete al mismo tiempo?** Uno bloquea el producto y descuenta; el otro espera, ve saldo 0 y recibe «No hay stock suficiente». Nunca queda negativo.
+
+**¿Por qué no calcular el saldo nuevo en JavaScript y guardarlo?** Porque se calcularía con un valor leído antes. Si otra operación cambió el saldo en el medio, se pisaría. Con `decrement` la resta la hace la base sobre el valor vigente, y la condición `saldo >= cantidad` va en la misma sentencia.
+
+**¿Qué significa rollback? Dé un ejemplo.** Deshacer todo lo hecho en la transacción. Si se descontaron 3 y después falló la inserción del movimiento, el rollback devuelve esas 3: no queda saldo sin explicación.
+
+**¿Para qué sirve el bloqueo si ya está la condición de saldo?** La condición evita el negativo. El bloqueo garantiza que unidad y actividad no cambien entre que se validan y se confirma, y coordina con la baja y el cambio de unidad de Catálogo.
+
+**¿Por qué el empleado no puede hacer ajustes? ¿Alcanza con ocultar la opción?** Porque un ajuste cambia stock sin mercadería que entre o salga, y lo controla el dueño (RF-08). Ocultarlo no alcanza: si alguien manda la solicitud igual, el backend responde 403.
+
+**¿Por qué no se puede editar un movimiento equivocado?** Para no perder la historia. Se corrige con un ajuste que explica la diferencia (ejemplo de 10 y 8).
+
+**¿Quién y cuándo, según el sistema?** El responsable sale de la sesión verificada; la fecha, del reloj de la base después del bloqueo. El navegador no puede mandar ninguno de los dos.
+
+**¿Qué pasa si se corta internet justo al registrar?** La pantalla no sabe si se guardó. No reintenta: avisa y recarga el historial para que la persona revise antes de cargar de nuevo.
+
+**¿Cómo saben que el saldo es correcto?** Hay una prueba que, para cada producto, suma ingresos y resta egresos del historial y compara con el saldo guardado.
+
+**¿Qué pasa con un producto inactivo?** No admite movimientos (409), pero su historial se puede consultar.
+
+### Actividades para comprobar la comprensión
+
+1. **Seguir una salida en el código:** `registrar` en `Inventario.jsx` → ruta POST en `inventario.routes.js` → `crearMovimiento` → `registrarMovimiento`. Señalar la línea del bloqueo, la del descuento condicional y la de la inserción.
+2. **Hacer la cuenta:** Yerba tiene 3. Se registran: reposición 5, salida 2, ajuste de egreso 1 («roto»). ¿Cuál es el saldo? (5) ¿Cuántos movimientos tiene, contando el inicial? (4) Comprobarlo en la pantalla.
+3. **Mostrar el rechazo por saldo:** con saldo 2, intentar una salida de 5 y leer el mensaje. Comprobar que la cantidad sigue escrita.
+4. **Mostrar que el ajuste exige explicación:** intentar un ajuste sin observación y después con observación; buscarlo en el historial.
+5. **Mostrar el permiso:** entrar como empleado y comprobar que no aparecen los ajustes.
+6. **Ver una prueba fallar:** en `movimientos.service.js`, borrar `stockActual: { gte: cantidad }` del filtro y correr `npm run test:integration`: falla la prueba de las dos salidas simultáneas. Explicar por qué y deshacer con `git restore backend/src/modules/inventario/movimientos.service.js`.
+
+### Comprobación personal de comprensión
+
+| Puedo hacer esto con mis palabras y mostrar dónde está | Tomás | Nazareno |
+|---|---|---|
+| Explicar qué es un movimiento y por qué el saldo debe coincidir con el historial | [ ] | [ ] |
+| Contar el recorrido de una salida, desde la pantalla hasta el historial | [ ] | [ ] |
+| Explicar con el ejemplo de dos empleados cómo se evita el stock negativo | [ ] | [ ] |
+| Explicar qué es rollback con el ejemplo de la inserción que falla | [ ] | [ ] |
+| Explicar por qué un ajuste agrega un movimiento y lo hace solo el dueño | [ ] | [ ] |
+| Explicar qué demuestran y qué no las pruebas de esta etapa | [ ] | [ ] |
+
+### Resumen de repaso
+
+- **Operaciones:** reposición y salida (ambos roles), ajuste (dueño, con explicación). `STOCK_INICIAL` solo desde el alta.
+- **Una transacción:** bloquear producto → validar con datos vigentes → `increment`/`decrement` condicional → insertar movimiento con el mismo `tx`. Si algo falla, rollback.
+- **Sin negativos:** el egreso exige `saldo >= cantidad` en la misma sentencia; dos salidas simultáneas de 3 sobre 3 → una sola confirma.
+- **Historial:** inmutable, incluye inactivos, del más reciente al más antiguo, 20 por página, sin datos de usuario de más.
+- **Pantalla:** sin envíos dobles, sin datos viejos, sin reintento ciego.
+- **Pendiente:** revisión cruzada, pruebas de Nazareno en su equipo, integración, despliegue y piloto.
+
 ## Etapas siguientes
-
-### Etapa 4 — Movimientos e historial
-
-Pendiente. Nazareno con Claude explicarán ingresos, egresos, ajustes, concurrencia, historial y conciliación. Tomás con Codex revisarán.
 
 ### Etapa 5 — Alertas y reposición
 

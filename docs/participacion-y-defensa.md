@@ -32,7 +32,7 @@ Los comandos de Git los ejecutan los integrantes. Este documento no asigna autor
 
 ## Qué hay que hacer en las etapas pendientes
 
-Estas explicaciones resumen la [hoja de ruta técnica](plan-desarrollo.md), donde está la checklist completa. Antes de implementar, leer también los [requerimientos](segunda_entrega/01-requerimientos.md) y las [reglas de negocio](segunda_entrega/02-reglas-de-negocio.md). La etapa 2 está cerrada: su implementación y revisión local terminaron y se integró a `main` el 09/11; su ensayo de despliegue sigue pendiente. La etapa 3 está implementada y aprobada por revisión cruzada el 10/11 sobre 28b1acb, integrada a main el 10/11 en f88b617; etapa cerrada. Después siguen las etapas 4 → revisión → 5 → revisión → 6 → 7.
+Estas explicaciones resumen la [hoja de ruta técnica](plan-desarrollo.md), donde está la checklist completa. Antes de implementar, leer también los [requerimientos](segunda_entrega/01-requerimientos.md) y las [reglas de negocio](segunda_entrega/02-reglas-de-negocio.md). La etapa 2 está cerrada: su implementación y revisión local terminaron y se integró a `main` el 09/11; su ensayo de despliegue sigue pendiente. La etapa 3 está implementada y aprobada por revisión cruzada el 10/11 sobre 28b1acb, integrada a main el 10/11 en f88b617; etapa cerrada. La etapa 4 está implementada en `etapa-4-inventario` y pendiente de revisión cruzada; no está integrada. Después siguen las etapas 5 → revisión → 6 → 7.
 
 ### Etapa 2 — Acceso y permisos
 
@@ -151,4 +151,19 @@ Nazareno compartió la revisión de Claude sobre d8c97e2. Tomás la transmitió 
 
 
 Tomás ejecutó el fast-forward y el push de la etapa 3 a main el 10/11/2026 (f88b617); compartió la salida y el estado limpio/sincronizado para registrar la integración. No se atribuyen nuevas pruebas manuales por ese paso.
+
+## Etapa 4 — Movimientos e historial (10/11/2026)
+
+- **Estado:** implementada el 10/11 en `etapa-4-inventario`, pendiente de revisión cruzada. No está integrada a `main` ni cerrada.
+- **Responsable y revisor:** Nazareno con Claude. Revisan Tomás con Codex.
+- **Versión:** parte de `main` en `b1b1b82`. *[Completar con el commit que publique Nazareno y, si cambia, el commit final después de la revisión.]*
+- **Qué quedó funcionando:** reposición y salida para ambos roles, ajustes del dueño con explicación, historial paginado con productos inactivos y pantalla de Inventario (RF-07 a RF-09).
+- **Aporte personal de Nazareno:** pidió la implementación con el alcance y las condiciones de trabajo, y creó la rama desde `main` actualizado. *[Completar con lo que efectivamente haga: pruebas en su equipo, recorrido manual, commit y publicación de la rama, coordinación de la revisión.]*
+- **Aporte personal de Tomás:** *[Completar con la revisión con Codex.]*
+- **Asistencia de IA:** Claude analizó el diseño y el código vigente, implementó backend, pantalla, pruebas, recorrido de navegador y documentación, y ejecutó todas las pruebas registradas hasta ahora en una copia aislada. No son pruebas manuales de los estudiantes.
+- **Decisiones importantes:** una sola operación cambia el saldo, compartida con el alta; fecha del movimiento tomada del reloj de la base después del bloqueo, para que el historial respete el orden real; sin reintento automático ante una respuesta perdida. Detalle en [etapa 4](implementacion/etapa-4.md#transacciones-y-concurrencia).
+- **Pruebas y evidencia:** 36/36 unitarias, 21/21 de integración dos veces, compilación y 12 pasos de navegador con ambos roles, ejecutados por Claude ([salida](implementacion/resultados-etapa-4-claude-2026-11-10.txt)). Pendiente: que Nazareno las ejecute en su equipo.
+- **Revisión cruzada:** pendiente.
+- **Para explicar en la defensa:** cómo dos salidas simultáneas de 3 sobre saldo 3 terminan con una sola confirmada; qué es un rollback con el ejemplo de la inserción que falla; por qué un ajuste agrega un movimiento. Material en la [guía de la defensa](../preparacion-defensa-oral.md#etapa-4--movimientos-e-historial).
+- **Comprensión pendiente de practicar:** ambos estudiantes; no se marca como adquirida hasta practicarla con las actividades de la guía.
 

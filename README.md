@@ -19,9 +19,9 @@ El MVP contempla uno o dos comercios piloto, con datos separados por comercio y 
 |---|---|---|
 | Entrega 1: propuesta y viabilidad | Aprobada por la tutora | 01/09/2026 (aprobación) |
 | Entrega 2: diseño y módulos | Aprobada por la tutora; habilitada la implementación | 27/09/2026 (entrega); correcciones del 29/09 |
-| Implementación y entrega final | Etapa 1 cerrada; etapa 2 (acceso y permisos) cerrada; etapa 3 (catálogo) cerrada e integrada a main; movimientos y reposición pendientes | 14/11/2026 (fecha límite) |
+| Implementación y entrega final | Etapa 1 cerrada; etapa 2 (acceso y permisos) cerrada; etapa 3 (catálogo) cerrada e integrada a main; etapa 4 (movimientos e historial) implementada y en revisión; reposición pendiente | 14/11/2026 (fecha límite) |
 
-El proyecto ya tiene una base ejecutable: frontend React, servidor Express, cliente Prisma, migración inicial y seed de desarrollo. Desde la etapa 2 se ingresa con usuario y contraseña, y cada rol ve su menú; el backend verifica la sesión, el rol y el comercio en cada solicitud protegida. El catálogo ya permite administrar referencias y productos con stock inicial; los formularios habituales de movimientos y la reposición siguen pendientes; la descripción funcional de abajo corresponde al MVP completo previsto.
+El proyecto ya tiene una base ejecutable: frontend React, servidor Express, cliente Prisma, migración inicial y seed de desarrollo. Desde la etapa 2 se ingresa con usuario y contraseña, y cada rol ve su menú; el backend verifica la sesión, el rol y el comercio en cada solicitud protegida. El catálogo ya permite administrar referencias y productos con stock inicial. En la rama de la etapa 4, todavía en revisión, se registran reposiciones, salidas y ajustes, y se consulta el historial por producto; la reposición sigue pendiente; la descripción funcional de abajo corresponde al MVP completo previsto.
 
 ## Stack definido
 
@@ -241,3 +241,7 @@ Claude aprobó las correcciones sobre 28b1acb: B1 y S1–S4 resueltos, sin nuevo
 
 Etapa cerrada: Tomás integró y publicó main en f88b617, después de la aprobación de Claude sobre 28b1acb. La siguiente etapa es movimientos e historial, a cargo de Nazareno con Claude y revisión de Tomás con Codex. El despliegue y el piloto siguen pendientes.
 
+
+### Avance del 10/11 — Etapa 4
+
+Movimientos e historial implementados por Nazareno con Claude en `etapa-4-inventario`, pendientes de revisión cruzada y de integración a main. Se agregan `POST /api/inventario/movimientos`, `GET /api/inventario/productos/:id/movimientos` y la pantalla de Inventario. [Informe y pruebas](docs/implementacion/etapa-4.md). Capítulo nuevo en la guía de defensa. Sin cambios de esquema ni dependencias.

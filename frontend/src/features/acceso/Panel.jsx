@@ -3,6 +3,7 @@ import { obtenerSesion } from '../../services/api.js';
 import { NOMBRE_ROL, seccionesDelRol } from './secciones.js';
 import EstadoConexion from '../../components/EstadoConexion.jsx';
 import Catalogo from '../catalogo/Catalogo.jsx';
+import Inventario from '../inventario/Inventario.jsx';
 
 // Interfaz después del login: datos de la sesión, menú según el rol y contenido.
 export default function Panel({ token, usuario, onUsuario, onSesionInvalida, onCerrarSesion }) {
@@ -55,7 +56,9 @@ export default function Panel({ token, usuario, onUsuario, onSesionInvalida, onC
         )}
         {seccion.id === 'inicio'
           ? <Inicio usuario={usuario} secciones={secciones.slice(1)} onAbrir={setSeccionId} />
-          : seccion.id === 'catalogo' ? <Catalogo token={token} usuario={usuario} onSesionInvalida={onSesionInvalida} /> : <SeccionPendiente seccion={seccion} />}
+          : seccion.id === 'catalogo' ? <Catalogo token={token} usuario={usuario} onSesionInvalida={onSesionInvalida} />
+          : seccion.id === 'inventario' ? <Inventario token={token} usuario={usuario} onSesionInvalida={onSesionInvalida} />
+          : <SeccionPendiente seccion={seccion} />}
       </main>
     </>
   );

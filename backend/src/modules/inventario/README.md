@@ -1,3 +1,12 @@
 # Inventario
 
-La etapa 3 incorpora registrarMovimiento(tx, auth, data, opciones), usada por Catálogo para STOCK_INICIAL. Recibe una transacción abierta y bloquea el producto antes de actualizar saldo e insertar movimiento. No publica rutas; las pantallas, endpoints e historial se implementan en la etapa 4. No habilitar STOCK_INICIAL desde entradas del cliente.
+Movimientos de stock e historial (etapa 4, RF-07 a RF-09).
+
+| Archivo | Qué hace |
+|---|---|
+| `inventario.routes.js` | `POST /api/inventario/movimientos` y `GET /api/inventario/productos/:id/movimientos`. Ambas exigen sesión; el permiso de `AJUSTE` lo controla el servicio. No hay rutas para editar ni borrar movimientos. |
+| `movimientos.service.js` | `validarSolicitud` revisa la forma del pedido; `registrarMovimiento(tx, auth, data, opciones)` es la única operación que cambia el saldo: bloquea el producto, valida, actualiza con aritmética de PostgreSQL e inserta el movimiento con el mismo cliente transaccional. `crearMovimiento` la usa para la API y `historial` lista movimientos paginados. |
+
+Catálogo llama a `registrarMovimiento` dentro del alta para `STOCK_INICIAL` (con `permitirInicial`). La API habitual nunca acepta ese motivo.
+
+Explicación completa: [etapa 4](../../../../docs/implementacion/etapa-4.md).

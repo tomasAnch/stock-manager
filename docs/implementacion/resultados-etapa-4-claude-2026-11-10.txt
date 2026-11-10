@@ -1,0 +1,165 @@
+Etapa 4 — Movimientos e historial · ejecución de Claude · 10/11/2026, 14:48 (hora de Argentina)
+Versión: main en b1b1b82 + cambios de la etapa 4 (rama etapa-4-inventario, todavía sin commit)
+Entorno: copia limpia aislada de Claude, Linux, Node v24.22.1, npm 11.21.2, npm ci desde package-lock.json,
+PostgreSQL 18.4 con bases nuevas y vacías (stock_manager y stock_manager_test).
+Limitación: en este entorno no se puede descargar el motor de migraciones de Prisma. Se aplicó el mismo
+migration.sql y se ejecutó el mismo archivo de pruebas de integración. En el equipo de Nazareno corresponde
+ejecutar 'npm run test:integration' tal cual.
+
+$ npm test
+✔ login correcto devuelve token y datos públicos, sin el hash (107.065489ms)
+✔ contraseña incorrecta, correo inexistente y cuenta inactiva responden igual (385.14222ms)
+✔ login sin datos o con tipos inválidos responde 400 (15.066689ms)
+✔ contraseñas de más de 72 bytes se rechazan antes de consultar la base (23.60214ms)
+✔ sesión: sin token, encabezado mal formado, otra firma, otro algoritmo, sin firma, sin vencimiento o vencido se rechazan (17.545759ms)
+✔ un token vigente deja de servir si el usuario se desactiva o ya no existe (11.213053ms)
+✔ rol y comercio salen de la base aunque el token diga otra cosa (4.147952ms)
+✔ requireRole: el empleado recibe 403 y el dueño pasa (5.763252ms)
+✔ filtro por comercio: reemplaza el comercio enviado y no consulta IDs inválidos (0.860998ms)
+✔ configuración: exige un secreto largo y un vencimiento válido, sin mostrar el secreto (0.68605ms)
+✔ CORS permite el encabezado Authorization desde el frontend configurado (4.07873ms)
+✔ catálogo: códigos normalizados y cantidades exactas (1.961315ms)
+✔ catálogo: no acepta escribir saldo, comercio ni actividad por el alta (0.446026ms)
+✔ catálogo: edición no admite otro stock inicial (0.236018ms)
+✔ catálogo: rechaza unidad fraccionaria, precisión excesiva y objetivo menor al mínimo (0.622542ms)
+✔ catálogo: errores identifican cada cantidad y las referencias obligatorias (0.848361ms)
+✔ diagnóstico conserva tipo, código y ubicación, pero no mensaje, metadatos ni ruta completa (1.811319ms)
+✔ 500 registra diagnóstico controlado sin filtrar el error ni la solicitud (0.453833ms)
+✔ seed requiere habilitación exacta y producción siempre prevalece (0.665988ms)
+✔ seed informa contraseñas inválidas antes de consultar la base (0.668331ms)
+✔ health devuelve disponibilidad sin exponer datos del comercio (69.490433ms)
+✔ base no disponible responde 503 y no filtra errores internos (50.339592ms)
+✔ 404, JSON mal formado y cuerpos excesivos tienen errores JSON controlados (34.746212ms)
+✔ la app no arranca sin configuración de autenticación (0.852125ms)
+✔ inventario: la API habitual acepta reposición, salida y ajuste con sus tipos (1.535725ms)
+✔ inventario: STOCK_INICIAL y motivos desconocidos no se aceptan desde la API (0.520452ms)
+✔ inventario: combinaciones incompatibles y ajuste del empleado (0.225017ms)
+✔ inventario: el cliente no puede elegir responsable, fecha, saldo ni comercio (0.329735ms)
+✔ inventario: los rechazos previos no abren consultas ni escriben (1.014225ms)
+✔ preflight acepta base sin tablas y base migrada sin datos de negocio (1.527089ms)
+✔ preflight rechaza datos conocidos, tablas ajenas y relaciones fuera de public (1.511042ms)
+✔ nunca usa desarrollo como base de pruebas por omisión o alias localhost (1.2211ms)
+✔ normaliza espacios y Unicode, conservando mayúsculas y tildes visibles (2.098377ms)
+✔ cantidades decimales exactas y serialización como texto (1.108448ms)
+✔ rechaza redondeos, notación científica, tipos y rangos inválidos (0.765148ms)
+✔ configuración inválida falla sin imprimir credenciales (1.443922ms)
+ℹ tests 36
+ℹ pass 36
+ℹ fail 0
+
+$ pruebas de integración, corrida 1 (tests/integration/database.test.js)
+✔ migración instala seis tablas y siete CHECK validados (136.638296ms)
+✔ seed repetible, hashes válidos, referencias en dos comercios y sin restablecer cuentas (1951.900753ms)
+✔ escritura y lectura con cliente generado y rollback real (7.112977ms)
+✔ restricción de stock rechaza escritura inválida desde Prisma (52.693178ms)
+✔ HTTP consulta PostgreSQL mediante el cliente generado (75.345528ms)
+✔ acceso con PostgreSQL: login, sesión y rechazo inmediato al desactivar la cuenta (1184.921228ms)
+✔ acceso con PostgreSQL: permisos por rol y registros de otro comercio (386.944125ms)
+✔ catálogo: alta atómica, baja conserva saldo y unidad con historial estable (65.461047ms)
+✔ catálogo: cero sin movimiento, kg exactos y reversión si falla el movimiento inicial (57.686712ms)
+✔ catálogo: normalización, referencias inactivas y reactivación con reasignación (55.054976ms)
+✔ catálogo: alta y baja concurrentes no dejan referencias inactivas en productos activos (34.724641ms)
+✔ inventario compartido: dos salidas simultáneas solo descuentan una y un fallo posterior revierte saldo (42.932524ms)
+✔ API catálogo: empleado consulta sin editar; comercio ajeno no se lee ni se asigna; validaciones HTTP (856.38483ms)
+✔ API inventario: reposición y salida para ambos roles, ajuste solo del dueño con explicación (914.037606ms)
+✔ API inventario: cantidades exactas, rango, saldo insuficiente y producto inactivo (936.3762ms)
+✔ API inventario: otro comercio no se mueve ni se consulta, con la misma respuesta que un ID inexistente (797.485936ms)
+✔ API inventario: dos egresos simultáneos de 3 sobre saldo 3 confirman uno solo (4224.80417ms)
+✔ inventario: si falla la inserción del movimiento después de actualizar el saldo, se revierte todo (23.590739ms)
+✔ inventario: el bloqueo del producto coordina movimientos con la baja y el cambio de unidad (1051.355646ms)
+✔ API inventario: historial paginado, ordenado, con productos inactivos y sin datos de más (921.441304ms)
+✔ inventario: cada saldo coincide con ingresos menos egresos de su historial (1.938552ms)
+ℹ tests 21
+ℹ pass 21
+ℹ fail 0
+
+$ pruebas de integración, corrida 2 (tests/integration/database.test.js)
+✔ migración instala seis tablas y siete CHECK validados (117.108602ms)
+✔ seed repetible, hashes válidos, referencias en dos comercios y sin restablecer cuentas (1961.847288ms)
+✔ escritura y lectura con cliente generado y rollback real (6.54767ms)
+✔ restricción de stock rechaza escritura inválida desde Prisma (59.767344ms)
+✔ HTTP consulta PostgreSQL mediante el cliente generado (82.298594ms)
+✔ acceso con PostgreSQL: login, sesión y rechazo inmediato al desactivar la cuenta (1139.508853ms)
+✔ acceso con PostgreSQL: permisos por rol y registros de otro comercio (372.099998ms)
+✔ catálogo: alta atómica, baja conserva saldo y unidad con historial estable (67.193655ms)
+✔ catálogo: cero sin movimiento, kg exactos y reversión si falla el movimiento inicial (56.423825ms)
+✔ catálogo: normalización, referencias inactivas y reactivación con reasignación (50.110552ms)
+✔ catálogo: alta y baja concurrentes no dejan referencias inactivas en productos activos (37.858986ms)
+✔ inventario compartido: dos salidas simultáneas solo descuentan una y un fallo posterior revierte saldo (44.248606ms)
+✔ API catálogo: empleado consulta sin editar; comercio ajeno no se lee ni se asigna; validaciones HTTP (778.723601ms)
+✔ API inventario: reposición y salida para ambos roles, ajuste solo del dueño con explicación (861.712358ms)
+✔ API inventario: cantidades exactas, rango, saldo insuficiente y producto inactivo (899.714957ms)
+✔ API inventario: otro comercio no se mueve ni se consulta, con la misma respuesta que un ID inexistente (763.854548ms)
+✔ API inventario: dos egresos simultáneos de 3 sobre saldo 3 confirman uno solo (3855.130421ms)
+✔ inventario: si falla la inserción del movimiento después de actualizar el saldo, se revierte todo (26.77512ms)
+✔ inventario: el bloqueo del producto coordina movimientos con la baja y el cambio de unidad (1159.908177ms)
+✔ API inventario: historial paginado, ordenado, con productos inactivos y sin datos de más (993.047128ms)
+✔ inventario: cada saldo coincide con ingresos menos egresos de su historial (2.29445ms)
+ℹ tests 21
+ℹ pass 21
+ℹ fail 0
+
+$ npm run build -w frontend
+dist/assets/index-CP9wRHYN.css    8.55 kB │ gzip:  2.27 kB
+dist/assets/index-Deqa47Sj.js   244.88 kB │ gzip: 76.11 kB
+✓ built in 167ms
+
+$ node --import tsx backend/tests/inventario-browser.mjs (Chromium de Playwright, BROWSER_CHANNEL=chromium)
+OK salida desde la pantalla: un envío, saldo e historial actualizados.
+OK saldo insuficiente y cantidad fraccionaria en unidades: mensaje claro y datos conservados.
+OK ajuste del dueño: exige explicación y queda en el historial.
+OK kg con coma decimal: saldo exacto.
+OK falla de conexión: aviso de resultado incierto, sin reintento automático.
+OK producto de la segunda página seleccionable; buscar dos veces no deja la carga trabada.
+OK respuestas demoradas y cambio rápido de producto: sin datos del producto anterior.
+OK producto inactivo: sin formulario y con historial.
+OK Inventario ↔ Catálogo ↔ Inicio sin errores; Catálogo muestra el saldo actualizado.
+OK sesión inválida al registrar: vuelve al login con el motivo.
+OK empleado: solo reposición y salida, carga con teclado, móvil sin desborde.
+OK sin excepciones de JavaScript; saldos conciliados con el historial.
+
+$ pruebas con errores introducidos a propósito (cada archivo se restaura después)
+Backend, con tests/unit/inventario.test.js y tests/integration/database.test.js:
+-- 1) egreso sin la condición de saldo suficiente
+ℹ fail 2
+ℹ pass 24
+✖ API inventario: cantidades exactas, rango, saldo insuficiente y producto inactivo (930.101775ms)
+✖ API inventario: dos egresos simultáneos de 3 sobre saldo 3 confirman uno solo (762.278712ms)
+-- 2) STOCK_INICIAL aceptado desde la API
+ℹ fail 3
+ℹ pass 23
+✖ API inventario: reposición y salida para ambos roles, ajuste solo del dueño con explicación (911.777314ms)
+✖ inventario: STOCK_INICIAL y motivos desconocidos no se aceptan desde la API (1.021413ms)
+✖ inventario: los rechazos previos no abren consultas ni escriben (1.017763ms)
+-- 3) el empleado puede registrar ajustes
+ℹ fail 3
+ℹ pass 23
+✖ API inventario: reposición y salida para ambos roles, ajuste solo del dueño con explicación (838.453ms)
+✖ inventario: combinaciones incompatibles y ajuste del empleado (0.807631ms)
+✖ inventario: los rechazos previos no abren consultas ni escriben (0.986242ms)
+-- 4) sin bloqueo de la fila del producto
+ℹ fail 2
+ℹ pass 24
+✖ API inventario: dos egresos simultáneos de 3 sobre saldo 3 confirman uno solo (776.917828ms)
+✖ inventario: el bloqueo del producto coordina movimientos con la baja y el cambio de unidad (418.068635ms)
+-- 5) historial sin filtro por comercio
+ℹ fail 1
+ℹ pass 25
+✖ API inventario: otro comercio no se mueve ni se consulta, con la misma respuesta que un ID inexistente (754.504872ms)
+-- 6) ajuste sin explicación (solo queda el CHECK de la base, que responde 500)
+ℹ fail 2
+ℹ pass 24
+✖ API inventario: reposición y salida para ambos roles, ajuste solo del dueño con explicación (829.647393ms)
+✖ inventario: los rechazos previos no abren consultas ni escriben (1.656921ms)
+
+Pantalla, con backend/tests/inventario-browser.mjs:
+-- 7) buscar dos veces lo mismo no repite la consulta
+  - waiting for getByText('Página 1 de 2') to be visible
+  log: [ "  - waiting for getByText('Página 1 de 2') to be visible" ],
+-- 8) el historial no cancela la consulta anterior ni comprueba a qué producto pertenece
+AssertionError [ERR_ASSERTION]: no debe quedar historial de Yerba bajo Harina
+-- 9) se permiten envíos repetidos
+AssertionError [ERR_ASSERTION]: doble clic: una sola solicitud
+
+En los 9 casos falló la prueba correspondiente. Archivos restaurados:
+sí, sin diferencias

@@ -412,3 +412,34 @@ button.link:hover:not(:disabled) {
 .catalogo-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr)); gap:16px; }
 .catalogo-grid article { padding:20px; background:#fff; border:1px solid #dce3da; border-radius:12px; overflow-wrap:anywhere; }
 .catalogo h2 { font-size:20px; }.catalogo dl { display:grid; grid-template-columns:1fr 1fr; gap:8px; }.catalogo dd { margin:0; }
+.inventario h1 { font-size:clamp(28px,4vw,44px); }
+.inventario h2 { font-size:20px; margin:0 0 8px; }
+.inventario h3 { font-size:17px; margin:28px 0 10px; }
+.inventario label { display:flex; flex-direction:column; gap:6px; font-size:14px; }
+.inventario input,.inventario select,.inventario textarea { width:100%; min-width:0; padding:10px; border:1px solid #b9c9be; border-radius:6px; font:inherit; background:white; color:#173e37; }
+.inventario textarea { resize:vertical; }
+.inventario-layout { display:grid; grid-template-columns:minmax(0,320px) minmax(0,1fr); gap:24px; align-items:start; margin-top:20px; }
+.inventario-selector,.inventario-detalle { background:#fff; border:1px solid #dce3da; border-radius:12px; padding:20px; min-width:0; }
+.inventario-filtros { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:end; margin-bottom:14px; }
+.inventario-filtros label:last-child { grid-column:1 / -1; }
+.inventario-productos { list-style:none; padding:0; margin:0; display:grid; gap:8px; }
+.inventario-productos button { width:100%; display:flex; flex-direction:column; align-items:flex-start; gap:2px; text-align:left; background:#f7f8f3; color:#173e37; border:1px solid #dce3da; overflow-wrap:anywhere; }
+.inventario-productos button span { font-size:13px; font-weight:400; color:#4d625c; }
+.inventario-productos button[aria-pressed=true] { background:#173e37; color:#fff; border-color:#173e37; }
+.inventario-productos button[aria-pressed=true] span { color:#dce9e4; }
+.inventario-paginas { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; margin-top:14px; font-size:14px; }
+.inventario-saldo { margin:0 0 14px; overflow-wrap:anywhere; }
+.inventario-aviso { padding:10px 12px; border-radius:8px; background:#e8f3ec; border:1px solid #b9d8c4; color:#1d5131; }
+.inventario-form fieldset { border:0; padding:0; margin:0; display:grid; gap:12px; min-width:0; }
+.inventario-form legend { font-weight:650; margin-bottom:6px; padding:0; }
+.inventario-form small { margin-top:-6px; color:#4d625c; }
+.inventario-form button[type=submit] { justify-self:start; }
+.inventario-vacio { color:#4d625c; }
+.inventario-historial { list-style:none; padding:0; margin:0; display:grid; gap:8px; }
+.inventario-historial li { padding:10px 12px; border:1px solid #dce3da; border-radius:8px; overflow-wrap:anywhere; }
+.inventario-meta { font-size:13px; color:#4d625c; }
+.inventario-obs { font-size:14px; margin-top:4px; white-space:pre-wrap; }
+.inventario h2:focus { outline:none; }
+@media (max-width: 760px) {
+  .inventario-layout { grid-template-columns:minmax(0,1fr); }
+}
