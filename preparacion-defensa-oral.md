@@ -1084,7 +1084,7 @@ Cada estudiante marca las casillas después de practicar.
 
 ## Etapa 3 — Catálogo
 
-Implementada por Codex a pedido de Tomás el 09/11/2026. Revisión de Nazareno con Claude aprobada el 10/11 sobre 28b1acb; falta integrar a main. [Informe y evidencias](docs/implementacion/etapa-3.md).
+Implementada por Codex a pedido de Tomás el 09/11/2026. Revisión de Nazareno con Claude aprobada el 10/11 sobre 28b1acb; integrada a main el 10/11/2026 mediante fast-forward a f88b617. [Informe y evidencias](docs/implementacion/etapa-3.md).
 
 ### Qué problema resuelve
 
@@ -1188,7 +1188,7 @@ Codex ejecutó 30 pruebas unitarias/HTTP simuladas y 13 de integración real en 
 
 Las pruebas nuevas comprueban normalización, cantidades, campos prohibidos, alta con y sin movimiento inicial, reversión, unidad estable, referencias inactivas/ajenas, permisos y solicitudes concurrentes. Navegador comprueba alta real con coma decimal, rechazo de unidad con historial, baja/reactivación, categoría, consulta de empleado y ancho móvil.
 
-No prueban todavía despliegue, piloto, rendimiento bajo carga ni los endpoints futuros. Naza y Claude completaron la revisión cruzada y aprobaron las correcciones el 10/11. Falta la integración a main; no equivale a despliegue ni a aprobación académica de la entrega final.
+No prueban todavía despliegue, piloto, rendimiento bajo carga ni los endpoints futuros. Naza y Claude completaron la revisión cruzada y aprobaron las correcciones el 10/11. La integración a main se completó el 10/11 en f88b617; no equivale a despliegue ni a aprobación académica de la entrega final.
 
 ### Preguntas para practicar
 
@@ -1264,6 +1264,7 @@ Cada capítulo debe contener lo siguiente:
 9. **Preparación oral.** Resumen para practicar, preguntas con respuestas razonadas y ejercicios para ubicar lo explicado en el código.
 
 La explicación debe cubrir las decisiones que afectan comportamiento, arquitectura, datos, seguridad, pruebas o mantenimiento. Los detalles de sintaxis se explican cuando hacen falta para seguir el flujo. Las razones que no estén registradas se plantean como interpretación o duda, sin atribuirlas al equipo ni a la tutora.
+
 
 
 

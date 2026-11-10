@@ -1,6 +1,6 @@
 # Etapa 3 — Catálogo y alta con stock inicial
 
-09/11/2026. Responsable: Tomás con Codex. Estado: implementación y revisión cruzada aprobadas por Claude el 10/11 sobre 28b1acb, coordinadas por Nazareno. Pendiente de integración a main.
+09/11/2026. Responsable: Tomás con Codex. Estado: implementación y revisión cruzada aprobadas por Claude el 10/11 sobre 28b1acb, coordinadas por Nazareno. Etapa cerrada: integrada a main el 10/11/2026 mediante fast-forward a f88b617.
 
 ## Qué se implementó
 
@@ -83,11 +83,12 @@ Se repitió el recorrido crear categoría → crear proveedor → volver a Produ
 
 Para repetirlo desde la raíz: definir DATABASE_URL y TEST_DATABASE_URL como bases distintas (esta última exclusiva, vacía, migrada y llamada stock_manager_test), y ejecutar `node --import tsx backend/tests/catalogo-browser.mjs`. Necesita Playwright y su navegador ya disponibles: PLAYWRIGHT_MODULE puede indicar una instalación externa; BROWSER_CHANNEL admite msedge (predeterminado) o chromium para el navegador de Playwright. No se agregó Playwright a las dependencias del producto ni a npm test. En la verificación de Codex se usó la instalación de herramientas del entorno y Edge. No ejecutarlo contra una base con datos: el script la rechaza.
 
-Nuevas evidencias: [31 pruebas unitarias](resultados-etapa-3-correcciones-unitarias.txt), [13 integración](resultados-etapa-3-correcciones-integracion.txt), [build](resultados-etapa-3-correcciones-build.txt). Estas son ejecuciones de Codex, no de Tomás. Claude verificó y aprobó B1 y S1–S4 sobre 28b1acb el 10/11. Queda pendiente integrar a main.
+Nuevas evidencias: [31 pruebas unitarias](resultados-etapa-3-correcciones-unitarias.txt), [13 integración](resultados-etapa-3-correcciones-integracion.txt), [build](resultados-etapa-3-correcciones-build.txt). Estas son ejecuciones de Codex, no de Tomás. Claude verificó y aprobó B1 y S1–S4 sobre 28b1acb el 10/11. Integrada a main el 10/11/2026 en f88b617.
 
 ## Verificación final de Claude (10/11)
 
 [Informe recibido de Nazareno](verificacion-etapa-3-claude.md): listo para integrar, sin nuevos bloqueantes. Claude informó 31/31 unitarias, 13/13 de integración en dos ejecuciones, build correcto y dos recorridos del script de navegador, más comprobaciones propias de respuestas demoradas. Su entorno fue Linux/Chromium/PostgreSQL 18.4; aplicó el SQL de la migración sin ejecutar prisma migrate deploy. Estos resultados son de Claude, no nuevas ejecuciones de Codex. El despliegue y el piloto siguen pendientes.
 
-Integración: pendiente. Registrar la versión confirmada cuando se complete; no se anticipa un commit de integración.
+Integración confirmada por Tomás el 10/11/2026: main avanzó mediante fast-forward de 048fe4b a f88b617 y se publicó en origin/main. El código aprobado es 28b1acb; f88b617 agrega el registro documental de la aprobación. No se creó un commit de merge adicional.
+
 
