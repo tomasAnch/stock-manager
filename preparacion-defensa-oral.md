@@ -1236,7 +1236,7 @@ Otro detalle para explicar: al editar, se bloquean las referencias nuevas que qu
 
 Nazareno llevó adelante la etapa con Claude; Tomás y Codex la revisaron. La versión que se explica se desarrolló en la rama `etapa-4-inventario`, creada desde `main` después del cierre de la etapa 3. **Estado: cerrada. Codex verificó y aprobó `bc7465d`, y la rama se integró a `main` el 10/11 por fast-forward a `3b939c0`.** Detalle técnico y evidencias: [etapa 4](docs/implementacion/etapa-4.md).
 
-Claude escribió el código, las pruebas y esta documentación, y ejecutó las pruebas en una copia aislada. Nazareno pidió la implementación con el alcance y las condiciones de trabajo, creó la rama, hizo los commits y la publicó. Todavía no ejecutó las pruebas de esta etapa en su equipo. Tomás coordinó la revisión con Codex, que leyó el código, ejecutó las pruebas y aprobó la versión final.
+Claude escribió el código, las pruebas y esta documentación, y ejecutó las pruebas en una copia aislada. Nazareno pidió la implementación con el alcance y las condiciones de trabajo, creó la rama, hizo los commits y la publicó. Después de la integración ejecutó en su equipo las pruebas automáticas: 36/36 y 21/21. Tomás coordinó la revisión con Codex, que leyó el código, ejecutó las pruebas y aprobó la versión final.
 
 ### Qué problema resuelve
 
@@ -1381,7 +1381,7 @@ La revisión cruzada encontró otra variante, esta vez con el *envío* de un mov
 
 ### Qué probamos y quién lo hizo
 
-Todo lo de esta tabla lo **ejecutó Claude** el 10/11 en una copia aislada. Codex, para Tomás, repitió las pruebas automáticas y, al verificar la versión final, los 15 pasos del navegador en Windows/Edge con ambos roles. Ninguna prueba es todavía manual de Nazareno ni de Tomás.
+Todo lo de esta tabla lo **ejecutó Claude** el 10/11 en una copia aislada. Codex, para Tomás, repitió las pruebas automáticas y, al verificar la versión final, los 15 pasos del navegador en Windows/Edge con ambos roles. Nazareno repitió las pruebas automáticas en su equipo (36/36 y 21/21) después de la integración; todavía no hay recorridos manuales registrados de los estudiantes.
 
 | Prueba | Qué demuestra | Qué no demuestra |
 |---|---|---|
@@ -1439,7 +1439,7 @@ Todo lo de esta tabla lo **ejecutó Claude** el 10/11 en una copia aislada. Code
 - **Sin negativos:** el egreso exige `saldo >= cantidad` en la misma sentencia; dos salidas simultáneas de 3 sobre 3 → una sola confirma.
 - **Historial:** inmutable, incluye inactivos, del más reciente al más antiguo, 20 por página, sin datos de usuario de más.
 - **Pantalla:** sin envíos dobles, sin datos viejos, sin reintento ciego.
-- **Pendiente:** pruebas de Nazareno en su equipo, despliegue y piloto.
+- **Pendiente:** despliegue y piloto.
 
 ## Etapas siguientes
 

@@ -17,7 +17,6 @@ No hay rutas para editar ni borrar movimientos, ni forma de escribir el saldo di
 
 ## Qué queda pendiente
 
-- **Pruebas en el equipo de Nazareno** con este código (todavía no ejecutadas). Son pruebas personales: la aprobación técnica de la revisión no depende de ellas.
 - **Ensayo de despliegue y piloto** (etapas 6 y 7).
 - **Tiempo de carga (RNF-03):** se mide en el piloto; no se cronometró.
 - **Alertas, reposición y CSV:** etapa 5.
@@ -92,6 +91,8 @@ El permiso del ajuste se informa antes que sus otros errores: un empleado recibe
 ## Pruebas y evidencias
 
 Ejecutadas por Claude el 10/11 en una copia aislada (Linux, Node 24.22.1, PostgreSQL 18.4, bases nuevas). Salidas: [implementación](resultados-etapa-4-claude-2026-11-10.txt) y [correcciones de la revisión](resultados-etapa-4-correcciones-claude-2026-11-10.txt).
+
+Nazareno repitió las pruebas automáticas en su equipo (Windows) el 10/11, con la etapa ya integrada en `main` (`a8fd447`): `npm test` 36/36 y `npm run test:integration` 21/21 ([salida](resultados-etapa-4-naza-2026-11-10.txt)). No ejecutó el recorrido de navegador.
 
 | Prueba | Qué comprueba | Resultado |
 |---|---|---|

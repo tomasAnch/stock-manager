@@ -257,3 +257,7 @@ Codex verificó `bc7465d` y aprobó las correcciones: 36/36 unitarias, 21/21 de 
 ### Integración del 10/11 — Etapa 4
 
 Nazareno integró `etapa-4-inventario` a main mediante fast-forward: main avanzó de `b1b1b82` a `3b939c0` (no se creó commit de merge). Etapa 4 cerrada. Siguen pendientes el despliegue, el piloto y las pruebas personales de Nazareno de esta etapa. Próxima: etapa 5, con Tomás y Codex; revisan Nazareno y Claude.
+
+### Pruebas de Nazareno — Etapa 4
+
+El 10/11 Nazareno ejecutó en su equipo, sobre main (`a8fd447`), `npm test` (36/36) y `npm run test:integration` (21/21). [Salida](docs/implementacion/resultados-etapa-4-naza-2026-11-10.txt). De la etapa 4 siguen pendientes el despliegue y el piloto.
