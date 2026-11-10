@@ -104,7 +104,7 @@ RF-07 a RF-09; RN-04 a RN-11.
 
 **Terminada cuando:** ambos roles pueden registrar sus operaciones desde la interfaz, el historial las refleja y las pruebas demuestran que no se crean saldos negativos ni escrituras parciales.
 
-**Estado (10/11):** implementada por Nazareno con Claude en `etapa-4-inventario`; los puntos marcados los ejecutó Claude en una copia aislada ([informe](implementacion/etapa-4.md)). Revisada por Tomás con Codex, corregida y aprobada sobre `bc7465d`. Pendiente: integración a `main` y las pruebas personales en el equipo de Nazareno.
+**Estado (10/11):** implementada por Nazareno con Claude en `etapa-4-inventario`; los puntos marcados los ejecutó Claude en una copia aislada ([informe](implementacion/etapa-4.md)). Revisada por Tomás con Codex, corregida y aprobada sobre `bc7465d`. Etapa integrada a `main` el 10/11 por Nazareno mediante fast-forward a `3b939c0` (no se creó commit de merge); cerrada. Pendiente aparte: las pruebas personales en el equipo de Nazareno.
 
 ## Etapa 5 — Alertas y reposición
 
@@ -161,9 +161,9 @@ Se priorizan comportamientos importantes y errores posibles; no se agrega un tes
 
 ## Registro de avance y continuidad
 
-**Estado actual:** etapas 1 y 2 cerradas. Etapa 3 implementada el 09/11 por Codex para Tomás en etapa-3-catalogo, aprobada por Nazareno con Claude el 10/11 sobre 28b1acb e integrada a main el 10/11/2026 mediante fast-forward a f88b617; etapa cerrada. Correcciones B1 y S1-S4 verificadas y aprobadas por Claude. Pruebas: 31/31 unitarias, 13/13 integración, build y recorrido de navegador correctos. Ver [informe de etapa 3](implementacion/etapa-3.md). Etapa 4 implementada el 10/11 por Nazareno con Claude en `etapa-4-inventario`: 36/36 unitarias, 21/21 de integración, build y 12 pasos de navegador, ejecutados por Claude ([informe de etapa 4](implementacion/etapa-4.md)). Revisada por Tomás con Codex sobre `e463673`: un bloqueante y dos sugerencias, corregidos el 10/11 y aprobados por Codex sobre `bc7465d` (36/36, 21/21, build y 15 pasos en Windows/Edge, según su informe). Implementación y revisión cruzada aprobadas; integración a `main` pendiente. Etapas 5 a 7 pendientes; ensayo online y piloto pendientes.
+**Estado actual:** etapas 1 y 2 cerradas. Etapa 3 implementada el 09/11 por Codex para Tomás en etapa-3-catalogo, aprobada por Nazareno con Claude el 10/11 sobre 28b1acb e integrada a main el 10/11/2026 mediante fast-forward a f88b617; etapa cerrada. Correcciones B1 y S1-S4 verificadas y aprobadas por Claude. Pruebas: 31/31 unitarias, 13/13 integración, build y recorrido de navegador correctos. Ver [informe de etapa 3](implementacion/etapa-3.md). Etapa 4 implementada el 10/11 por Nazareno con Claude en `etapa-4-inventario`: 36/36 unitarias, 21/21 de integración, build y 12 pasos de navegador, ejecutados por Claude ([informe de etapa 4](implementacion/etapa-4.md)). Revisada por Tomás con Codex sobre `e463673`: un bloqueante y dos sugerencias, corregidos el 10/11 y aprobados por Codex sobre `bc7465d` (36/36, 21/21, build y 15 pasos en Windows/Edge, según su informe). Implementación y revisión cruzada aprobadas; integrada a `main` el 10/11 por Nazareno mediante fast-forward a `3b939c0` (no se creó commit de merge). Etapa cerrada. Etapas 5 a 7 pendientes; ensayo online y piloto pendientes.
 
-**Siguiente acción:** Nazareno publica este cierre documental en `etapa-4-inventario` e integra la rama a `main` con fast-forward. Pendiente aparte: que ejecute las pruebas de la etapa 4 en su equipo. Después de aprobada se integra a `main` y se inicia la etapa 5. Git lo ejecutan los integrantes.
+**Siguiente acción:** Tomás con Codex implementan la etapa 5 (alertas, reposición y CSV) en una rama nueva desde `main` actualizado; Nazareno con Claude la revisan. Pendiente aparte de la etapa 4: que Nazareno ejecute sus pruebas en su equipo. Git lo ejecutan los integrantes.
 
 **Datos externos pendientes:** disponibilidad y acceso al comercio piloto; cuentas y condiciones del hosting. No se necesitan para redactar o probar toda la lógica local.
 

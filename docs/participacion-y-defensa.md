@@ -32,7 +32,7 @@ Los comandos de Git los ejecutan los integrantes. Este documento no asigna autor
 
 ## Qué hay que hacer en las etapas pendientes
 
-Estas explicaciones resumen la [hoja de ruta técnica](plan-desarrollo.md), donde está la checklist completa. Antes de implementar, leer también los [requerimientos](segunda_entrega/01-requerimientos.md) y las [reglas de negocio](segunda_entrega/02-reglas-de-negocio.md). La etapa 2 está cerrada: su implementación y revisión local terminaron y se integró a `main` el 09/11; su ensayo de despliegue sigue pendiente. La etapa 3 está implementada y aprobada por revisión cruzada el 10/11 sobre 28b1acb, integrada a main el 10/11 en f88b617; etapa cerrada. La etapa 4 tiene la implementación y la revisión cruzada aprobadas en `etapa-4-inventario` (`bc7465d`); su integración a `main` está pendiente. Después siguen las etapas 5 → revisión → 6 → 7.
+Estas explicaciones resumen la [hoja de ruta técnica](plan-desarrollo.md), donde está la checklist completa. Antes de implementar, leer también los [requerimientos](segunda_entrega/01-requerimientos.md) y las [reglas de negocio](segunda_entrega/02-reglas-de-negocio.md). La etapa 2 está cerrada: su implementación y revisión local terminaron y se integró a `main` el 09/11; su ensayo de despliegue sigue pendiente. La etapa 3 está implementada y aprobada por revisión cruzada el 10/11 sobre 28b1acb, integrada a main el 10/11 en f88b617; etapa cerrada. La etapa 4 está cerrada e integrada a `main` (`3b939c0`); siguen pendientes su despliegue, que va con la etapa 6, y las pruebas personales de Nazareno. Las etapas 5 a 7 están pendientes: 5 → revisión → 6 → 7. La etapa 5 la implementan Tomás con Codex y la revisan Nazareno con Claude.
 
 ### Etapa 2 — Acceso y permisos
 
@@ -154,9 +154,9 @@ Tomás ejecutó el fast-forward y el push de la etapa 3 a main el 10/11/2026 (f8
 
 ## Etapa 4 — Movimientos e historial (10/11/2026)
 
-- **Estado:** implementación y revisión cruzada aprobadas: implementada el 10/11 (`e463673`), revisada por Tomás con Codex, corregida (`bc7465d`) y aprobada por Codex. Integración a `main` pendiente; no está cerrada.
+- **Estado:** cerrada. Implementada el 10/11 (`e463673`), revisada por Tomás con Codex, corregida (`bc7465d`), aprobada por Codex e integrada a `main` el 10/11 por Nazareno mediante fast-forward a `3b939c0` (no se creó commit de merge).
 - **Responsable y revisor:** Nazareno con Claude. Revisan Tomás con Codex.
-- **Versión:** parte de `main` en `b1b1b82`; implementación `e463673`; correcciones `bc7465d`, versión aprobada. *[Completar con la versión integrada en `main`.]*
+- **Versión:** parte de `main` en `b1b1b82`; implementación `e463673`; correcciones `bc7465d`, versión aprobada; registro de la aprobación `3b939c0`, que es la versión a la que avanzó `main` (fast-forward, sin commit de merge).
 - **Qué quedó funcionando:** reposición y salida para ambos roles, ajustes del dueño con explicación, historial paginado con productos inactivos y pantalla de Inventario (RF-07 a RF-09).
 - **Aporte personal de Nazareno:** pidió la implementación con el alcance y las condiciones de trabajo, y creó la rama desde `main` actualizado. Hizo los commits y publicó la rama con la implementación (`e463673`) y con las correcciones (`bc7465d`), y coordinó con Tomás la revisión y la verificación. No consta que haya ejecutado las pruebas de esta etapa en su equipo ni el recorrido manual.
 - **Aporte personal de Tomás:** coordinó con Codex la revisión de `e463673` y la verificación de `bc7465d`, y compartió con Nazareno las observaciones y la aprobación. La lectura del código, las pruebas automáticas y los recorridos de navegador en Windows/Edge los ejecutó Codex.

@@ -8,7 +8,7 @@ Documento de estudio compartido. Creado el 06/11/2026. La defensa será individu
 
 Primero leer el problema y el recorrido general. Después estudiar una etapa junto con sus archivos. Al terminar, intentar responder las preguntas sin mirar y mostrar en el código dónde ocurre lo explicado. Si una respuesta todavía cuesta, anotarla como pendiente de practicar.
 
-Las etapas 0 y 1 se explican a partir del código local y los registros de ejecución de octubre. La etapa 1 está cerrada por el equipo. La etapa 2 se explica a partir de la versión con las correcciones de la revisión (`5ce7c91`), aprobada por Codex e integrada a `main` el 09/11 (`51e1853`). La etapa 3 está cerrada e integrada. La etapa 4 se explica a partir de la rama `etapa-4-inventario` (`bc7465d`), con la implementación y la revisión cruzada aprobadas y la integración a `main` pendiente. Las explicaciones sobre futuras funciones se identifican como diseño previsto.
+Las etapas 0 y 1 se explican a partir del código local y los registros de ejecución de octubre. La etapa 1 está cerrada por el equipo. La etapa 2 se explica a partir de la versión con las correcciones de la revisión (`5ce7c91`), aprobada por Codex e integrada a `main` el 09/11 (`51e1853`). La etapa 3 está cerrada e integrada. La etapa 4 se explica a partir de la rama `etapa-4-inventario` (`bc7465d`), con la implementación y la revisión cruzada aprobadas; está integrada a `main` (`3b939c0`). Las explicaciones sobre futuras funciones se identifican como diseño previsto.
 
 Los ejemplos orales son una guía para practicar. Cada integrante debe ajustarlos a las tareas que realmente realizó. El registro de participación permite identificar responsables y evidencias. [Registro de participación](docs/participacion-y-defensa.md).
 
@@ -1234,7 +1234,7 @@ Otro detalle para explicar: al editar, se bloquean las referencias nuevas que qu
 
 ### Estado y responsables
 
-Nazareno llevó adelante la etapa con Claude; Tomás y Codex la revisan. La versión que se explica está en la rama `etapa-4-inventario`, creada desde `main` después del cierre de la etapa 3. **Estado: implementación y revisión cruzada aprobadas (Codex verificó `bc7465d`); integración a `main` pendiente.** Detalle técnico y evidencias: [etapa 4](docs/implementacion/etapa-4.md).
+Nazareno llevó adelante la etapa con Claude; Tomás y Codex la revisaron. La versión que se explica se desarrolló en la rama `etapa-4-inventario`, creada desde `main` después del cierre de la etapa 3. **Estado: cerrada. Codex verificó y aprobó `bc7465d`, y la rama se integró a `main` el 10/11 por fast-forward a `3b939c0`.** Detalle técnico y evidencias: [etapa 4](docs/implementacion/etapa-4.md).
 
 Claude escribió el código, las pruebas y esta documentación, y ejecutó las pruebas en una copia aislada. Nazareno pidió la implementación con el alcance y las condiciones de trabajo, creó la rama, hizo los commits y la publicó. Todavía no ejecutó las pruebas de esta etapa en su equipo. Tomás coordinó la revisión con Codex, que leyó el código, ejecutó las pruebas y aprobó la versión final.
 
@@ -1439,7 +1439,7 @@ Todo lo de esta tabla lo **ejecutó Claude** el 10/11 en una copia aislada. Code
 - **Sin negativos:** el egreso exige `saldo >= cantidad` en la misma sentencia; dos salidas simultáneas de 3 sobre 3 → una sola confirma.
 - **Historial:** inmutable, incluye inactivos, del más reciente al más antiguo, 20 por página, sin datos de usuario de más.
 - **Pantalla:** sin envíos dobles, sin datos viejos, sin reintento ciego.
-- **Pendiente:** integración a `main`, pruebas de Nazareno en su equipo, despliegue y piloto.
+- **Pendiente:** pruebas de Nazareno en su equipo, despliegue y piloto.
 
 ## Etapas siguientes
 

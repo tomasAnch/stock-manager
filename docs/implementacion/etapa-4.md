@@ -1,6 +1,6 @@
 # Etapa 4 — Movimientos e historial
 
-10/11/2026 · Responsable: Nazareno, con Claude. Revisión: Tomás, con Codex. Estado: **implementación y revisión cruzada aprobadas; integración a `main` pendiente**. Codex verificó la versión final `bc7465d`. Parte de `main` en `b1b1b82` (etapa 3 cerrada), rama `etapa-4-inventario`. Referencias: RF-07 a RF-09, RN-01 y RN-04 a RN-11.
+10/11/2026 · Responsable: Nazareno, con Claude. Revisión: Tomás, con Codex. Estado: **cerrada: implementación y revisión cruzada aprobadas, integrada a `main` el 10/11 por Nazareno mediante fast-forward a `3b939c0` (no se creó commit de merge)**. Codex verificó la versión final `bc7465d`; `3b939c0` solo agrega el registro documental de esa aprobación. Parte de `main` en `b1b1b82` (etapa 3 cerrada), rama `etapa-4-inventario`. Referencias: RF-07 a RF-09, RN-01 y RN-04 a RN-11.
 
 ## Qué funciona
 
@@ -17,7 +17,6 @@ No hay rutas para editar ni borrar movimientos, ni forma de escribir el saldo di
 
 ## Qué queda pendiente
 
-- **Integración a `main`.**
 - **Pruebas en el equipo de Nazareno** con este código (todavía no ejecutadas). Son pruebas personales: la aprobación técnica de la revisión no depende de ellas.
 - **Ensayo de despliegue y piloto** (etapas 6 y 7).
 - **Tiempo de carga (RNF-03):** se mide en el piloto; no se cronometró.
