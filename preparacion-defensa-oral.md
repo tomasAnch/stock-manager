@@ -1084,7 +1084,7 @@ Cada estudiante marca las casillas después de practicar.
 
 ## Etapa 3 — Catálogo
 
-Implementada por Codex a pedido de Tomás el 09/11/2026. Pendiente de revisión de Nazareno con Claude. [Informe y evidencias](docs/implementacion/etapa-3.md).
+Implementada por Codex a pedido de Tomás el 09/11/2026. Revisión de Nazareno con Claude aprobada el 10/11 sobre 28b1acb; falta integrar a main. [Informe y evidencias](docs/implementacion/etapa-3.md).
 
 ### Qué problema resuelve
 
@@ -1188,7 +1188,7 @@ Codex ejecutó 30 pruebas unitarias/HTTP simuladas y 13 de integración real en 
 
 Las pruebas nuevas comprueban normalización, cantidades, campos prohibidos, alta con y sin movimiento inicial, reversión, unidad estable, referencias inactivas/ajenas, permisos y solicitudes concurrentes. Navegador comprueba alta real con coma decimal, rechazo de unidad con historial, baja/reactivación, categoría, consulta de empleado y ancho móvil.
 
-No prueban todavía despliegue, piloto, rendimiento bajo carga ni los endpoints futuros. Naza y Claude deben hacer la revisión cruzada. La aprobación de esta etapa no se marca antes de recibirla.
+No prueban todavía despliegue, piloto, rendimiento bajo carga ni los endpoints futuros. Naza y Claude completaron la revisión cruzada y aprobaron las correcciones el 10/11. Falta la integración a main; no equivale a despliegue ni a aprobación académica de la entrega final.
 
 ### Preguntas para practicar
 
@@ -1225,7 +1225,7 @@ Cada uno debe poder explicar con sus palabras: alta atómica, bloqueo de referen
 
 El recorrido original de navegador fue parcial: no volvió a Productos desde referencias con datos. Claude detectó que React intentaba renderizar categorías como productos y la pantalla quedaba en blanco. Cambiar el estado inicia un render antes de que el efecto cargue datos: por eso el cambio de pestaña debe limpiar la lista y marcar carga en ese mismo paso. Las respuestas de consultas canceladas también se ignoran.
 
-La nueva prueba recorre ambas vueltas con dueño y empleado, respuestas demoradas y cambios rápidos. No alcanza con probar cada pantalla aislada: también hay que probar sus transiciones. En la guía, practicar Categorías → Proveedores → Productos sin recargar; comprobar que la búsqueda y filtros se reinician. La corrección está implementada y probada por Codex; falta la verificación de Claude.
+La nueva prueba recorre ambas vueltas con dueño y empleado, respuestas demoradas y cambios rápidos. No alcanza con probar cada pantalla aislada: también hay que probar sus transiciones. En la guía, practicar Categorías → Proveedores → Productos sin recargar; comprobar que la búsqueda y filtros se reinician. La corrección fue implementada y probada por Codex, y verificada por Claude el 10/11 sobre 28b1acb. [Informe de verificación](docs/implementacion/verificacion-etapa-3-claude.md).
 
 Otro detalle para explicar: al editar, se bloquean las referencias nuevas que quedarán asignadas. No se bloquean las antiguas. Una baja concurrente de la referencia anterior puede ver todavía el producto asociado y rechazar la baja; si ve la edición confirmada, ya no existe esa asociación. Esto puede provocar un rechazo conservador, pero no deja un producto activo asociado a una referencia inactiva. La referencia nueva sí debe quedar protegida hasta confirmar.
 
@@ -1264,6 +1264,7 @@ Cada capítulo debe contener lo siguiente:
 9. **Preparación oral.** Resumen para practicar, preguntas con respuestas razonadas y ejercicios para ubicar lo explicado en el código.
 
 La explicación debe cubrir las decisiones que afectan comportamiento, arquitectura, datos, seguridad, pruebas o mantenimiento. Los detalles de sintaxis se explican cuando hacen falta para seguir el flujo. Las razones que no estén registradas se plantean como interpretación o duda, sin atribuirlas al equipo ni a la tutora.
+
 
 
 

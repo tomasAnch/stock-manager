@@ -1,15 +1,15 @@
-Revisión de la etapa 3 — Catálogo y alta con stock inicial
+# Revisión de la etapa 3 — Catálogo y alta con stock inicial
 
 Revisión de Claude, coordinada por Nazareno. 09/11/2026.
 
-1. Veredicto
+## 1. Veredicto
 
 Requiere correcciones. Hay un bloqueante en la interfaz; el backend, las transacciones y los permisos están bien.
 
 Versión revisada: rama etapa-3-catalogo en d8c97e2, comparada con main en 048fe4b. Se bajó del repositorio público a una copia aislada; no se modificaron archivos del proyecto.
 
-2. Hallazgos
-Bloqueante
+## 2. Hallazgos
+### Bloqueante
 
 B1. Volver a «Productos» desde «Categorías» o «Proveedores» deja la aplicación en blanco.
 
@@ -21,7 +21,7 @@ Resultado esperado: se muestra «Cargando catálogo…» y después los producto
 Impacto: rompe un recorrido necesario para ambos roles. El recorrido manual de etapa-3.md (crear categoría y proveedor y después el producto) lleva exactamente a este error.
 Corrección mínima: en el onClick de las pestañas, vaciar la lista y marcar la carga (setLista({ items: [], paginas: 1, total: 0 }); setCargando(true);). Otra opción es guardar el tipo junto con la lista y dibujarla solo si coincide. Conviene agregar ese paso (Categorías → Productos y Proveedores → Productos con datos) al recorrido de navegador.
 Reproducción: Chromium con frontend, API y PostgreSQL reales; dueño y empleado; pantalla en blanco y el error de consola en los dos casos.
-Sugerencias
+### Sugerencias
 
 S1. La búsqueda se mantiene al cambiar de pestaña. Catalogo.jsx:66 no reinicia q ni busqueda. Si se busca «har» en Productos y se pasa a Proveedores, se muestran «0 registros» con el texto todavía en el campo. Conviene reiniciar la búsqueda al cambiar de pestaña, o dejar claro que el filtro sigue aplicado.
 
@@ -37,7 +37,7 @@ S3. Pruebas que aceptan cualquier error. database.test.js:177 y :179 usan assert
 
 S4. Botones repetidos sin contexto para lectores de pantalla. Cada tarjeta tiene «Editar» y «Desactivar»/«Reactivar» con el mismo nombre accesible. Corrección mínima: aria-label={\Editar ${item.nombre}`}`. El título del formulario dice «Crear productos» / «Editar categorías» en plural; es un detalle cosmético.
 
-3. Qué leí, qué ejecuté y qué no verifiqué
+## 3. Qué leí, qué ejecuté y qué no verifiqué
 
 Leí:
 
@@ -70,13 +70,13 @@ No verifiqué:
 prisma migrate deploy: en mi entorno no se puede descargar el motor de Prisma, así que apliqué el mismo migration.sql y ejecuté el mismo archivo de pruebas.
 La combinación cambio de unidad + movimiento simultáneos: solo la razoné en el código, porque no hay ruta de movimientos.
 Despliegue, carga sostenida, Windows/Edge y lectores de pantalla reales.
-4. Resultados y límites de la evidencia
+## 4. Resultados y límites de la evidencia
 
 Los números de Codex (30/30, 13/13, build) coinciden con los míos. Su recorrido de navegador no detectó B1, probablemente porque no volvió a Productos con datos en otra pestaña. Las pruebas automáticas tampoco pueden detectarlo: no hay pruebas de componentes del frontend.
 
 Las pruebas de concurrencia (las de Codex y las mías) cubren escenarios concretos; no demuestran todos los intercalados posibles. La garantía viene del razonamiento sobre el orden de bloqueos, y las pruebas lo respaldan.
 
-5. Correcciones en la guía y la documentación
+## 5. Correcciones en la guía y la documentación
 etapa-3.md, «Recorrido manual para el equipo», paso 2: hoy termina en la pantalla en blanco de B1. Después de corregir, repetir el recorrido y registrarlo.
 etapa-3.md y la guía (línea 1190): dicen que el recorrido de navegador fue correcto. Después de corregir, agregar el paso entre pestañas y no presentar el recorrido anterior como completo.
 Ubicación del capítulo: la etapa 3 quedó como subsección de «Etapas siguientes» y no figura en el índice. Ahora que está implementada, conviene darle su propia sección (como las etapas 1 y 2), agregarla al índice y registrar ahí la revisión cruzada cuando se cierre.

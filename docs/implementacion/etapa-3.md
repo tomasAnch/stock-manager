@@ -1,6 +1,6 @@
 # Etapa 3 — Catálogo y alta con stock inicial
 
-09/11/2026. Responsable: Tomás con Codex. Estado: implementada, pendiente de revisión de Nazareno con Claude. No integrada a main.
+09/11/2026. Responsable: Tomás con Codex. Estado: implementación y revisión cruzada aprobadas por Claude el 10/11 sobre 28b1acb, coordinadas por Nazareno. Pendiente de integración a main.
 
 ## Qué se implementó
 
@@ -54,7 +54,7 @@ Windows, Node 24.22.1, PostgreSQL local temporal en puerto 55435, base exclusiva
 
 La concurrencia se verificó con solicitudes de servicio simultáneas: alta contra baja de categoría/proveedor, y dos egresos de 3 sobre saldo 3. Solo uno confirma. Se comprobó rollback tras movimiento y reversión del alta cuando falla la identidad del responsable del ingreso inicial. Las pruebas HTTP verifican permisos en rutas reales, comercio ajeno y errores de datos.
 
-No equivale a una auditoría exhaustiva: no se ensayó carga sostenida, despliegue ni un comercio piloto. La prueba de concurrencia cubre escenarios concretos, no todos los intercalados posibles. Las próximas etapas deben probar sus rutas propias. Falta revisión cruzada y recorrido personal del equipo.
+No equivale a una auditoría exhaustiva: no se ensayó carga sostenida, despliegue ni un comercio piloto. La prueba de concurrencia cubre escenarios concretos, no todos los intercalados posibles. Las próximas etapas deben probar sus rutas propias. La revisión cruzada fue aprobada el 10/11; sigue pendiente el recorrido personal del equipo.
 
 ## Recorrido manual para el equipo
 
@@ -79,8 +79,15 @@ Claude revisó d8c97e2 y encontró B1: el primer render al volver de referencias
 - S3: rollback exige INVALID_SESSION/401 y los casos de datos inválidos exigen ValidationError con mensaje esperado. Un TypeError o fallo inesperado ya no pasa esas verificaciones.
 - S4: botones de tarjetas tienen nombre accesible con el nombre del registro; títulos del formulario en singular. No se afirma haber probado un lector de pantalla real.
 
-Se repitió el recorrido crear categoría → crear proveedor → volver a Productos, y las vueltas desde ambas pestañas con dueño/empleado, respuestas demoradas, búsqueda vacía, cambios rápidos y móvil. Resultado en [navegador corregido](resultados-etapa-3-correcciones-navegador.txt). El script reproducible es backend/tests/catalogo-browser.mjs: arranca API y Vite, usa PostgreSQL real y limpia solo sus datos si la base estaba vacía inicialmente.
+Se repitió el recorrido crear categoría → crear proveedor → volver a Productos, y las vueltas desde ambas pestañas con dueño/empleado, respuestas demoradas, búsqueda vacía, cambios rápidos y móvil. Resultado en [navegador corregido](resultados-etapa-3-correcciones-navegador.txt). El script reproducible es backend/tests/catalogo-browser.mjs: arranca API y Vite, usa PostgreSQL real y borra todas las filas de las seis tablas de negocio al terminar, únicamente si comprobó que esas tablas estaban vacías al comenzar. Requiere una base exclusiva y una ejecución por vez, sin otras aplicaciones escribiendo en ella.
 
 Para repetirlo desde la raíz: definir DATABASE_URL y TEST_DATABASE_URL como bases distintas (esta última exclusiva, vacía, migrada y llamada stock_manager_test), y ejecutar `node --import tsx backend/tests/catalogo-browser.mjs`. Necesita Playwright y su navegador ya disponibles: PLAYWRIGHT_MODULE puede indicar una instalación externa; BROWSER_CHANNEL admite msedge (predeterminado) o chromium para el navegador de Playwright. No se agregó Playwright a las dependencias del producto ni a npm test. En la verificación de Codex se usó la instalación de herramientas del entorno y Edge. No ejecutarlo contra una base con datos: el script la rechaza.
 
-Nuevas evidencias: [31 pruebas unitarias](resultados-etapa-3-correcciones-unitarias.txt), [13 integración](resultados-etapa-3-correcciones-integracion.txt), [build](resultados-etapa-3-correcciones-build.txt). Estas son ejecuciones de Codex, no de Tomás. Queda pendiente que Claude verifique las correcciones antes de integrar.
+Nuevas evidencias: [31 pruebas unitarias](resultados-etapa-3-correcciones-unitarias.txt), [13 integración](resultados-etapa-3-correcciones-integracion.txt), [build](resultados-etapa-3-correcciones-build.txt). Estas son ejecuciones de Codex, no de Tomás. Claude verificó y aprobó B1 y S1–S4 sobre 28b1acb el 10/11. Queda pendiente integrar a main.
+
+## Verificación final de Claude (10/11)
+
+[Informe recibido de Nazareno](verificacion-etapa-3-claude.md): listo para integrar, sin nuevos bloqueantes. Claude informó 31/31 unitarias, 13/13 de integración en dos ejecuciones, build correcto y dos recorridos del script de navegador, más comprobaciones propias de respuestas demoradas. Su entorno fue Linux/Chromium/PostgreSQL 18.4; aplicó el SQL de la migración sin ejecutar prisma migrate deploy. Estos resultados son de Claude, no nuevas ejecuciones de Codex. El despliegue y el piloto siguen pendientes.
+
+Integración: pendiente. Registrar la versión confirmada cuando se complete; no se anticipa un commit de integración.
+

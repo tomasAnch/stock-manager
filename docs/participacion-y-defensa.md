@@ -32,7 +32,7 @@ Los comandos de Git los ejecutan los integrantes. Este documento no asigna autor
 
 ## Qué hay que hacer en las etapas pendientes
 
-Estas explicaciones resumen la [hoja de ruta técnica](plan-desarrollo.md), donde está la checklist completa. Antes de implementar, leer también los [requerimientos](segunda_entrega/01-requerimientos.md) y las [reglas de negocio](segunda_entrega/02-reglas-de-negocio.md). La etapa 2 está cerrada: su implementación y revisión local terminaron y se integró a `main` el 09/11; su ensayo de despliegue sigue pendiente. Las etapas 3 a 7 están pendientes; el orden es 3 → revisión → 4 → revisión → 5 → revisión → 6 → 7.
+Estas explicaciones resumen la [hoja de ruta técnica](plan-desarrollo.md), donde está la checklist completa. Antes de implementar, leer también los [requerimientos](segunda_entrega/01-requerimientos.md) y las [reglas de negocio](segunda_entrega/02-reglas-de-negocio.md). La etapa 2 está cerrada: su implementación y revisión local terminaron y se integró a `main` el 09/11; su ensayo de despliegue sigue pendiente. La etapa 3 está implementada y aprobada por revisión cruzada el 10/11 sobre 28b1acb, pendiente de integración. Después siguen las etapas 4 → revisión → 5 → revisión → 6 → 7.
 
 ### Etapa 2 — Acceso y permisos
 
@@ -136,15 +136,16 @@ Copiar esta ficha para las etapas 2 a 7. Usar frases cortas y enlaces a los docu
 
 ## Etapa 3 — Catálogo (09/11/2026)
 
-- Estado: implementada en etapa-3-catalogo, pendiente de revisión cruzada e integración.
-- Responsable: Tomás con Codex. Revisión prevista: Nazareno con Claude, aún no realizada.
+- Estado: implementada en etapa-3-catalogo; revisión cruzada aprobada el 10/11 sobre 28b1acb. Pendiente de integración.
+- Responsable: Tomás con Codex. Revisión: Nazareno con Claude, realizada y aprobada el 10/11.
 - Aporte registrado de Tomás: trajo la versión compartida, creó la rama y solicitó la implementación siguiendo la hoja de ruta.
 - Asistencia de IA: Codex implementó backend/frontend, operación compartida de Inventario, pruebas y documentación. Ejecutó pruebas automatizadas y navegador; no son pruebas manuales de Tomás.
 - Resultado: catálogo con permisos y aislamiento, altas con stock inicial atómico, bajas lógicas, reactivación y validaciones de unidad/referencias.
 - Evidencias: [informe de implementación](implementacion/etapa-3.md), 30/30 unitarias, 13/13 integración, build y recorrido de navegador. Sin despliegue ni piloto.
 - Para estudiar: capítulo etapa 3 de la guía raíz. Comprensión individual pendiente de practicar.
-- Siguiente paso: compartir el commit para revisión; no se inventa un hash antes de que el integrante lo cree.
+- Siguiente paso: integrar y registrar la versión resultante.
 
 ### Revisión de etapa 3 — correcciones
 
-Nazareno compartió la revisión de Claude sobre d8c97e2. Tomás la transmitió a Codex y coordinó la corrección. Codex corrigió B1 y S1-S4, reforzó pruebas y agregó un recorrido reproducible de navegador. El recorrido original no detectaba la vuelta entre pestañas; se documenta esa limitación. Queda pendiente la verificación de Claude. Ver [informe](implementacion/etapa-3.md#correcciones-después-de-la-revisión-cruzada-0911).
+Nazareno compartió la revisión de Claude sobre d8c97e2. Tomás la transmitió a Codex y coordinó la corrección. Codex corrigió B1 y S1-S4, reforzó pruebas y agregó un recorrido reproducible de navegador. El recorrido original no detectaba la vuelta entre pestañas; se documenta esa limitación. Claude aprobó las correcciones el 10/11 sobre 28b1acb. [Verificación final](implementacion/verificacion-etapa-3-claude.md). Ver [informe](implementacion/etapa-3.md#correcciones-después-de-la-revisión-cruzada-0911).
+

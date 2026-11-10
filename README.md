@@ -19,7 +19,7 @@ El MVP contempla uno o dos comercios piloto, con datos separados por comercio y 
 |---|---|---|
 | Entrega 1: propuesta y viabilidad | Aprobada por la tutora | 01/09/2026 (aprobación) |
 | Entrega 2: diseño y módulos | Aprobada por la tutora; habilitada la implementación | 27/09/2026 (entrega); correcciones del 29/09 |
-| Implementación y entrega final | Etapa 1 cerrada; etapa 2 (acceso y permisos) cerrada; etapa 3 (catálogo) implementada y pendiente de revisión; movimientos y reposición pendientes | 14/11/2026 (fecha límite) |
+| Implementación y entrega final | Etapa 1 cerrada; etapa 2 (acceso y permisos) cerrada; etapa 3 (catálogo) aprobada por revisión cruzada, pendiente de integración; movimientos y reposición pendientes | 14/11/2026 (fecha límite) |
 
 El proyecto ya tiene una base ejecutable: frontend React, servidor Express, cliente Prisma, migración inicial y seed de desarrollo. Desde la etapa 2 se ingresa con usuario y contraseña, y cada rol ve su menú; el backend verifica la sesión, el rol y el comercio en cada solicitud protegida. El catálogo ya permite administrar referencias y productos con stock inicial; los formularios habituales de movimientos y la reposición siguen pendientes; la descripción funcional de abajo corresponde al MVP completo previsto.
 
@@ -230,4 +230,9 @@ El PDF de la primera entrega se conserva tal como fue presentado.
 ### Avance del 09/11 — Etapa 3
 
 Catálogo implementado, pendiente de revisión cruzada y de integración a main. [Informe y pruebas](docs/implementacion/etapa-3.md). Se agregó la explicación a la guía de defensa. Sin cambios de esquema ni dependencias.
+
+
+### Verificación del 10/11 — Etapa 3
+
+Claude aprobó las correcciones sobre 28b1acb: B1 y S1–S4 resueltos, sin nuevos bloqueantes. [Verificación](docs/implementacion/verificacion-etapa-3-claude.md). Implementación y revisión local completas; integración a main pendiente. El despliegue y el piloto siguen pendientes.
 
