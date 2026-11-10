@@ -1234,7 +1234,7 @@ Otro detalle para explicar: al editar, se bloquean las referencias nuevas que qu
 
 ### Estado y responsables
 
-Nazareno llevó adelante la etapa con Claude; Tomás y Codex la revisan. La versión que se explica está en la rama `etapa-4-inventario`, creada desde `main` después del cierre de la etapa 3. **Estado: implementada, pendiente de revisión cruzada, no integrada.** Detalle técnico y evidencias: [etapa 4](docs/implementacion/etapa-4.md).
+Nazareno llevó adelante la etapa con Claude; Tomás y Codex la revisan. La versión que se explica está en la rama `etapa-4-inventario`, creada desde `main` después del cierre de la etapa 3. **Estado: implementada y revisada por Tomás con Codex; correcciones aplicadas, pendientes de su verificación; no integrada.** Detalle técnico y evidencias: [etapa 4](docs/implementacion/etapa-4.md).
 
 Claude escribió el código, las pruebas y esta documentación, y ejecutó las pruebas en una copia aislada. Nazareno pidió la implementación con el alcance y las condiciones de trabajo, y creó la rama. Todavía no ejecutó las pruebas de esta etapa en su equipo.
 
@@ -1360,7 +1360,7 @@ El sistema usa la segunda (RN-08). Por eso no existen rutas para editar ni borra
 |---|---|---|
 | Una sola función cambia el saldo, compartida con el alta | No hay dos lógicas de saldo que puedan divergir | — |
 | `STOCK_INICIAL` rechazado en la API habitual | Solo tiene sentido al crear el producto (RN-07) | — |
-| Fecha `clock_timestamp()` tomada después del bloqueo | El valor por defecto de la base es la hora de *inicio* de la transacción. Un movimiento que esperó quedaría con hora anterior a otro confirmado antes, y el historial mostraría otro orden | Usar la hora del servidor Node: mezcla dos relojes |
+| Fecha `clock_timestamp()` tomada después del bloqueo | El valor por defecto de la base es la hora de *inicio* de la transacción. Un movimiento que esperó quedaría con hora anterior a otro confirmado antes. Tomarla después del bloqueo la acerca al momento real. No es un orden perfecto: dos movimientos en el mismo milisegundo empatan, y el desempate por ID es estable pero no cronológico | Usar la hora del servidor Node: mezcla dos relojes |
 | Historial del más reciente al más antiguo, con desempate por ID | Lo último es lo que más se consulta; el desempate da un orden estable aunque dos movimientos tengan la misma fecha | — |
 | Si se pierde la conexión al registrar, no se reintenta | La operación pudo haberse confirmado; repetirla podría duplicarla | La pantalla avisa y recarga el historial para revisar |
 | Cantidades como texto con punto | Los números de JavaScript no representan exacto 0,1 + 0,2 | La pantalla convierte la coma a punto |
@@ -1374,15 +1374,20 @@ En la etapa 3 apareció una pantalla en blanco al cambiar de pestaña porque Rea
 - **Carga trabada.** Al apretar «Buscar» dos veces con el mismo texto, la lista se vaciaba y quedaba «Cargando…» para siempre: React no repite un efecto si sus datos no cambiaron. Ahora cada búsqueda incrementa un contador que obliga a repetir la consulta.
 - **Respuesta vieja.** Si se elige Yerba y enseguida Harina, y la respuesta de Yerba llega última, podría pisar el historial de Harina. Hay dos protecciones independientes: la consulta vieja se cancela, y además solo se dibuja un historial que pertenezca al producto elegido. Se comprobó quitando ambas: la prueba falla.
 
+La revisión cruzada encontró otra variante, esta vez con el *envío* de un movimiento:
+
+- **Respuesta asociada al producto equivocado (bloqueante).** Mientras se registraba una reposición de Yerba se podía elegir Harina. Al llegar la respuesta, la pantalla volvía sola a Yerba. Y si la respuesta se perdía después de que el servidor guardara, el aviso «no pudimos confirmar» aparecía bajo Harina, con el historial de Harina: la persona podía revisar el producto equivocado y cargar dos veces. La base estaba bien; el problema era la pantalla. Ahora, mientras se envía, no se puede elegir otro producto, y además la respuesta solo se aplica al producto enviado, cuyo nombre aparece en los mensajes. **Idea para la defensa:** una respuesta pertenece a la solicitud que la generó, no a lo que esté en pantalla cuando llega.
+- **Vacío falso.** Si fallaba la carga del historial, aparecían el error y «todavía no tiene movimientos». Eso es incorrecto: no sabemos si tiene movimientos. Ahora el vacío se muestra solo después de una consulta exitosa, y el error ofrece «Reintentar».
+
 ### Qué probamos y quién lo hizo
 
-Todo lo de esta tabla lo **ejecutó Claude** el 10/11 en una copia aislada. Ninguna prueba es todavía manual de Nazareno ni de Tomás.
+Todo lo de esta tabla lo **ejecutó Claude** el 10/11 en una copia aislada. Codex, en la revisión, repitió las pruebas automáticas y los 12 pasos originales del navegador en Windows/Edge. Ninguna prueba es todavía manual de Nazareno ni de Tomás.
 
 | Prueba | Qué demuestra | Qué no demuestra |
 |---|---|---|
 | 5 unitarias (sin base) | Que los pedidos inválidos se rechazan antes de tocar la base | Nada sobre PostgreSQL |
 | 8 de integración (PostgreSQL real y API) | Permisos, aislamiento por comercio, cantidades, saldo insuficiente, dos salidas simultáneas, rollback real, coordinación con baja y unidad, historial y conciliación | La pantalla |
-| Navegador, 12 pasos | Que dueño y empleado pueden hacer el recorrido completo, con errores, transiciones, móvil y teclado | Edge, Windows y lectores de pantalla reales |
+| Navegador, 15 pasos | Que dueño y empleado pueden hacer el recorrido completo, con errores, transiciones, envíos en curso, móvil y teclado | Lectores de pantalla reales. Claude lo corrió en Chromium; Codex corrió los 12 pasos originales en Windows/Edge |
 | Errores introducidos a propósito | Que cada prueba importante detecta el error que dice cubrir | — |
 
 ### Preguntas para practicar
@@ -1434,7 +1439,7 @@ Todo lo de esta tabla lo **ejecutó Claude** el 10/11 en una copia aislada. Ning
 - **Sin negativos:** el egreso exige `saldo >= cantidad` en la misma sentencia; dos salidas simultáneas de 3 sobre 3 → una sola confirma.
 - **Historial:** inmutable, incluye inactivos, del más reciente al más antiguo, 20 por página, sin datos de usuario de más.
 - **Pantalla:** sin envíos dobles, sin datos viejos, sin reintento ciego.
-- **Pendiente:** revisión cruzada, pruebas de Nazareno en su equipo, integración, despliegue y piloto.
+- **Pendiente:** que Codex verifique las correcciones de su revisión, pruebas de Nazareno en su equipo, integración, despliegue y piloto.
 
 ## Etapas siguientes
 

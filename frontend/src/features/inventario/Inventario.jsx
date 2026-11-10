@@ -97,21 +97,25 @@ export default function Inventario({ token, usuario, onSesionInvalida }) {
   async function registrar(event) {
     event.preventDefault();
     if (enviando || !seleccionado) return;
+    // La respuesta pertenece al producto enviado. Mientras se espera, el selector queda bloqueado
+    // y, por las dudas, nada de la respuesta se aplica a otro producto.
+    const enviado = seleccionado;
+    const sigueElegido = actual => actual?.id === enviado.id;
     setEnviando(true); setError(''); setAviso('');
     const texto = cantidad.trim().replace(',', '.');
-    const body = { productoId: seleccionado.id, tipo: elegida.tipo, motivo: elegida.motivo, cantidad: texto };
+    const body = { productoId: enviado.id, tipo: elegida.tipo, motivo: elegida.motivo, cantidad: texto };
     if (observacion.trim()) body.observacion = observacion;
     try {
       const { producto, movimiento } = await api('inventario/movimientos', { method: 'POST', body });
-      setSeleccionado(actual => ({ ...actual, ...producto }));
-      setAviso(`Movimiento registrado: ${elegida.etiqueta.toLowerCase()} de ${movimiento.cantidad} ${unidadVisible(producto.unidad, movimiento.cantidad)}. Saldo actual: ${producto.stockActual} ${unidadVisible(producto.unidad, producto.stockActual)}.`);
+      setSeleccionado(actual => (sigueElegido(actual) ? { ...actual, ...producto } : actual));
+      setAviso(`Movimiento registrado en ${enviado.nombre}: ${elegida.etiqueta.toLowerCase()} de ${movimiento.cantidad} ${unidadVisible(producto.unidad, movimiento.cantidad)}. Saldo actual: ${producto.stockActual} ${unidadVisible(producto.unidad, producto.stockActual)}.`);
       setCantidad(''); setObservacion('');
       setPaginaHistorial(1); setRevisionHistorial(n => n + 1); setRevisionProductos(n => n + 1);
     } catch (e) {
       if (e.status === 401) { onSesionInvalida(e.message); return; }
       if (e.status === 0) {
         // No se sabe si el servidor confirmó: se actualiza el historial en lugar de reintentar.
-        setError('No pudimos confirmar si el movimiento se registró porque falló la conexión. Revisá el historial antes de volver a intentarlo.');
+        setError(`No pudimos confirmar si el movimiento de ${enviado.nombre} se registró porque falló la conexión. Revisá su historial antes de volver a intentarlo.`);
         setRevisionHistorial(n => n + 1);
       } else {
         setError(e.message);
@@ -132,22 +136,23 @@ export default function Inventario({ token, usuario, onSesionInvalida }) {
         <div className="inventario-selector">
           <h2>Productos</h2>
           <form className="inventario-filtros" onSubmit={event => { event.preventDefault(); filtrar({ q: busqueda.trim() }); }}>
-            <label>Buscar por código o nombre<input value={busqueda} onChange={e => setBusqueda(e.target.value)} maxLength={160} /></label>
-            <button type="submit">Buscar</button>
+            <label>Buscar por código o nombre<input value={busqueda} onChange={e => setBusqueda(e.target.value)} maxLength={160} disabled={enviando} /></label>
+            <button type="submit" disabled={enviando}>Buscar</button>
             <label>Estado
-              <select value={estado} onChange={e => filtrar({ estado: e.target.value })}>
+              <select value={estado} disabled={enviando} onChange={e => filtrar({ estado: e.target.value })}>
                 <option value="activos">Activos</option>
                 <option value="inactivos">Inactivos (solo historial)</option>
                 <option value="todos">Todos</option>
               </select>
             </label>
           </form>
+          {enviando && <p role="status" className="inventario-vacio">Esperá la respuesta del movimiento de {seleccionado.nombre} para elegir otro producto.</p>}
           {errorProductos && <p role="alert" className="form-error">{errorProductos}</p>}
           {cargandoProductos ? <p role="status">Cargando productos…</p> : productos.items.length === 0 ? <p>No hay productos con esos filtros.</p> : (
             <ul className="inventario-productos">
               {productos.items.map(producto => (
                 <li key={producto.id}>
-                  <button type="button" aria-pressed={producto.id === seleccionado?.id} aria-label={`Seleccionar ${producto.nombre} (${producto.codigo})`} onClick={() => elegir(producto)}>
+                  <button type="button" aria-pressed={producto.id === seleccionado?.id} aria-label={`Seleccionar ${producto.nombre} (${producto.codigo})`} disabled={enviando} onClick={() => elegir(producto)}>
                     <strong>{producto.nombre}</strong>
                     <span>{producto.codigo} · {producto.stockActual} {unidadVisible(producto.unidad, producto.stockActual)}{producto.activo ? '' : ' · inactivo'}</span>
                   </button>
@@ -157,9 +162,9 @@ export default function Inventario({ token, usuario, onSesionInvalida }) {
           )}
           {!cargandoProductos && productos.paginas > 1 && (
             <div className="inventario-paginas">
-              <button type="button" className="secondary" disabled={pagina <= 1} onClick={() => filtrar({ pagina: pagina - 1 })}>Anterior</button>
+              <button type="button" className="secondary" disabled={pagina <= 1 || enviando} onClick={() => filtrar({ pagina: pagina - 1 })}>Anterior</button>
               <span>Página {pagina} de {productos.paginas}</span>
-              <button type="button" className="secondary" disabled={pagina >= productos.paginas} onClick={() => filtrar({ pagina: pagina + 1 })}>Siguiente</button>
+              <button type="button" className="secondary" disabled={pagina >= productos.paginas || enviando} onClick={() => filtrar({ pagina: pagina + 1 })}>Siguiente</button>
             </div>
           )}
         </div>
@@ -196,8 +201,13 @@ export default function Inventario({ token, usuario, onSesionInvalida }) {
             ) : <p className="inventario-vacio">Un producto inactivo no admite movimientos. Podés consultar su historial; el dueño puede reactivarlo desde Catálogo.</p>}
 
             <h3>Historial</h3>
-            {errorHistorial && <p role="alert" className="form-error">{errorHistorial}</p>}
-            {cargandoHistorial ? <p role="status">Cargando historial…</p> : movimientos.items.length === 0 ? <p>Este producto todavía no tiene movimientos.</p> : <>
+            {/* El estado vacío solo se muestra después de una consulta exitosa del producto elegido. */}
+            {errorHistorial ? (
+              <div role="alert" className="inventario-error-historial">
+                <p className="form-error">No pudimos cargar el historial: {errorHistorial}</p>
+                <button type="button" className="secondary" onClick={() => { setHistorial(VACIO); setCargandoHistorial(true); setRevisionHistorial(n => n + 1); }}>Reintentar</button>
+              </div>
+            ) : cargandoHistorial || movimientos.producto?.id !== seleccionado.id ? <p role="status">Cargando historial…</p> : movimientos.items.length === 0 ? <p>Este producto todavía no tiene movimientos.</p> : <>
               <ol className="inventario-historial">
                 {movimientos.items.map(mov => (
                   <li key={mov.id}>

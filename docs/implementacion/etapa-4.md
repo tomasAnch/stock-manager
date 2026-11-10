@@ -1,6 +1,6 @@
 # Etapa 4 — Movimientos e historial
 
-10/11/2026 · Responsable: Nazareno, con Claude. Revisión: Tomás, con Codex. Estado: **implementada, pendiente de revisión cruzada**. No está integrada a `main`. Parte de `main` en `b1b1b82` (etapa 3 cerrada), rama `etapa-4-inventario`. Referencias: RF-07 a RF-09, RN-01 y RN-04 a RN-11.
+10/11/2026 · Responsable: Nazareno, con Claude. Revisión: Tomás, con Codex. Estado: **revisada por Tomás con Codex sobre `e463673`; correcciones aplicadas, pendientes de su verificación**. No está integrada a `main`. Parte de `main` en `b1b1b82` (etapa 3 cerrada), rama `etapa-4-inventario`. Referencias: RF-07 a RF-09, RN-01 y RN-04 a RN-11.
 
 ## Qué funciona
 
@@ -11,7 +11,7 @@
 - **Saldo insuficiente y producto inactivo** se rechazan sin cambios (409).
 - **Responsable, comercio y fecha** los pone el servidor: el usuario sale de la sesión verificada; la fecha, del reloj de PostgreSQL. El cliente no puede enviar `usuarioId`, `creadoEn`, `stockActual` ni `comercioId`.
 - **Historial por producto** para ambos roles, incluidos productos inactivos. Muestra fecha, responsable (solo el nombre), tipo, motivo, cantidad, unidad y observación. Va del más reciente al más antiguo, con desempate por ID, 20 por página.
-- **Pantalla de Inventario:** búsqueda y paginación de productos, unidad y saldo visibles, coma o punto decimal, envío bloqueado mientras hay una solicitud en curso, confirmación con el saldo nuevo, historial actualizado, errores que conservan lo escrito, estados de carga, vacío, sin conexión y sesión inválida.
+- **Pantalla de Inventario:** búsqueda y paginación de productos, unidad y saldo visibles, coma o punto decimal, envío bloqueado mientras hay una solicitud en curso (tampoco se puede elegir otro producto hasta recibir la respuesta), confirmación con el saldo nuevo, historial actualizado, errores que conservan lo escrito, estados de carga, vacío, sin conexión y sesión inválida.
 
 No hay rutas para editar ni borrar movimientos, ni forma de escribir el saldo directamente.
 
@@ -84,7 +84,7 @@ El permiso del ajuste se informa antes que sus otros errores: un empleado recibe
 
 **Decisiones:**
 
-- **Fecha tomada después del bloqueo.** El valor por defecto de la columna (`now()`) es la hora de *inicio* de la transacción. Si un movimiento esperó el bloqueo, quedaría con una hora anterior a la de otro confirmado antes que él, y el historial mostraría un orden distinto al real. `clock_timestamp()` después del bloqueo hace que, para un mismo producto, el orden por fecha sea el orden en que se aplicaron. Alternativa descartada: hora del servidor Node, porque mezcla dos relojes.
+- **Fecha tomada después del bloqueo.** El valor por defecto de la columna (`now()`) es la hora de *inicio* de la transacción. Si un movimiento esperó el bloqueo, quedaría con una hora anterior a la de otro confirmado antes que él, y el historial mostraría un orden distinto al real. `clock_timestamp()` después del bloqueo acerca la fecha al momento en que el movimiento se aplica. No garantiza un orden estricto: la columna guarda milisegundos y dos movimientos pueden empatar; el desempate por ID es estable, pero no cronológico. Alternativa descartada: hora del servidor Node, porque mezcla dos relojes.
 - **Orden de bloqueos:** esta operación bloquea solo el producto, que en el diseño va primero. No agrega esperas circulares con las operaciones de Catálogo.
 - **Sin reintento automático.** Si se pierde la respuesta, la pantalla avisa que el resultado es incierto y recarga el historial para que la persona verifique antes de repetir.
 - **Historial en una sola instantánea.** Saldo, página y total se leen en una transacción `REPEATABLE READ`, así corresponden al mismo momento.
@@ -92,15 +92,15 @@ El permiso del ajuste se informa antes que sus otros errores: un empleado recibe
 
 ## Pruebas y evidencias
 
-Ejecutadas por Claude el 10/11 en una copia aislada (Linux, Node 24.22.1, PostgreSQL 18.4, bases nuevas). Salida en [resultados-etapa-4-claude-2026-11-10.txt](resultados-etapa-4-claude-2026-11-10.txt).
+Ejecutadas por Claude el 10/11 en una copia aislada (Linux, Node 24.22.1, PostgreSQL 18.4, bases nuevas). Salidas: [implementación](resultados-etapa-4-claude-2026-11-10.txt) y [correcciones de la revisión](resultados-etapa-4-correcciones-claude-2026-11-10.txt).
 
 | Prueba | Qué comprueba | Resultado |
 |---|---|---|
 | `npm test` | 36 pruebas. Las 5 nuevas de `inventario.test.js`: operaciones permitidas, `STOCK_INICIAL` y motivos desconocidos, combinaciones incompatibles, permiso de ajuste, campos que el cliente no puede enviar y que los rechazos previos no hagan consultas. | 36/36 |
 | `npm run test:integration` | 21 pruebas, 8 nuevas, con PostgreSQL y la API real: roles y motivos; cantidades, rango, saldo insuficiente e inactivos; otro comercio con la misma respuesta que un ID inexistente; dos salidas simultáneas de 3 sobre saldo 3 (5 rondas); fallo real de la inserción después de descontar el saldo; coordinación con baja y cambio de unidad (con espera medida y carreras reales contra Catálogo); historial de 25 movimientos paginado y ordenado; conciliación de todos los saldos. | 21/21, dos veces |
 | `npm run build` | Compilación del frontend. | Correcta |
-| `backend/tests/inventario-browser.mjs` | 12 pasos con dueño y empleado: salida con doble clic (una solicitud), saldo insuficiente, fracción en unidades, ajuste con y sin observación, kg con coma, falla de red, producto en la segunda página, búsqueda repetida, respuesta demorada con cambio rápido de producto, producto inactivo, Inventario ↔ Catálogo ↔ Inicio, sesión inválida, empleado con teclado y en móvil, sin excepciones de JavaScript y saldos conciliados. | 12/12 |
-| Errores introducidos a propósito | Backend: quitar la condición de saldo, aceptar `STOCK_INICIAL`, permitir ajustes al empleado, quitar el bloqueo, quitar el filtro por comercio del historial, aceptar ajustes sin explicación. Pantalla: no repetir una búsqueda igual, no descartar un historial viejo, permitir envíos dobles. | Cada uno hace fallar su prueba |
+| `backend/tests/inventario-browser.mjs` | 15 pasos con dueño y empleado (12 originales y 3 agregados por la revisión cruzada): salida con doble clic (una solicitud), saldo insuficiente, fracción en unidades, ajuste con y sin observación, kg con coma, falla de red, producto en la segunda página, búsqueda repetida, respuesta demorada con cambio rápido de producto, producto inactivo, Inventario ↔ Catálogo ↔ Inicio, sesión inválida, empleado con teclado y en móvil, envío en curso con respuesta demorada y con respuesta perdida después de confirmar (ambos roles), historial que falla, sin excepciones de JavaScript y saldos conciliados. | 12/12 antes de la revisión; 15/15 dos veces después de las correcciones |
+| Errores introducidos a propósito | Backend: quitar la condición de saldo, aceptar `STOCK_INICIAL`, permitir ajustes al empleado, quitar el bloqueo, quitar el filtro por comercio del historial, aceptar ajustes sin explicación. Pantalla: no repetir una búsqueda igual, no descartar un historial viejo, permitir envíos dobles; después de la revisión, la pantalla anterior, no bloquear el selector durante el envío y mostrar un historial fallido como vacío. | Cada uno hace fallar su prueba |
 
 **Cómo se provoca el fallo entre saldo e inserción:** la prueba envuelve el cliente transaccional y cambia el responsable por un ID inexistente justo al insertar. PostgreSQL rechaza la clave foránea cuando el saldo ya fue descontado dentro de la transacción; la prueba confirma que adentro el saldo había bajado y que, después del rollback, quedó igual que antes y sin movimiento nuevo.
 
@@ -112,7 +112,7 @@ node --import tsx backend/tests/inventario-browser.mjs
 
 Necesita Playwright y su navegador fuera del proyecto: `PLAYWRIGHT_MODULE` indica dónde está, y `BROWSER_CHANNEL=chromium` usa el Chromium de Playwright (por omisión, Edge). Si la base tiene datos, se detiene sin tocarla; al terminar borra las filas de las seis tablas, que creó él. No está incluido en `npm test`.
 
-**Límites:** en el entorno de Claude no se puede descargar el motor de migraciones de Prisma; se aplicó el mismo `migration.sql` y se ejecutó el mismo archivo de pruebas. No se probó Edge ni Windows, ni un lector de pantalla real.
+**Límites:** en el entorno de Claude no se puede descargar el motor de migraciones de Prisma; se aplicó el mismo `migration.sql` y se ejecutó el mismo archivo de pruebas. Claude no probó Edge ni Windows (Codex sí corrió los 12 pasos originales en Windows/Edge), ni un lector de pantalla real. Si alguien cambia de sección del menú mientras se envía un movimiento, la pantalla de Inventario se cierra y no muestra la confirmación; el movimiento queda registrado y se ve en Catálogo y en el historial.
 
 ## Recorrido manual para el equipo
 
@@ -127,6 +127,16 @@ Con `npm run dev` y el seed cargado (el seed no crea productos):
 7. Cerrar sesión y entrar como **empleado**: solo ve reposición y salida; registrar una reposición y verla en el historial con su nombre.
 8. Como dueño, desactivar «Yerba» en Catálogo. En Inventario, con el estado «Inactivos», elegirla: no hay formulario, pero sí historial.
 
+## Revisión cruzada
+
+Tomás revisó con Codex la versión `e463673` el 10/11. Según su informe: leyó servicio, rutas, pantalla, pruebas, recorrido, informe y guía; ejecutó 36/36, 21/21 con una base temporal vacía y la compilación; corrió los 12 pasos del navegador en Windows/Edge y reprodujo los casos de abajo. No encontró problemas en permisos, aislamiento ni transacciones, y confirmó que la prueba de fallo de inserción comprueba un rollback real. Los resultados de Codex no los repitió Claude; sí reprodujo B1 y S1 con las pruebas nuevas contra la pantalla anterior.
+
+| Observación | Tipo | Resolución (10/11) | Verificación |
+|---|---|---|---|
+| **B1.** Si se elegía otro producto mientras se enviaba un movimiento, la respuesta volvía a mostrar el producto enviado; si la respuesta se perdía después de confirmar, el aviso de resultado incierto y la recarga del historial quedaban en el producto equivocado | Bloqueante | Mientras se envía, el selector, la búsqueda, el estado y la paginación quedan deshabilitados, con un aviso. Además, la respuesta y sus errores se aplican solo al producto enviado, y los mensajes lo nombran | Recorrido de navegador, con dueño y con empleado: respuesta exitosa demorada (el selector queda bloqueado y la confirmación sale en el producto enviado) y respuesta perdida después del commit (el aviso nombra el producto, su historial muestra el movimiento y el saldo se actualiza). Falla con la pantalla anterior y si se quita el bloqueo |
+| **S1.** Un historial que fallaba al cargar mostraba a la vez el error y «Este producto todavía no tiene movimientos» | Sugerencia, aceptada | El estado vacío aparece solo después de una consulta exitosa del producto elegido. Si falla, se muestra el error con «Reintentar» | Paso nuevo del recorrido; falla si vuelven a mostrarse los dos mensajes |
+| **S2.** El informe prometía que el orden por fecha coincide con el orden de aplicación | Sugerencia, aceptada | Se corrigió la redacción en este informe y en la guía: la fecha se toma después del bloqueo, pero puede haber empates de milisegundos y el desempate por ID no es cronológico | — |
+
 ## Para que revise Codex
 
 1. `registrarMovimiento`: la fecha con `clock_timestamp()` después del bloqueo y el usuario tomado de la base. ¿Algún caso donde el alta con `STOCK_INICIAL` cambie de comportamiento?
@@ -135,3 +145,4 @@ Con `npm run dev` y el seed cargado (el seed no crea productos):
 4. La prueba de fallo con el cliente envuelto: ¿reproduce de verdad un fallo entre actualización e inserción?
 5. `Inventario.jsx`: cancelación y descarte de respuestas viejas (dos protecciones), búsqueda repetida, resultado incierto ante falla de red, foco y etiquetas.
 6. Que el recorrido de navegador cubra las transiciones entre secciones y que se pueda correr en Windows con Edge.
+7. Correcciones de la revisión: que B1 quede resuelto también para el empleado y que el recorrido nuevo (15 pasos) pase en Windows/Edge.

@@ -68,6 +68,37 @@ try {
     await p.locator('.inventario-historial li').first().waitFor();
   }
 
+  // Envío en curso (revisión de Codex, B1): la respuesta pertenece al producto enviado.
+  async function envioEnCurso(responsable) {
+    await campo('Buscar por código o nombre').fill(''); await boton('Buscar').click();
+    await p.getByRole('button', { name: /^Seleccionar Harina suelta/ }).click();
+    await p.getByRole('heading', { name: 'Harina suelta', exact: true }).waitFor();
+    await p.locator('.inventario-historial li').first().waitFor();
+    await campo('Operación').selectOption({ label: 'Reposición (ingreso)' });
+    const antes = Number((await saldoVisible()).split(' ')[0]);
+    const otro = p.getByRole('button', { name: /^Seleccionar Relleno 01/ });
+
+    // 1. Respuesta exitosa demorada: no se puede elegir otro producto y la confirmación queda en Harina.
+    await p.route('**/api/inventario/movimientos', async ruta => { await new Promise(r => setTimeout(r, 1500)); await ruta.continue(); });
+    await campo('Cantidad').fill('1'); await boton('Registrar').click();
+    await p.getByText('Esperá la respuesta del movimiento de Harina suelta para elegir otro producto.').waitFor();
+    assert.equal(await otro.isDisabled(), true, 'el selector debe bloquearse mientras se envía');
+    assert.equal(await boton('Buscar').isDisabled(), true);
+    await aviso().filter({ hasText: 'Movimiento registrado en Harina suelta' }).waitFor();
+    assert.equal(await p.locator('.inventario-detalle h2').innerText(), 'Harina suelta');
+    assert.equal(await otro.isDisabled(), false);
+    await p.unroute('**/api/inventario/movimientos');
+
+    // 2. El servidor confirma, pero la respuesta se pierde: el aviso nombra a Harina y su historial lo muestra.
+    await p.route('**/api/inventario/movimientos', async ruta => { await ruta.fetch(); await ruta.abort('failed'); });
+    await campo('Cantidad').fill('1'); await boton('Registrar').click();
+    await p.getByText(/No pudimos confirmar si el movimiento de Harina suelta se registró/).waitFor();
+    await p.unroute('**/api/inventario/movimientos');
+    assert.equal(await p.locator('.inventario-detalle h2').innerText(), 'Harina suelta');
+    await p.locator('.inventario-saldo strong', { hasText: `${antes + 2} kg` }).waitFor();
+    assert.match(await primeroDelHistorial(responsable), new RegExp(`\\+1 kg · Ingreso por reposición[\\s\\S]*${responsable}`));
+  }
+
   // --- Dueño
   await entrar('dueno.a@example.invalid', 'review-owner-only-123');
   assert.deepEqual(await p.locator('.inventario-detalle select option').allInnerTexts(), []);
@@ -112,7 +143,7 @@ try {
   await campo('Cantidad').fill('1');
   await p.route('**/api/inventario/movimientos', ruta => ruta.abort('failed'));
   await boton('Registrar').click();
-  await p.getByText(/No pudimos confirmar si el movimiento se registró/).waitFor();
+  await p.getByText(/No pudimos confirmar si el movimiento de Harina suelta se registró/).waitFor();
   await p.unroute('**/api/inventario/movimientos');
   assert.equal(await saldoVisible(), '2.75 kg');
   ok('falla de conexión: aviso de resultado incierto, sin reintento automático.');
@@ -157,6 +188,19 @@ try {
   await boton('Inicio').click(); await boton('Inventario').click(); await p.getByText(/Elegí un producto de la lista/).waitFor();
   ok('Inventario ↔ Catálogo ↔ Inicio sin errores; Catálogo muestra el saldo actualizado.');
 
+  await envioEnCurso('dueno de prueba A');
+  ok('envío en curso (dueño): selector bloqueado; respuesta demorada y respuesta perdida tras confirmar quedan en el producto enviado.');
+
+  // Historial que falla (revisión de Codex, S1): error con reintento, sin mostrarlo como vacío.
+  await p.route('**/api/inventario/productos/**', ruta => ruta.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: { code: 'INTERNAL_ERROR', message: 'No se pudo completar la operación.' } }) }));
+  await p.getByRole('button', { name: /^Seleccionar Relleno 02/ }).click();
+  await p.getByText(/No pudimos cargar el historial/).waitFor();
+  assert.equal(await p.getByText('Este producto todavía no tiene movimientos.').count(), 0);
+  await p.unroute('**/api/inventario/productos/**');
+  await p.locator('.inventario-error-historial').getByRole('button', { name: 'Reintentar' }).click();
+  await p.locator('.inventario-historial li').first().filter({ hasText: /stock inicial/ }).waitFor();
+  ok('historial que falla: error con reintento y sin estado vacío falso.');
+
   // Sesión inválida durante una carga.
   await buscarYElegir('yer', 'Yerba 1 kg');
   await p.route('**/api/inventario/movimientos', ruta => ruta.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ error: { code: 'INVALID_SESSION', message: 'La sesión ya no es válida. Iniciá sesión nuevamente.' } }) }));
@@ -177,6 +221,8 @@ try {
   assert.match(await primeroDelHistorial(/empleado de prueba A/), /\+2 unidades · Ingreso por reposición[\s\S]*empleado de prueba A/);
   assert.equal(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'sin desborde horizontal a 390 px');
   ok('empleado: solo reposición y salida, carga con teclado, móvil sin desborde.');
+  await envioEnCurso('empleado de prueba A');
+  ok('envío en curso (empleado): mismo resultado.');
   if (process.env.CAPTURAS) await p.screenshot({ path: `${process.env.CAPTURAS}/inventario-empleado-movil.png`, fullPage: true });
 
   assert.deepEqual(errores, []);

@@ -245,3 +245,7 @@ Etapa cerrada: Tomás integró y publicó main en f88b617, después de la aproba
 ### Avance del 10/11 — Etapa 4
 
 Movimientos e historial implementados por Nazareno con Claude en `etapa-4-inventario`, pendientes de revisión cruzada y de integración a main. Se agregan `POST /api/inventario/movimientos`, `GET /api/inventario/productos/:id/movimientos` y la pantalla de Inventario. [Informe y pruebas](docs/implementacion/etapa-4.md). Capítulo nuevo en la guía de defensa. Sin cambios de esquema ni dependencias.
+
+### Correcciones del 10/11 — Etapa 4
+
+Tomás revisó con Codex `e463673`: un bloqueante en la pantalla (la respuesta de un envío podía aplicarse a otro producto elegido mientras tanto) y dos sugerencias. Corregidas por Nazareno con Claude, con pruebas nuevas de navegador; pendiente de verificación de Codex. Detalle en [etapa 4](docs/implementacion/etapa-4.md#revisión-cruzada).

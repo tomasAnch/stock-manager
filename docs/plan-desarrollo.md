@@ -104,7 +104,7 @@ RF-07 a RF-09; RN-04 a RN-11.
 
 **Terminada cuando:** ambos roles pueden registrar sus operaciones desde la interfaz, el historial las refleja y las pruebas demuestran que no se crean saldos negativos ni escrituras parciales.
 
-**Estado (10/11):** implementada por Nazareno con Claude en `etapa-4-inventario`; los puntos marcados los ejecutó Claude en una copia aislada ([informe](implementacion/etapa-4.md)). Pendiente de revisión cruzada de Tomás con Codex, de las pruebas en el equipo de Nazareno y de integración a `main`.
+**Estado (10/11):** implementada por Nazareno con Claude en `etapa-4-inventario`; los puntos marcados los ejecutó Claude en una copia aislada ([informe](implementacion/etapa-4.md)). Revisada por Tomás con Codex y corregida; pendiente de su verificación, de las pruebas en el equipo de Nazareno y de integración a `main`.
 
 ## Etapa 5 — Alertas y reposición
 
@@ -161,9 +161,9 @@ Se priorizan comportamientos importantes y errores posibles; no se agrega un tes
 
 ## Registro de avance y continuidad
 
-**Estado actual:** etapas 1 y 2 cerradas. Etapa 3 implementada el 09/11 por Codex para Tomás en etapa-3-catalogo, aprobada por Nazareno con Claude el 10/11 sobre 28b1acb e integrada a main el 10/11/2026 mediante fast-forward a f88b617; etapa cerrada. Correcciones B1 y S1-S4 verificadas y aprobadas por Claude. Pruebas: 31/31 unitarias, 13/13 integración, build y recorrido de navegador correctos. Ver [informe de etapa 3](implementacion/etapa-3.md). Etapa 4 implementada el 10/11 por Nazareno con Claude en `etapa-4-inventario`: 36/36 unitarias, 21/21 de integración, build y 12 pasos de navegador, ejecutados por Claude ([informe de etapa 4](implementacion/etapa-4.md)); pendiente de revisión cruzada e integración. Etapas 5 a 7 pendientes; ensayo online y piloto pendientes.
+**Estado actual:** etapas 1 y 2 cerradas. Etapa 3 implementada el 09/11 por Codex para Tomás en etapa-3-catalogo, aprobada por Nazareno con Claude el 10/11 sobre 28b1acb e integrada a main el 10/11/2026 mediante fast-forward a f88b617; etapa cerrada. Correcciones B1 y S1-S4 verificadas y aprobadas por Claude. Pruebas: 31/31 unitarias, 13/13 integración, build y recorrido de navegador correctos. Ver [informe de etapa 3](implementacion/etapa-3.md). Etapa 4 implementada el 10/11 por Nazareno con Claude en `etapa-4-inventario`: 36/36 unitarias, 21/21 de integración, build y 12 pasos de navegador, ejecutados por Claude ([informe de etapa 4](implementacion/etapa-4.md)). Revisada por Tomás con Codex sobre `e463673`: un bloqueante y dos sugerencias, corregidos el 10/11; pendiente de verificación de Codex e integración. Etapas 5 a 7 pendientes; ensayo online y piloto pendientes.
 
-**Siguiente acción:** Nazareno ejecuta las pruebas de la etapa 4 en su equipo y publica la rama `etapa-4-inventario`; Tomás con Codex la revisan. Después de aprobada se integra a `main` y se inicia la etapa 5. Git lo ejecutan los integrantes.
+**Siguiente acción:** Nazareno publica las correcciones en `etapa-4-inventario` y ejecuta las pruebas en su equipo; Tomás con Codex verifican las correcciones. Después de aprobada se integra a `main` y se inicia la etapa 5. Git lo ejecutan los integrantes.
 
 **Datos externos pendientes:** disponibilidad y acceso al comercio piloto; cuentas y condiciones del hosting. No se necesitan para redactar o probar toda la lógica local.
 

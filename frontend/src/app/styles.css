@@ -443,3 +443,6 @@ button.link:hover:not(:disabled) {
 @media (max-width: 760px) {
   .inventario-layout { grid-template-columns:minmax(0,1fr); }
 }
+.inventario-error-historial { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.inventario-error-historial p { margin:0; flex:1 1 220px; }
+.inventario-productos button:disabled { opacity:.6; cursor:not-allowed; }

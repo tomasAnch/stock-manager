@@ -1,0 +1,68 @@
+Etapa 4 — Correcciones de la revisión cruzada · ejecución de Claude · 10/11/2026, 15:57 (hora de Argentina)
+Versión: rama etapa-4-inventario en e463673 + correcciones de B1, S1 y S2 (todavía sin commit)
+Entorno: copia aislada de Claude, Linux, Node v24.22.1, npm 11.21.2, PostgreSQL 18.4 con bases nuevas y vacías.
+El backend no cambió: las pruebas de lógica e integración se repiten como regresión.
+Limitación: igual que antes, la migración se aplicó con el mismo migration.sql (sin el motor de Prisma).
+
+$ npm test
+ℹ tests 36
+ℹ pass 36
+ℹ fail 0
+
+$ pruebas de integración, corrida 1
+ℹ tests 21
+ℹ pass 21
+ℹ fail 0
+
+$ pruebas de integración, corrida 2
+ℹ tests 21
+ℹ pass 21
+ℹ fail 0
+
+$ npm run build -w frontend
+dist/assets/index-C4PJlhvT.css    8.75 kB │ gzip:  2.30 kB
+dist/assets/index-CYi6xz3S.js   245.40 kB │ gzip: 76.25 kB
+✓ built in 191ms
+
+$ node --import tsx backend/tests/inventario-browser.mjs (Chromium), corrida 1
+OK salida desde la pantalla: un envío, saldo e historial actualizados.
+OK saldo insuficiente y cantidad fraccionaria en unidades: mensaje claro y datos conservados.
+OK ajuste del dueño: exige explicación y queda en el historial.
+OK kg con coma decimal: saldo exacto.
+OK falla de conexión: aviso de resultado incierto, sin reintento automático.
+OK producto de la segunda página seleccionable; buscar dos veces no deja la carga trabada.
+OK respuestas demoradas y cambio rápido de producto: sin datos del producto anterior.
+OK producto inactivo: sin formulario y con historial.
+OK Inventario ↔ Catálogo ↔ Inicio sin errores; Catálogo muestra el saldo actualizado.
+OK envío en curso (dueño): selector bloqueado; respuesta demorada y respuesta perdida tras confirmar quedan en el producto enviado.
+OK historial que falla: error con reintento y sin estado vacío falso.
+OK sesión inválida al registrar: vuelve al login con el motivo.
+OK empleado: solo reposición y salida, carga con teclado, móvil sin desborde.
+OK envío en curso (empleado): mismo resultado.
+OK sin excepciones de JavaScript; saldos conciliados con el historial.
+
+$ node --import tsx backend/tests/inventario-browser.mjs (Chromium), corrida 2
+OK salida desde la pantalla: un envío, saldo e historial actualizados.
+OK saldo insuficiente y cantidad fraccionaria en unidades: mensaje claro y datos conservados.
+OK ajuste del dueño: exige explicación y queda en el historial.
+OK kg con coma decimal: saldo exacto.
+OK falla de conexión: aviso de resultado incierto, sin reintento automático.
+OK producto de la segunda página seleccionable; buscar dos veces no deja la carga trabada.
+OK respuestas demoradas y cambio rápido de producto: sin datos del producto anterior.
+OK producto inactivo: sin formulario y con historial.
+OK Inventario ↔ Catálogo ↔ Inicio sin errores; Catálogo muestra el saldo actualizado.
+OK envío en curso (dueño): selector bloqueado; respuesta demorada y respuesta perdida tras confirmar quedan en el producto enviado.
+OK historial que falla: error con reintento y sin estado vacío falso.
+OK sesión inválida al registrar: vuelve al login con el motivo.
+OK empleado: solo reposición y salida, carga con teclado, móvil sin desborde.
+OK envío en curso (empleado): mismo resultado.
+OK sin excepciones de JavaScript; saldos conciliados con el historial.
+
+$ las pruebas nuevas contra versiones con el error (cada archivo se restaura después)
+-- a) pantalla de e463673 (la revisada por Codex): falla en el primer paso que la involucra
+  - waiting for getByText(/No pudimos confirmar si el movimiento de Harina suelta se registró/) to be visible
+-- b) B1: sin bloquear la elección de producto durante el envío
+AssertionError [ERR_ASSERTION]: el selector debe bloquearse mientras se envía
+-- c) S1: error y «todavía no tiene movimientos» a la vez
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+Archivo restaurado sin diferencias.

@@ -154,16 +154,16 @@ Tomás ejecutó el fast-forward y el push de la etapa 3 a main el 10/11/2026 (f8
 
 ## Etapa 4 — Movimientos e historial (10/11/2026)
 
-- **Estado:** implementada el 10/11 en `etapa-4-inventario`, pendiente de revisión cruzada. No está integrada a `main` ni cerrada.
+- **Estado:** implementada el 10/11 en `etapa-4-inventario` (`e463673`), revisada por Tomás con Codex el mismo día y corregida; pendiente de que Codex verifique las correcciones. No está integrada a `main` ni cerrada.
 - **Responsable y revisor:** Nazareno con Claude. Revisan Tomás con Codex.
 - **Versión:** parte de `main` en `b1b1b82`. *[Completar con el commit que publique Nazareno y, si cambia, el commit final después de la revisión.]*
 - **Qué quedó funcionando:** reposición y salida para ambos roles, ajustes del dueño con explicación, historial paginado con productos inactivos y pantalla de Inventario (RF-07 a RF-09).
 - **Aporte personal de Nazareno:** pidió la implementación con el alcance y las condiciones de trabajo, y creó la rama desde `main` actualizado. *[Completar con lo que efectivamente haga: pruebas en su equipo, recorrido manual, commit y publicación de la rama, coordinación de la revisión.]*
 - **Aporte personal de Tomás:** *[Completar con la revisión con Codex.]*
 - **Asistencia de IA:** Claude analizó el diseño y el código vigente, implementó backend, pantalla, pruebas, recorrido de navegador y documentación, y ejecutó todas las pruebas registradas hasta ahora en una copia aislada. No son pruebas manuales de los estudiantes.
-- **Decisiones importantes:** una sola operación cambia el saldo, compartida con el alta; fecha del movimiento tomada del reloj de la base después del bloqueo, para que el historial respete el orden real; sin reintento automático ante una respuesta perdida. Detalle en [etapa 4](implementacion/etapa-4.md#transacciones-y-concurrencia).
-- **Pruebas y evidencia:** 36/36 unitarias, 21/21 de integración dos veces, compilación y 12 pasos de navegador con ambos roles, ejecutados por Claude ([salida](implementacion/resultados-etapa-4-claude-2026-11-10.txt)). Pendiente: que Nazareno las ejecute en su equipo.
-- **Revisión cruzada:** pendiente.
+- **Decisiones importantes:** una sola operación cambia el saldo, compartida con el alta; fecha del movimiento tomada del reloj de la base después del bloqueo, para que el historial refleje mejor el orden real (sin garantizar un orden estricto ante empates de milisegundos); sin reintento automático ante una respuesta perdida. Detalle en [etapa 4](implementacion/etapa-4.md#transacciones-y-concurrencia).
+- **Pruebas y evidencia:** 36/36 unitarias, 21/21 de integración dos veces, compilación y 12 pasos de navegador con ambos roles, ejecutados por Claude ([salida](implementacion/resultados-etapa-4-claude-2026-11-10.txt)); después de las correcciones, 15 pasos de navegador dos veces ([salida](implementacion/resultados-etapa-4-correcciones-claude-2026-11-10.txt)). En la revisión, Codex informó 36/36, 21/21, compilación y los 12 pasos originales en Windows/Edge. Pendiente: que Nazareno las ejecute en su equipo.
+- **Revisión cruzada:** Tomás revisó con Codex `e463673` el 10/11: un bloqueante (la respuesta de un envío podía aplicarse a otro producto elegido mientras tanto) y dos sugerencias (no mostrar como vacío un historial que falló; no prometer un orden cronológico estricto). Las tres se resolvieron el mismo día, con pruebas que fallan con la pantalla anterior; detalle en [etapa 4](implementacion/etapa-4.md#revisión-cruzada). Pendiente: verificación de Codex.
 - **Para explicar en la defensa:** cómo dos salidas simultáneas de 3 sobre saldo 3 terminan con una sola confirmada; qué es un rollback con el ejemplo de la inserción que falla; por qué un ajuste agrega un movimiento. Material en la [guía de la defensa](../preparacion-defensa-oral.md#etapa-4--movimientos-e-historial).
 - **Comprensión pendiente de practicar:** ambos estudiantes; no se marca como adquirida hasta practicarla con las actividades de la guía.
 
