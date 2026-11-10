@@ -1,6 +1,6 @@
 # Etapa 4 — Movimientos e historial
 
-10/11/2026 · Responsable: Nazareno, con Claude. Revisión: Tomás, con Codex. Estado: **revisada por Tomás con Codex sobre `e463673`; correcciones aplicadas, pendientes de su verificación**. No está integrada a `main`. Parte de `main` en `b1b1b82` (etapa 3 cerrada), rama `etapa-4-inventario`. Referencias: RF-07 a RF-09, RN-01 y RN-04 a RN-11.
+10/11/2026 · Responsable: Nazareno, con Claude. Revisión: Tomás, con Codex. Estado: **implementación y revisión cruzada aprobadas; integración a `main` pendiente**. Codex verificó la versión final `bc7465d`. Parte de `main` en `b1b1b82` (etapa 3 cerrada), rama `etapa-4-inventario`. Referencias: RF-07 a RF-09, RN-01 y RN-04 a RN-11.
 
 ## Qué funciona
 
@@ -17,8 +17,8 @@ No hay rutas para editar ni borrar movimientos, ni forma de escribir el saldo di
 
 ## Qué queda pendiente
 
-- **Revisión cruzada** de Tomás con Codex e integración a `main`.
-- **Pruebas en el equipo de Nazareno** con este código (todavía no ejecutadas).
+- **Integración a `main`.**
+- **Pruebas en el equipo de Nazareno** con este código (todavía no ejecutadas). Son pruebas personales: la aprobación técnica de la revisión no depende de ellas.
 - **Ensayo de despliegue y piloto** (etapas 6 y 7).
 - **Tiempo de carga (RNF-03):** se mide en el piloto; no se cronometró.
 - **Alertas, reposición y CSV:** etapa 5.
@@ -99,7 +99,7 @@ Ejecutadas por Claude el 10/11 en una copia aislada (Linux, Node 24.22.1, Postgr
 | `npm test` | 36 pruebas. Las 5 nuevas de `inventario.test.js`: operaciones permitidas, `STOCK_INICIAL` y motivos desconocidos, combinaciones incompatibles, permiso de ajuste, campos que el cliente no puede enviar y que los rechazos previos no hagan consultas. | 36/36 |
 | `npm run test:integration` | 21 pruebas, 8 nuevas, con PostgreSQL y la API real: roles y motivos; cantidades, rango, saldo insuficiente e inactivos; otro comercio con la misma respuesta que un ID inexistente; dos salidas simultáneas de 3 sobre saldo 3 (5 rondas); fallo real de la inserción después de descontar el saldo; coordinación con baja y cambio de unidad (con espera medida y carreras reales contra Catálogo); historial de 25 movimientos paginado y ordenado; conciliación de todos los saldos. | 21/21, dos veces |
 | `npm run build` | Compilación del frontend. | Correcta |
-| `backend/tests/inventario-browser.mjs` | 15 pasos con dueño y empleado (12 originales y 3 agregados por la revisión cruzada): salida con doble clic (una solicitud), saldo insuficiente, fracción en unidades, ajuste con y sin observación, kg con coma, falla de red, producto en la segunda página, búsqueda repetida, respuesta demorada con cambio rápido de producto, producto inactivo, Inventario ↔ Catálogo ↔ Inicio, sesión inválida, empleado con teclado y en móvil, envío en curso con respuesta demorada y con respuesta perdida después de confirmar (ambos roles), historial que falla, sin excepciones de JavaScript y saldos conciliados. | 12/12 antes de la revisión; 15/15 dos veces después de las correcciones |
+| `backend/tests/inventario-browser.mjs` | 15 pasos con dueño y empleado (12 originales y 3 agregados por la revisión cruzada): salida con doble clic (una solicitud), saldo insuficiente, fracción en unidades, ajuste con y sin observación, kg con coma, falla de red, producto en la segunda página, búsqueda repetida, respuesta demorada con cambio rápido de producto, producto inactivo, Inventario ↔ Catálogo ↔ Inicio, sesión inválida, empleado con teclado y en móvil, envío en curso con respuesta demorada y con respuesta perdida después de confirmar (ambos roles), historial que falla, sin excepciones de JavaScript y saldos conciliados. | Claude: 12/12 antes de la revisión y 15/15 dos veces después de las correcciones (Chromium). Codex: 15/15 en Windows/Edge sobre `bc7465d` |
 | Errores introducidos a propósito | Backend: quitar la condición de saldo, aceptar `STOCK_INICIAL`, permitir ajustes al empleado, quitar el bloqueo, quitar el filtro por comercio del historial, aceptar ajustes sin explicación. Pantalla: no repetir una búsqueda igual, no descartar un historial viejo, permitir envíos dobles; después de la revisión, la pantalla anterior, no bloquear el selector durante el envío y mostrar un historial fallido como vacío. | Cada uno hace fallar su prueba |
 
 **Cómo se provoca el fallo entre saldo e inserción:** la prueba envuelve el cliente transaccional y cambia el responsable por un ID inexistente justo al insertar. PostgreSQL rechaza la clave foránea cuando el saldo ya fue descontado dentro de la transacción; la prueba confirma que adentro el saldo había bajado y que, después del rollback, quedó igual que antes y sin movimiento nuevo.
@@ -112,7 +112,7 @@ node --import tsx backend/tests/inventario-browser.mjs
 
 Necesita Playwright y su navegador fuera del proyecto: `PLAYWRIGHT_MODULE` indica dónde está, y `BROWSER_CHANNEL=chromium` usa el Chromium de Playwright (por omisión, Edge). Si la base tiene datos, se detiene sin tocarla; al terminar borra las filas de las seis tablas, que creó él. No está incluido en `npm test`.
 
-**Límites:** en el entorno de Claude no se puede descargar el motor de migraciones de Prisma; se aplicó el mismo `migration.sql` y se ejecutó el mismo archivo de pruebas. Claude no probó Edge ni Windows (Codex sí corrió los 12 pasos originales en Windows/Edge), ni un lector de pantalla real. Si alguien cambia de sección del menú mientras se envía un movimiento, la pantalla de Inventario se cierra y no muestra la confirmación; el movimiento queda registrado y se ve en Catálogo y en el historial.
+**Límites:** en el entorno de Claude no se puede descargar el motor de migraciones de Prisma; se aplicó el mismo `migration.sql` y se ejecutó el mismo archivo de pruebas. Claude no probó Edge ni Windows (Codex corrió los 12 pasos originales y, en la verificación final, los 15 en Windows/Edge), ni un lector de pantalla real. Si alguien cambia de sección del menú mientras se envía un movimiento, la pantalla de Inventario se cierra y no muestra la confirmación; el movimiento queda registrado y se ve en Catálogo y en el historial.
 
 ## Recorrido manual para el equipo
 
@@ -136,6 +136,8 @@ Tomás revisó con Codex la versión `e463673` el 10/11. Según su informe: ley�
 | **B1.** Si se elegía otro producto mientras se enviaba un movimiento, la respuesta volvía a mostrar el producto enviado; si la respuesta se perdía después de confirmar, el aviso de resultado incierto y la recarga del historial quedaban en el producto equivocado | Bloqueante | Mientras se envía, el selector, la búsqueda, el estado y la paginación quedan deshabilitados, con un aviso. Además, la respuesta y sus errores se aplican solo al producto enviado, y los mensajes lo nombran | Recorrido de navegador, con dueño y con empleado: respuesta exitosa demorada (el selector queda bloqueado y la confirmación sale en el producto enviado) y respuesta perdida después del commit (el aviso nombra el producto, su historial muestra el movimiento y el saldo se actualiza). Falla con la pantalla anterior y si se quita el bloqueo |
 | **S1.** Un historial que fallaba al cargar mostraba a la vez el error y «Este producto todavía no tiene movimientos» | Sugerencia, aceptada | El estado vacío aparece solo después de una consulta exitosa del producto elegido. Si falla, se muestra el error con «Reintentar» | Paso nuevo del recorrido; falla si vuelven a mostrarse los dos mensajes |
 | **S2.** El informe prometía que el orden por fecha coincide con el orden de aplicación | Sugerencia, aceptada | Se corrigió la redacción en este informe y en la guía: la fecha se toma después del bloqueo, pero puede haber empates de milisegundos y el desempate por ID no es cronológico | — |
+
+**Verificación final.** Codex verificó `bc7465d` y aprobó las tres resoluciones. Según el informe compartido por Tomás: 36/36 pruebas unitarias; 21/21 de integración, con la migración aplicada sobre un PostgreSQL temporal vacío; compilación correcta; y los 15 pasos del recorrido en Windows/Edge con ambos roles, sin excepciones de JavaScript y con saldos conciliados. Son resultados informados por Codex: sus salidas no están guardadas en el repositorio.
 
 ## Para que revise Codex
 

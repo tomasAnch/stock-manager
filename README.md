@@ -19,9 +19,9 @@ El MVP contempla uno o dos comercios piloto, con datos separados por comercio y 
 |---|---|---|
 | Entrega 1: propuesta y viabilidad | Aprobada por la tutora | 01/09/2026 (aprobación) |
 | Entrega 2: diseño y módulos | Aprobada por la tutora; habilitada la implementación | 27/09/2026 (entrega); correcciones del 29/09 |
-| Implementación y entrega final | Etapa 1 cerrada; etapa 2 (acceso y permisos) cerrada; etapa 3 (catálogo) cerrada e integrada a main; etapa 4 (movimientos e historial) implementada y en revisión; reposición pendiente | 14/11/2026 (fecha límite) |
+| Implementación y entrega final | Etapa 1 cerrada; etapa 2 (acceso y permisos) cerrada; etapa 3 (catálogo) cerrada e integrada a main; etapa 4 (movimientos e historial) aprobada en revisión cruzada, integración a main pendiente; reposición pendiente | 14/11/2026 (fecha límite) |
 
-El proyecto ya tiene una base ejecutable: frontend React, servidor Express, cliente Prisma, migración inicial y seed de desarrollo. Desde la etapa 2 se ingresa con usuario y contraseña, y cada rol ve su menú; el backend verifica la sesión, el rol y el comercio en cada solicitud protegida. El catálogo ya permite administrar referencias y productos con stock inicial. En la rama de la etapa 4, todavía en revisión, se registran reposiciones, salidas y ajustes, y se consulta el historial por producto; la reposición sigue pendiente; la descripción funcional de abajo corresponde al MVP completo previsto.
+El proyecto ya tiene una base ejecutable: frontend React, servidor Express, cliente Prisma, migración inicial y seed de desarrollo. Desde la etapa 2 se ingresa con usuario y contraseña, y cada rol ve su menú; el backend verifica la sesión, el rol y el comercio en cada solicitud protegida. El catálogo ya permite administrar referencias y productos con stock inicial. En la rama de la etapa 4, aprobada y pendiente de integrar a main, se registran reposiciones, salidas y ajustes, y se consulta el historial por producto; la reposición sigue pendiente; la descripción funcional de abajo corresponde al MVP completo previsto.
 
 ## Stack definido
 
@@ -249,3 +249,7 @@ Movimientos e historial implementados por Nazareno con Claude en `etapa-4-invent
 ### Correcciones del 10/11 — Etapa 4
 
 Tomás revisó con Codex `e463673`: un bloqueante en la pantalla (la respuesta de un envío podía aplicarse a otro producto elegido mientras tanto) y dos sugerencias. Corregidas por Nazareno con Claude, con pruebas nuevas de navegador; pendiente de verificación de Codex. Detalle en [etapa 4](docs/implementacion/etapa-4.md#revisión-cruzada).
+
+### Aprobación del 10/11 — Etapa 4
+
+Codex verificó `bc7465d` y aprobó las correcciones: 36/36 unitarias, 21/21 de integración, build y 15 pasos de navegador en Windows/Edge, según su informe. Implementación y revisión cruzada aprobadas; integración a main pendiente. Siguen pendientes el despliegue, el piloto y las pruebas personales de Nazareno de esta etapa.

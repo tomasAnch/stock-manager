@@ -8,7 +8,7 @@ Documento de estudio compartido. Creado el 06/11/2026. La defensa será individu
 
 Primero leer el problema y el recorrido general. Después estudiar una etapa junto con sus archivos. Al terminar, intentar responder las preguntas sin mirar y mostrar en el código dónde ocurre lo explicado. Si una respuesta todavía cuesta, anotarla como pendiente de practicar.
 
-Las etapas 0 y 1 se explican a partir del código local y los registros de ejecución de octubre. La etapa 1 está cerrada por el equipo. La etapa 2 se explica a partir de la versión con las correcciones de la revisión (`5ce7c91`), aprobada por Codex e integrada a `main` el 09/11 (`51e1853`). La etapa 3 está cerrada e integrada. La etapa 4 se explica a partir de la rama `etapa-4-inventario`, implementada y pendiente de revisión cruzada. Las explicaciones sobre futuras funciones se identifican como diseño previsto.
+Las etapas 0 y 1 se explican a partir del código local y los registros de ejecución de octubre. La etapa 1 está cerrada por el equipo. La etapa 2 se explica a partir de la versión con las correcciones de la revisión (`5ce7c91`), aprobada por Codex e integrada a `main` el 09/11 (`51e1853`). La etapa 3 está cerrada e integrada. La etapa 4 se explica a partir de la rama `etapa-4-inventario` (`bc7465d`), con la implementación y la revisión cruzada aprobadas y la integración a `main` pendiente. Las explicaciones sobre futuras funciones se identifican como diseño previsto.
 
 Los ejemplos orales son una guía para practicar. Cada integrante debe ajustarlos a las tareas que realmente realizó. El registro de participación permite identificar responsables y evidencias. [Registro de participación](docs/participacion-y-defensa.md).
 
@@ -1234,9 +1234,9 @@ Otro detalle para explicar: al editar, se bloquean las referencias nuevas que qu
 
 ### Estado y responsables
 
-Nazareno llevó adelante la etapa con Claude; Tomás y Codex la revisan. La versión que se explica está en la rama `etapa-4-inventario`, creada desde `main` después del cierre de la etapa 3. **Estado: implementada y revisada por Tomás con Codex; correcciones aplicadas, pendientes de su verificación; no integrada.** Detalle técnico y evidencias: [etapa 4](docs/implementacion/etapa-4.md).
+Nazareno llevó adelante la etapa con Claude; Tomás y Codex la revisan. La versión que se explica está en la rama `etapa-4-inventario`, creada desde `main` después del cierre de la etapa 3. **Estado: implementación y revisión cruzada aprobadas (Codex verificó `bc7465d`); integración a `main` pendiente.** Detalle técnico y evidencias: [etapa 4](docs/implementacion/etapa-4.md).
 
-Claude escribió el código, las pruebas y esta documentación, y ejecutó las pruebas en una copia aislada. Nazareno pidió la implementación con el alcance y las condiciones de trabajo, y creó la rama. Todavía no ejecutó las pruebas de esta etapa en su equipo.
+Claude escribió el código, las pruebas y esta documentación, y ejecutó las pruebas en una copia aislada. Nazareno pidió la implementación con el alcance y las condiciones de trabajo, creó la rama, hizo los commits y la publicó. Todavía no ejecutó las pruebas de esta etapa en su equipo. Tomás coordinó la revisión con Codex, que leyó el código, ejecutó las pruebas y aprobó la versión final.
 
 ### Qué problema resuelve
 
@@ -1381,13 +1381,13 @@ La revisión cruzada encontró otra variante, esta vez con el *envío* de un mov
 
 ### Qué probamos y quién lo hizo
 
-Todo lo de esta tabla lo **ejecutó Claude** el 10/11 en una copia aislada. Codex, en la revisión, repitió las pruebas automáticas y los 12 pasos originales del navegador en Windows/Edge. Ninguna prueba es todavía manual de Nazareno ni de Tomás.
+Todo lo de esta tabla lo **ejecutó Claude** el 10/11 en una copia aislada. Codex, para Tomás, repitió las pruebas automáticas y, al verificar la versión final, los 15 pasos del navegador en Windows/Edge con ambos roles. Ninguna prueba es todavía manual de Nazareno ni de Tomás.
 
 | Prueba | Qué demuestra | Qué no demuestra |
 |---|---|---|
 | 5 unitarias (sin base) | Que los pedidos inválidos se rechazan antes de tocar la base | Nada sobre PostgreSQL |
 | 8 de integración (PostgreSQL real y API) | Permisos, aislamiento por comercio, cantidades, saldo insuficiente, dos salidas simultáneas, rollback real, coordinación con baja y unidad, historial y conciliación | La pantalla |
-| Navegador, 15 pasos | Que dueño y empleado pueden hacer el recorrido completo, con errores, transiciones, envíos en curso, móvil y teclado | Lectores de pantalla reales. Claude lo corrió en Chromium; Codex corrió los 12 pasos originales en Windows/Edge |
+| Navegador, 15 pasos | Que dueño y empleado pueden hacer el recorrido completo, con errores, transiciones, envíos en curso, móvil y teclado | Lectores de pantalla reales. Claude lo corrió en Chromium; Codex, en Windows/Edge |
 | Errores introducidos a propósito | Que cada prueba importante detecta el error que dice cubrir | — |
 
 ### Preguntas para practicar
@@ -1439,7 +1439,7 @@ Todo lo de esta tabla lo **ejecutó Claude** el 10/11 en una copia aislada. Code
 - **Sin negativos:** el egreso exige `saldo >= cantidad` en la misma sentencia; dos salidas simultáneas de 3 sobre 3 → una sola confirma.
 - **Historial:** inmutable, incluye inactivos, del más reciente al más antiguo, 20 por página, sin datos de usuario de más.
 - **Pantalla:** sin envíos dobles, sin datos viejos, sin reintento ciego.
-- **Pendiente:** que Codex verifique las correcciones de su revisión, pruebas de Nazareno en su equipo, integración, despliegue y piloto.
+- **Pendiente:** integración a `main`, pruebas de Nazareno en su equipo, despliegue y piloto.
 
 ## Etapas siguientes
 
