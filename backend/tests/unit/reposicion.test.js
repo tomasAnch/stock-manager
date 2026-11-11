@@ -5,15 +5,32 @@ import { cantidadValida, crearTexto, crearCSV, fechaArgentina } from '../../../f
 const fecha = '2026-11-11T01:02:03.456Z';
 const grupo = { proveedor: { nombre: 'Almacén Ñandú' }, items: [
   { codigo: '001', nombre: 'Harina', cantidad: '0.250', unidad: 'KG' },
-  { codigo: '002', nombre: 'Yerba', cantidad: '12.000', unidad: 'UNIDAD' },
+  { codigo: '002', nombre: 'Yerba', cantidad: '12', unidad: 'UNIDAD' },
   { codigo: '003', nombre: 'Omitido', cantidad: '', unidad: 'KG', omitido: true },
 ] };
 
 test('reposición: cantidades exactas, positivas, sin redondeos ni fracciones de unidad', () => {
-  for (const [q, u] of [['0.001', 'KG'], ['0,250', 'KG'], ['999999999.999', 'KG'], ['12.000', 'UNIDAD']]) assert.equal(cantidadValida(q, u), true);
+  for (const [q, u] of [['0.001', 'KG'], ['0,250', 'KG'], ['999999999.999', 'KG'], ['12', 'UNIDAD']]) assert.equal(cantidadValida(q, u), true);
   for (const q of ['', '0', '0.000', '-1', '1e3', '1.0001', '1000000000', '1,2.3', ' 1', 1]) assert.equal(cantidadValida(q, 'KG'), false);
   assert.equal(cantidadValida('1.001', 'UNIDAD'), false);
   assert.equal(cantidadValida('1', 'LITRO'), false);
+});
+
+test('reposición: mil unidades se escribe 1000, sin separadores ambiguos', () => {
+  const lista = cantidad => ({ ...grupo, items: [{ ...grupo.items[1], cantidad }] });
+  for (const valor of ['1.000', '1,000', '12.000', '1.0', '0', '-1', '1e3', '1000000000']) {
+    assert.equal(cantidadValida(valor, 'UNIDAD'), false);
+    for (const salida of [crearTexto, crearCSV]) assert.throws(() => salida(lista(valor), fecha), /Revisá la cantidad/);
+  }
+  assert.equal(cantidadValida('1000', 'UNIDAD'), true);
+  assert(crearTexto(lista('1000'), fecha).includes('1000 unidades'));
+  assert(crearCSV(lista('1000'), fecha).includes(';1000;UNIDAD'));
+});
+
+test('reposición: singular en texto y código de unidad estable en CSV', () => {
+  const lista = { ...grupo, items: [{ ...grupo.items[1], cantidad: '001' }] };
+  assert(crearTexto(lista, fecha).endsWith('Yerba: 1 unidad'));
+  assert(crearCSV(lista, fecha).endsWith(';1;UNIDAD\r\n'));
 });
 
 test('reposición: copia y CSV usan cantidad editada, omisiones y fecha del cálculo', () => {

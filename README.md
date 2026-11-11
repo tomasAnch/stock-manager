@@ -267,3 +267,7 @@ El 10/11 Nazareno ejecutó en su equipo, sobre main (`a8fd447`), `npm test` (36/
 ### 10/11/2026 — Implementación de la etapa 5, pendiente de revisión
 
 Se implementaron alertas para ambos roles y listas temporales de reposición para el dueño, agrupadas por proveedor, con edición, omisiones, copia manual/automática y CSV según RN-14. Actualizar alertas conserva la fotografía; recalcular la reemplaza. No se agregaron dependencias, tablas ni migraciones. Codex ejecutó 40/40 pruebas de lógica/HTTP, 24/24 de integración, build y 10 pasos en Edge con ambos roles. Se agregaron evidencias, informe y capítulo de defensa. [Detalle y límites](docs/implementacion/etapa-5.md). Pendientes: revisión de Nazareno con Claude, integración, despliegue y piloto.
+
+### 11/11/2026 — Sugerencias de revisión de la etapa 5
+
+Claude aprobó b9675f9 sin bloqueantes. Se aplicaron sus cuatro sugerencias: fecha argentina en el nombre del CSV, cantidades por unidad sin separadores, singular «unidad» y precisión sobre Decimal/toString en la guía. Codex verificó 42/42 pruebas de lógica/HTTP, build y 10 pasos de navegador. Pendientes: confirmación de estos cambios e integración. [Detalle y evidencia](docs/implementacion/etapa-5.md#revisión-cruzada-y-correcciones--11112026).

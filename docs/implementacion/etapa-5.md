@@ -2,14 +2,14 @@
 
 ## Estado y responsables
 
-Implementada el 10/11/2026 en `etapa-5-reposicion`, partiendo del `main` actualizado que Tomás informó (`cc4d42d`). Tomás coordina; Codex escribió código, pruebas y documentación y ejecutó las comprobaciones locales. Nazareno con Claude harán la revisión cruzada. **Todavía no está aprobada por esa revisión ni integrada a main.** Git lo ejecuta Tomás; el commit a revisar se identifica cuando lo comparta.
+Implementada el 10/11/2026 en `etapa-5-reposicion`, partiendo del `main` actualizado que Tomás informó (`cc4d42d`). Tomás coordina; Codex escribió código, pruebas y documentación y ejecutó las comprobaciones locales. Nazareno con Claude harán la revisión cruzada. **La versión b9675f9 fue aprobada por Claude sin bloqueantes; S1-S4 ya están aplicadas y pendientes de confirmación. Todavía no se integró a main.** Git lo ejecuta Tomás; el commit a revisar se identifica cuando lo comparta.
 
 ## Qué quedó funcionando
 
 - RF-10 / RN-12: ambos roles consultan productos activos cuyo saldo es estrictamente menor al mínimo. Igualdad y mínimo cero no producen alerta.
 - RF-11 / RN-13: el dueño genera una lista por proveedor, con objetivo menos saldo actual. El empleado recibe 403 si llama directamente a la ruta de generación.
 - RF-12 / RN-14: el dueño edita cantidades positivas, omite o vuelve a incluir productos del cálculo y copia texto o descarga CSV por proveedor. No puede agregar productos externos a ese cálculo.
-- Los productos por unidad exigen enteros; kg admite hasta tres decimales. La pantalla acepta punto o coma; no convierte silenciosamente entradas inválidas ni las redondea.
+- Los productos por unidad exigen enteros; kg admite hasta tres decimales. Para KG la pantalla acepta punto o coma decimal; en UNIDAD solo acepta dígitos sin separadores; no convierte silenciosamente entradas inválidas ni las redondea.
 - Copiar/exportar usa la misma selección editada y la fecha original. No guarda órdenes ni altera inventario. Recargar, salir de la sección o recalcular descarta ediciones. Actualizar solo alertas conserva la lista.
 - Si falla la copia automática se ofrece el texto seleccionable. Si falla la preparación de la descarga se conserva la lista y se avisa. Si falla una consulta se muestra error y Reintentar, sin inventar un resultado vacío.
 
@@ -39,7 +39,7 @@ Implementada el 10/11/2026 en `etapa-5-reposicion`, partiendo del `main` actuali
 
 **Lista temporal.** React conserva la respuesta y sus ediciones en memoria. Generar otro cálculo reemplaza esa respuesta; actualizar alertas no la reemplaza. Se muestran fecha y aviso de descarte. No se necesita una tabla o migración nueva. Un CSV puede conservarse fuera de la aplicación, pero no constituye una orden persistida ni un ingreso de mercadería.
 
-**Cantidades exactas.** PostgreSQL calcula la sugerencia en decimal, Prisma la serializa como cadena. En el navegador se validan milésimas con BigInt, evitando aritmética de punto flotante y redondeos. Se admiten hasta nueve cifras enteras y tres decimales. La validación vuelve a ejecutarse al construir cada salida, además del bloqueo visual de botones.
+**Cantidades exactas.** PostgreSQL calcula la sugerencia en decimal, Prisma devuelve un Decimal y el servicio lo convierte en cadena con `.toString()`. En el navegador se validan milésimas con BigInt, evitando aritmética de punto flotante y redondeos. Se admiten hasta nueve cifras enteras y tres decimales. La validación vuelve a ejecutarse al construir cada salida, además del bloqueo visual de botones.
 
 **CSV de RN-14.** UTF-8 con BOM, `;`, CRLF, coma decimal, enteros para UNIDAD y tres decimales para KG. Columnas: `proveedor;fecha_calculo;codigo;nombre;cantidad;unidad`. La fecha corresponde al cálculo con desplazamiento -03:00, no a la descarga ni al huso del equipo. Se duplican comillas y se encierran campos que contienen comillas, punto y coma o saltos. Texto que comienza con `=`, `+`, `-` o `@`, incluso después de espacios, recibe apóstrofo solo en el CSV. Se respeta la advertencia de RN-14: otro programa/configuración puede necesitar importar indicando separador y código como texto para conservar ceros iniciales.
 
@@ -88,3 +88,26 @@ Como en la etapa 4, Playwright se obtiene de una instalación externa: `PLAYWRIG
 ## Para que revise Claude
 
 Revisar la rama y commit compartidos contra main, sin corregir directamente. Priorizar RN-12 a RN-14, autorización y aislamiento, fechas y decimales, igualdad entre copia/CSV, omisiones, fallos de red/portapapeles/descarga y conservación de la fotografía. Repetir pruebas de lógica, integración y recorrido de navegador. Separar lo leído, lo ejecutado y lo no verificado; clasificar observaciones como bloqueantes o sugerencias y dar pasos de reproducción. Revisar también la explicación de la etapa 5 en la guía de defensa. El cierre y la integración se registrarán después de resolver esa revisión.
+
+## Revisión cruzada y correcciones — 11/11/2026
+
+Claude revisó `b9675f9` contra `cc4d42d` y lo consideró listo para integrar, sin bloqueantes y con cuatro sugerencias. Se conserva su [revisión completa](revision-etapa-5-claude.md), incluyendo la limitación de su entorno: ejecutó el archivo de integración dos veces con una migración aplicada directamente, no el runner npm completo. Sus resultados se atribuyen a Claude; no son ejecuciones nuevas de Codex.
+
+Codex aplicó las cuatro sugerencias en esta misma rama:
+
+- **S1:** el nombre del CSV toma el día de `fechaArgentina(calculadaEn)`, igual que su contenido. El recorrido intercepta solo la fecha de la primera respuesta para fijarla en `2026-11-11T01:30Z`; comprueba que las descargas se llaman con el día argentino `2026-11-10`.
+- **S2:** las cantidades editadas de UNIDAD admiten únicamente dígitos positivos, hasta nueve cifras. `1.000` y `1,000` se rechazan; mil se escribe `1000`. Se muestra una ayuda junto al campo y se verifica el bloqueo de ambas salidas. KG mantiene punto/coma decimal, con aviso de que no representan miles. No cambia el contrato de cantidades de Catálogo ni de Inventario.
+- **S3:** el texto copiable usa «1 unidad» y plural para otras cantidades; el CSV conserva UNIDAD/KG.
+- **S4:** la guía y este informe aclaran que Prisma devuelve Decimal y el servicio aplica `.toString()` antes de responder.
+
+Verificación ejecutada por Codex después de los cambios:
+
+| Comprobación | Resultado | Evidencia |
+|---|---|---|
+| npm test | 42/42 | [Salida](resultados-etapa-5-correcciones-unitarias.txt) |
+| npm run build | Correcto | [Salida](resultados-etapa-5-correcciones-build.txt) |
+| Recorrido Edge con PostgreSQL temporal | 10 pasos correctos, con casos S1 y S2 añadidos | [Salida](resultados-etapa-5-correcciones-navegador.txt) |
+
+No se repitieron las 24 pruebas de integración ni el recorrido de Inventario en esta ronda: no se modificaron backend, esquema ni lógica de Inventario. El navegador sí usó la API y PostgreSQL reales; solo la fecha inicial y los errores indicados en el script se controlan para reproducir los casos. Retiró sus datos al terminar. Las capturas anteriores se conservan como evidencia de la primera versión, no se presentan como nuevas.
+
+**Estado:** sugerencias resueltas y probadas localmente, pendientes de confirmación de Claude sobre el nuevo commit y de integración a main. Para la etapa 6 queda revisar si conviene unificar la ayuda de ingreso de cantidades entre módulos; esta ronda cambia únicamente la edición de la lista de reposición.

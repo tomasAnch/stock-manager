@@ -1,0 +1,32 @@
+
+> stock-manager@0.1.0 build
+> npm run generate && npm run build -w frontend
+
+
+> stock-manager@0.1.0 generate
+> npm run generate -w backend
+
+
+> @stock-manager/backend@0.1.0 generate
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+
+✔ Generated Prisma Client (7.10.1) to .\src\generated\prisma in 86ms
+
+
+> @stock-manager/frontend@0.1.0 build
+> vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 26 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.46 kB │ gzip:  0.30 kB
+dist/assets/index-D5cgOu-p.css    9.98 kB │ gzip:  2.53 kB
+dist/assets/index-oPgTdGb7.js   252.94 kB │ gzip: 78.42 kB
+
+✓ built in 334ms

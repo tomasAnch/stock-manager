@@ -1446,7 +1446,7 @@ Todo lo de esta tabla lo **ejecutó Claude** el 10/11 en una copia aislada. Code
 
 ### Estado, responsables y problema que resolvemos
 
-Implementada por Codex con la coordinación de Tomás el 10/11/2026, en `etapa-5-reposicion`. Las comprobaciones locales pasaron; la revisión de Nazareno con Claude y la integración están pendientes. Esto describe el código construido, no una función futura. El [informe de etapa 5](docs/implementacion/etapa-5.md) contiene las evidencias y los pasos para repetirlas.
+Implementada por Codex con la coordinación de Tomás el 10/11/2026, en `etapa-5-reposicion`. Las comprobaciones locales pasaron. Claude aprobó b9675f9 sin bloqueantes; el 11/11 Codex aplicó sus cuatro sugerencias. Falta confirmar esos ajustes e integrar. Esto describe el código construido, no una función futura. El [informe de etapa 5](docs/implementacion/etapa-5.md) contiene las evidencias y los pasos para repetirlas.
 
 Hasta la etapa 4 ya sabíamos registrar cuánto entra y sale. Ahora usamos ese saldo para responder dos preguntas del comercio: «¿qué me está faltando?» y «¿cuánto le pido a cada proveedor?». El empleado puede consultar faltantes. El dueño prepara las cantidades que desea solicitar y obtiene texto para pegar en un mensaje o un archivo CSV. La aplicación no envía el pedido, no guarda una orden y no carga automáticamente la mercadería: cuando llega, se registra un ingreso en Inventario.
 
@@ -1513,11 +1513,11 @@ Si una solicitud tarda y la persona cambia de sección, un `AbortController` la 
 
 ### Decimales: por qué no sumar y restar con Number en todas partes
 
-JavaScript suele representar números con punto flotante: algunas fracciones decimales no tienen una representación exacta. En inventario necesitamos conservar exactamente hasta tres decimales. PostgreSQL hace la resta usando Decimal y Prisma entrega el resultado como cadena, por ejemplo `"0.25"`.
+JavaScript suele representar números con punto flotante: algunas fracciones decimales no tienen una representación exacta. En inventario necesitamos conservar exactamente hasta tres decimales. PostgreSQL hace la resta en decimal; Prisma devuelve un objeto Decimal y el servicio lo convierte en texto con `.toString()`, por ejemplo `"0.25"`.
 
-Para validar en el navegador usamos **BigInt**, un entero que no usa decimales de punto flotante. Convertimos la cantidad a milésimas: 0.250 equivale a 250 milésimas; 1 equivale a 1000. La validación exige un valor positivo y, para UNIDAD, que sea múltiplo de 1000. Antes de convertir, una expresión regular comprueba el formato y el límite de nueve enteros y tres decimales. Eso rechaza signos negativos, notación científica y valores como `1.0001` sin redondearlos.
+Para validar en el navegador usamos **BigInt**, un entero que no usa decimales de punto flotante. Convertimos la cantidad a milésimas: 0.250 equivale a 250 milésimas; 1 equivale a 1000. La validación exige un valor positivo. En UNIDAD se aceptan solo dígitos, sin puntos ni comas: mil se escribe `1000`, para evitar que `1.000` se interprete como uno. Antes de convertir, una expresión regular comprueba el formato y el límite de nueve enteros y tres decimales. Eso rechaza signos negativos, notación científica y valores como `1.0001` sin redondearlos.
 
-La pantalla admite punto o coma decimal por comodidad. El CSV siempre usa coma. `formatearCantidad` muestra tres decimales para kg y un entero para unidades. No se transforma una cantidad inválida en una válida por aproximación. Si hay un ítem incluido inválido se bloquean las dos salidas de ese proveedor. Omitir ese ítem permite continuar con los demás.
+Para KG la pantalla admite punto o coma decimal, nunca como separador de miles. Para UNIDAD admite solo dígitos. El CSV siempre usa coma. `formatearCantidad` muestra tres decimales para kg y un entero para unidades. No se transforma una cantidad inválida en una válida por aproximación. Si hay un ítem incluido inválido se bloquean las dos salidas de ese proveedor. Omitir ese ítem permite continuar con los demás.
 
 ### Copiar texto y CSV: dos presentaciones de la misma lista
 
@@ -1535,7 +1535,7 @@ Un **CSV** es un archivo de texto con filas y columnas separadas por un carácte
 | Comillas y escape | Un nombre con `;` no debe crear otra columna; un salto no debe partir el registro. Las comillas internas se duplican. |
 | Apóstrofo ante posibles fórmulas | Texto que empieza con `=`, `+`, `-` o `@`, incluso después de espacios, no debe ejecutarse como fórmula al abrirlo. Solo cambia el CSV. |
 
-Las columnas son proveedor, fecha del cálculo, código, nombre, cantidad y unidad. La fecha no se genera al descargar: se toma de `calculadaEn`. Se repite junto al proveedor en cada fila para que cada registro se pueda entender por separado.
+Las columnas son proveedor, fecha del cálculo, código, nombre, cantidad y unidad. La fecha no se genera al descargar: se toma de `calculadaEn`. El nombre del archivo usa también el día argentino: a las 22:30 no debe mostrar el día siguiente por usar UTC. Se repite junto al proveedor en cada fila para que cada registro se pueda entender por separado.
 
 Ejemplo de escape: el nombre `Harina; "especial"` se escribe como `"Harina; ""especial"""` dentro del archivo. Esas comillas delimitan un solo campo, no forman parte del nombre original. Los códigos como `001` se conservan así en los bytes del archivo; una hoja de cálculo puede interpretarlos como número y quitar ceros. Por eso, si hace falta, se importa indicando que la columna código es texto. No prometemos reconocimiento automático en cualquier programa.
 

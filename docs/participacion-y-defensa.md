@@ -181,3 +181,7 @@ Tomás ejecutó el fast-forward y el push de la etapa 3 a main el 10/11/2026 (f8
 - **Pruebas:** 40/40 de lógica/HTTP, 24/24 de integración, build y 10 pasos en Edge, incluyendo escritorio y móvil. [Informe y evidencias](implementacion/etapa-5.md). Portapapeles con respuestas controladas; descarga CSV real. No se probó Excel ni despliegue/piloto.
 - **Para estudiar:** [capítulo de etapa 5](../preparacion-defensa-oral.md#etapa-5--alertas-y-reposición). Explicar mínimo frente a objetivo, diferencia entre pedir y recibir, temporalidad de la lista, permisos y CSV.
 - **Siguiente paso:** compartir un commit identificable con Nazareno y Claude, resolver observaciones y registrar la aprobación antes de integrar. La comprensión individual sigue pendiente de practicar.
+
+### Etapa 5 — Revisión y ajustes del 11/11/2026
+
+Nazareno compartió mediante Tomás la revisión de Claude sobre b9675f9: sin bloqueantes, cuatro sugerencias. Codex las aplicó y verificó localmente (42/42, build, 10 pasos en Edge). La corrección relevante para estudiar es evitar que 1.000 unidades se entienda como uno: en esta lista solo se escriben dígitos. También se precisó dónde se convierte Decimal a texto. No se atribuyen las ejecuciones automatizadas como pruebas personales de los estudiantes. [Registro completo](implementacion/etapa-5.md#revisión-cruzada-y-correcciones--11112026). Pendiente de confirmación del nuevo commit por Claude e integración.

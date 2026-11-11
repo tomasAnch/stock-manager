@@ -63,6 +63,12 @@ try {
   await entrar('dueno');
   assert.equal(await p.locator('.reposicion-alertas li').count(), 3);
   assert(!/Igual al mínimo|Mínimo cero|Inactivo/.test(await p.locator('.reposicion-alertas').innerText()));
+  // S1: solo fijamos la fecha de la primera respuesta; los productos siguen viniendo de PostgreSQL.
+  await p.route('**/api/reposicion/lista', async ruta => {
+    const respuesta = await ruta.fetch();
+    const datos = await respuesta.json(); datos.calculadaEn = '2026-11-11T01:30:00.000Z';
+    await ruta.fulfill({ response: respuesta, json: datos });
+  }, { times: 1 });
   await generar();
   assert.equal(await cantidadHarina().inputValue(), '0.25'); assert.equal(await cantidadYerba().inputValue(), '9');
   assert.equal(await p.locator('.reposicion-grupo').count(), 2);
@@ -74,14 +80,21 @@ try {
   }
   await cantidadHarina().fill('0,250');
   await cantidadYerba().fill('2.5'); assert.equal(await csv().isDisabled(), true);
+  for (const valor of ['1.000', '1,000']) {
+    await cantidadYerba().fill(valor); assert.equal(await csv().isDisabled(), true); assert.equal(await copiar().isDisabled(), true);
+  }
+  await cantidadYerba().fill('1000'); assert.equal(await csv().isEnabled(), true);
   await cantidadYerba().fill('12'); assert.equal(await csv().isEnabled(), true);
   await campo('Incluir Yerba (002)').uncheck();
   ok('2. Cantidades inválidas bloquean salidas; coma decimal y omisiones admitidas.');
 
   const fecha = await p.locator('.reposicion time').innerText();
+  assert.equal(fecha, '2026-11-10 22:30:00-03:00');
   async function descargar(botonCSV) {
     const descarga = p.waitForEvent('download'); await botonCSV.click();
-    return readFile(await (await descarga).path());
+    const archivo = await descarga;
+    assert(archivo.suggestedFilename().endsWith('-2026-11-10.csv'), 'el nombre usa el día argentino, no el UTC');
+    return readFile(await archivo.path());
   }
   const archivo = await descargar(csv());
   assert.deepEqual([...archivo.subarray(0, 3)], [239, 187, 191]);

@@ -1,6 +1,6 @@
 # Alertas y reposición
 
-`Reposicion.jsx` muestra faltantes para ambos roles. El dueño puede generar la lista por proveedor, editar cantidades, omitir productos y copiar texto o descargar un CSV. Las entradas aceptan punto o coma decimal y no redondean valores inválidos. Un grupo vacío o con cantidades inválidas tiene sus salidas deshabilitadas.
+`Reposicion.jsx` muestra faltantes para ambos roles. El dueño puede generar la lista por proveedor, editar cantidades, omitir productos y copiar texto o descargar un CSV. Las entradas de KG aceptan punto o coma decimal; UNIDAD solo admite dígitos sin separadores (mil se escribe 1000). No se redondean valores inválidos. Un grupo vacío o con cantidades inválidas tiene sus salidas deshabilitadas.
 
 `salidas.js` valida cantidades con milésimas enteras (BigInt) y genera texto/CSV desde los mismos ítems editados. La lista no se guarda en la base; al recargar, salir de la sección o recalcular se pierden las ediciones. Actualizar alertas no cambia la lista ya generada. El CSV conserva la fecha del cálculo y respeta RN-14: UTF-8 con BOM, `;`, coma decimal, CRLF, escape de campos y neutralización de posibles fórmulas.
 

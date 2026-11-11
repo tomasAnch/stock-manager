@@ -1,5 +1,7 @@
 // Milésimas enteras: validamos y formateamos sin redondear cantidades con punto flotante.
 export function cantidadValida(valor, unidad) {
+  // En unidades, solo dígitos: 1.000 no debe confundirse con mil.
+  if (unidad === 'UNIDAD') return typeof valor === 'string' && /^\d{1,9}$/.test(valor) && BigInt(valor) > 0n;
   if (!['UNIDAD', 'KG'].includes(unidad) || typeof valor !== 'string' || !/^\d{1,9}([.,]\d{1,3})?$/.test(valor)) return false;
   const [entero, decimal = ''] = valor.replace(',', '.').split('.');
   const milesimas = BigInt(entero) * 1000n + BigInt(decimal.padEnd(3, '0'));
@@ -32,7 +34,11 @@ function celda(valor) {
 export function crearTexto(grupo, calculadaEn) {
   const items = itemsSeleccionados(grupo);
   return [`Proveedor: ${grupo.proveedor.nombre}`, `Fecha del cálculo: ${fechaArgentina(calculadaEn)}`, '',
-    ...items.map(p => `${p.codigo} — ${p.nombre}: ${formatearCantidad(p.cantidad, p.unidad)} ${p.unidad === 'KG' ? 'kg' : 'unidades'}`),
+    ...items.map(p => {
+      const cantidad = formatearCantidad(p.cantidad, p.unidad);
+      const unidad = p.unidad === 'KG' ? 'kg' : cantidad === '1' ? 'unidad' : 'unidades';
+      return `${p.codigo} — ${p.nombre}: ${cantidad} ${unidad}`;
+    }),
   ].join('\r\n');
 }
 

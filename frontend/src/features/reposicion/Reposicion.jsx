@@ -84,7 +84,7 @@ function Grupo({ grupo, calculadaEn, bloqueado, onEditar }) {
       const blob = new Blob([crearCSV(grupo, calculadaEn)], { type: 'text/csv;charset=utf-8' });
       url = URL.createObjectURL(blob);
       const enlace = document.createElement('a'); enlace.href = url;
-      enlace.download = `reposicion-${grupo.proveedor.id}-${calculadaEn.slice(0, 10)}.csv`;
+      enlace.download = `reposicion-${grupo.proveedor.id}-${fechaArgentina(calculadaEn).slice(0, 10)}.csv`;
       document.body.append(enlace);
       try { enlace.click(); } finally { enlace.remove(); }
       setAviso('Descarga solicitada. Revisá las descargas del navegador.');
@@ -105,7 +105,8 @@ function Grupo({ grupo, calculadaEn, bloqueado, onEditar }) {
               maxLength={13} aria-invalid={invalida} aria-describedby={invalida ? `error-${p.id}` : undefined}
               onChange={e => cambiar(p.id, { cantidad: e.target.value })} />
           </label>
-          {invalida && <p id={`error-${p.id}`} className="reposicion-error">Ingresá {p.unidad === 'KG' ? 'una cantidad positiva con hasta 3 decimales' : 'un entero positivo'}, con hasta 9 cifras enteras.</p>}
+          <small>{p.unidad === 'KG' ? 'Punto o coma indican decimales, no miles.' : 'Solo dígitos, sin puntos ni comas. Para mil unidades, escribí 1000.'}</small>
+          {invalida && <p id={`error-${p.id}`} className="reposicion-error">Ingresá {p.unidad === 'KG' ? 'una cantidad positiva con hasta 3 decimales' : 'un entero positivo sin puntos ni comas'}, con hasta 9 cifras enteras.</p>}
         </div>;
       })}
     </fieldset>
