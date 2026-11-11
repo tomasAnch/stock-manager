@@ -1,0 +1,56 @@
+
+> stock-manager@0.1.0 test
+> npm run test -w backend
+
+
+> @stock-manager/backend@0.1.0 test
+> tsx --test tests/unit/*.test.js
+
+✔ login correcto devuelve token y datos públicos, sin el hash (76.0063ms)
+✔ contraseña incorrecta, correo inexistente y cuenta inactiva responden igual (244.5217ms)
+✔ login sin datos o con tipos inválidos responde 400 (11.7049ms)
+✔ contraseñas de más de 72 bytes se rechazan antes de consultar la base (17.0259ms)
+✔ sesión: sin token, encabezado mal formado, otra firma, otro algoritmo, sin firma, sin vencimiento o vencido se rechazan (15.9958ms)
+✔ un token vigente deja de servir si el usuario se desactiva o ya no existe (9.8782ms)
+✔ rol y comercio salen de la base aunque el token diga otra cosa (4.7359ms)
+✔ requireRole: el empleado recibe 403 y el dueño pasa (6.5314ms)
+✔ filtro por comercio: reemplaza el comercio enviado y no consulta IDs inválidos (0.6242ms)
+✔ configuración: exige un secreto largo y un vencimiento válido, sin mostrar el secreto (0.3611ms)
+✔ CORS permite el encabezado Authorization desde el frontend configurado (5.1401ms)
+✔ catálogo: códigos normalizados y cantidades exactas (2.3776ms)
+✔ catálogo: no acepta escribir saldo, comercio ni actividad por el alta (0.6093ms)
+✔ catálogo: edición no admite otro stock inicial (0.2915ms)
+✔ catálogo: rechaza unidad fraccionaria, precisión excesiva y objetivo menor al mínimo (0.7369ms)
+✔ catálogo: errores identifican cada cantidad y las referencias obligatorias (0.9122ms)
+✔ diagnóstico conserva tipo, código y ubicación, pero no mensaje, metadatos ni ruta completa (3.1355ms)
+✔ 500 registra diagnóstico controlado sin filtrar el error ni la solicitud (0.8662ms)
+✔ seed requiere habilitación exacta y producción siempre prevalece (0.9234ms)
+✔ seed informa contraseñas inválidas antes de consultar la base (1.321ms)
+✔ health devuelve disponibilidad sin exponer datos del comercio (52.2344ms)
+✔ base no disponible responde 503 y no filtra errores internos (14.2874ms)
+✔ 404, JSON mal formado y cuerpos excesivos tienen errores JSON controlados (27.264ms)
+✔ la app no arranca sin configuración de autenticación (0.4348ms)
+✔ inventario: la API habitual acepta reposición, salida y ajuste con sus tipos (2.2004ms)
+✔ inventario: STOCK_INICIAL y motivos desconocidos no se aceptan desde la API (0.7657ms)
+✔ inventario: combinaciones incompatibles y ajuste del empleado (0.3381ms)
+✔ inventario: el cliente no puede elegir responsable, fecha, saldo ni comercio (0.3679ms)
+✔ inventario: los rechazos previos no abren consultas ni escriben (1.199ms)
+✔ preflight acepta base sin tablas y base migrada sin datos de negocio (0.9378ms)
+✔ preflight rechaza datos conocidos, tablas ajenas y relaciones fuera de public (0.7689ms)
+✔ reposición: cantidades exactas, positivas, sin redondeos ni fracciones de unidad (1.4812ms)
+✔ reposición: copia y CSV usan cantidad editada, omisiones y fecha del cálculo (14.6633ms)
+✔ CSV: escapa separadores, comillas y saltos; neutraliza fórmulas solo en la salida (0.8503ms)
+✔ reposición: ninguna salida acepta lista vacía ni cantidades inválidas incluidas (0.9922ms)
+✔ nunca usa desarrollo como base de pruebas por omisión o alias localhost (1.9041ms)
+✔ normaliza espacios y Unicode, conservando mayúsculas y tildes visibles (1.6038ms)
+✔ cantidades decimales exactas y serialización como texto (0.745ms)
+✔ rechaza redondeos, notación científica, tipos y rangos inválidos (0.2673ms)
+✔ configuración inválida falla sin imprimir credenciales (0.3535ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 991.0238

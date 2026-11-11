@@ -32,6 +32,7 @@ Los ejemplos orales son una guía para practicar. Cada integrante debe ajustarlo
 - [Etapa 2 — Resumen de repaso](#etapa-2--resumen-de-repaso)
 - [Etapa 3 — Catálogo](#etapa-3--catálogo)
 - [Etapa 4 — Movimientos e historial](#etapa-4--movimientos-e-historial)
+- [Etapa 5 — Alertas y reposición](#etapa-5--alertas-y-reposición)
 - [Etapas siguientes](#etapas-siguientes)
 - [Acuerdo para ampliar esta guía](#acuerdo-para-ampliar-esta-guía)
 
@@ -1441,11 +1442,152 @@ Todo lo de esta tabla lo **ejecutó Claude** el 10/11 en una copia aislada. Code
 - **Pantalla:** sin envíos dobles, sin datos viejos, sin reintento ciego.
 - **Pendiente:** despliegue y piloto.
 
+## Etapa 5 — Alertas y reposición
+
+### Estado, responsables y problema que resolvemos
+
+Implementada por Codex con la coordinación de Tomás el 10/11/2026, en `etapa-5-reposicion`. Las comprobaciones locales pasaron; la revisión de Nazareno con Claude y la integración están pendientes. Esto describe el código construido, no una función futura. El [informe de etapa 5](docs/implementacion/etapa-5.md) contiene las evidencias y los pasos para repetirlas.
+
+Hasta la etapa 4 ya sabíamos registrar cuánto entra y sale. Ahora usamos ese saldo para responder dos preguntas del comercio: «¿qué me está faltando?» y «¿cuánto le pido a cada proveedor?». El empleado puede consultar faltantes. El dueño prepara las cantidades que desea solicitar y obtiene texto para pegar en un mensaje o un archivo CSV. La aplicación no envía el pedido, no guarda una orden y no carga automáticamente la mercadería: cuando llega, se registra un ingreso en Inventario.
+
+### Mínimo y objetivo no son lo mismo
+
+El **mínimo** es el umbral que decide si el producto está en alerta. La condición es estricta: `actual < mínimo`. El **objetivo** es el nivel al que queremos volver cuando reponemos. La sugerencia es `objetivo - actual`, pero solo se calcula para los productos activos que están en alerta.
+
+| Actual | Mínimo | Objetivo | Resultado |
+|---|---|---|---|
+| 3 unidades | 5 | 12 | Alerta; sugerimos 9 unidades. |
+| 5 unidades | 5 | 12 | Sin alerta, aunque todavía no llegó al objetivo. |
+| 0 unidades | 0 | 0 | Sin alerta: mínimo cero la desactiva. |
+| 0.100 kg | 0.200 | 0.350 | Alerta; sugerimos 0.250 kg. |
+
+Un producto inactivo nunca aparece, aunque su saldo sea bajo. Catálogo ya impide que el objetivo sea menor al mínimo. Por eso, si un producto está en alerta, objetivo menos actual da una cantidad positiva. No es una predicción de ventas: el sistema no conoce la demanda futura ni calcula compras con inteligencia artificial.
+
+### Recorrido desde la pantalla hasta la base
+
+1. La persona abre la sección desde `Panel.jsx`. Un dueño ve «Alertas y reposición» y un empleado ve «Alertas».
+2. `Reposicion.jsx` pide `/api/reposicion/alertas` usando `apiRequest`, que agrega el token. El servidor recibe la solicitud en `reposicion.routes.js`.
+3. `requireAuth` verifica el token y consulta al usuario en PostgreSQL. Obtiene de ahí su comercio, rol y estado actual. El usuario no puede elegir el comercio de la consulta agregando un parámetro a la URL.
+4. `consultarAlertas`, en `reposicion.service.js`, llama a `faltantes`. La consulta obtiene los productos activos del comercio que tienen saldo menor al mínimo y los datos del proveedor. Devuelve los decimales como texto.
+5. React guarda la respuesta y dibuja la lista de alertas. Si la consulta falla, muestra el error y Reintentar; no dice que no hay faltantes porque eso todavía no se sabe.
+6. Cuando el dueño toca «Generar lista de reposición», se consulta `/api/reposicion/lista`. Además de autenticar, el servidor aplica `requireRole('DUENO')`. Un empleado que escriba esa URL manualmente recibe 403.
+7. `generarLista` usa la misma consulta y arma grupos por ID de proveedor, con una cantidad sugerida por producto y la fecha del cálculo. La respuesta queda en la memoria de React.
+8. Editar, omitir, copiar y exportar trabajan sobre esa respuesta en el navegador. No hay una escritura de inventario ni un envío a proveedores.
+
+Usamos **GET** porque estas operaciones consultan datos; «generar» aquí significa construir una respuesta, no crear una orden en la base. Una **ruta** es una dirección de la API. Un **router** reúne esas rutas y sus controles. Un **servicio** contiene la consulta y la preparación de los datos; no dibuja la pantalla.
+
+### Cómo funciona la consulta y por qué se eligió
+
+El código usa `$queryRaw` de Prisma: permite ejecutar una consulta SQL concreta desde el mismo cliente de base. No dejamos de usar Prisma ni cambiamos de base. La consulta une productos con proveedores mediante un **JOIN**: relaciona cada producto con su proveedor por ID y comprueba que corresponden al mismo comercio.
+
+La parte central se puede leer así:
+
+```sql
+WHERE p.comercio_id = ...
+  AND p.activo
+  AND p.stock_actual < p.stock_minimo
+```
+
+«Traé solo productos de este comercio, que estén activos y cuyo stock esté por debajo del mínimo». Además, `p.stock_objetivo - p.stock_actual` calcula la sugerencia. El valor del comercio se pasa como parámetro, no pegando texto en la consulta. Así un dato no se interpreta como una instrucción SQL.
+
+La consulta obtiene productos, proveedores y fecha en una sola sentencia. En PostgreSQL esa sentencia ve una fotografía consistente de los datos. No bloqueamos productos porque no estamos descontando stock. Si alguien registra un movimiento inmediatamente después, la respuesta representa el momento consultado; para ver lo nuevo hay que actualizar o recalcular.
+
+No almacenamos una tabla de alertas: una alerta se deduce del saldo y el mínimo, que ya existen. Guardarla obligaría a mantener dos representaciones de lo mismo y podría quedar desactualizada. No agregamos tablas ni migraciones en esta etapa.
+
+La lista se agrupa con un `Map`, una estructura de JavaScript que guarda un valor por clave. La clave elegida es el ID de proveedor y el valor contiene sus productos. Agrupar por ID evita confundir proveedores por su nombre visible. Se trae el conjunto completo de faltantes del comercio para no exportar solo una página. Esto cubre el volumen previsto del MVP; no demuestra rendimiento con catálogos enormes.
+
+### Qué significa que la lista sea una fotografía temporal
+
+Una **fotografía** o snapshot es el resultado de una consulta en un momento. No es una imagen: es un conjunto de datos que dejamos estable mientras el dueño decide qué pedir.
+
+Ejemplo: se sugieren 9 paquetes de yerba y el dueño escribe 12 para pedir una caja. Mientras tanto, un empleado registra dos ventas. No reemplazamos automáticamente el 12, porque era una decisión del dueño. La pantalla muestra cuándo se calculó la lista.
+
+- **Actualizar alertas** consulta los faltantes actuales, sin tocar la lista ya editada.
+- **Recalcular lista** consulta otra vez y reemplaza la lista completa: se pierden cantidades editadas y omisiones.
+- **Recargar la página o salir de la sección** también pierde la lista porque no se guardó en la base ni en almacenamiento del navegador.
+- **Omitir un producto** lo excluye de ambas salidas, pero se puede volver a incluir mientras siga en esa fotografía.
+
+React usa `useState` para conservar esa información mientras el componente está montado. «Montado» significa que la sección está presente en la interfaz. Se actualizan los objetos sin modificarlos directamente, creando las nuevas listas con `map`; eso permite que React vuelva a mostrar el estado correcto.
+
+Si una solicitud tarda y la persona cambia de sección, un `AbortController` la cancela y el código descarta su respuesta. No queremos que datos viejos vuelvan a llenar una pantalla que ya se abandonó. Mientras se consulta se deshabilitan las acciones de salida. Si cambia el usuario o su rol, `Panel` vuelve a montar la sección, descartando el estado anterior.
+
+### Decimales: por qué no sumar y restar con Number en todas partes
+
+JavaScript suele representar números con punto flotante: algunas fracciones decimales no tienen una representación exacta. En inventario necesitamos conservar exactamente hasta tres decimales. PostgreSQL hace la resta usando Decimal y Prisma entrega el resultado como cadena, por ejemplo `"0.25"`.
+
+Para validar en el navegador usamos **BigInt**, un entero que no usa decimales de punto flotante. Convertimos la cantidad a milésimas: 0.250 equivale a 250 milésimas; 1 equivale a 1000. La validación exige un valor positivo y, para UNIDAD, que sea múltiplo de 1000. Antes de convertir, una expresión regular comprueba el formato y el límite de nueve enteros y tres decimales. Eso rechaza signos negativos, notación científica y valores como `1.0001` sin redondearlos.
+
+La pantalla admite punto o coma decimal por comodidad. El CSV siempre usa coma. `formatearCantidad` muestra tres decimales para kg y un entero para unidades. No se transforma una cantidad inválida en una válida por aproximación. Si hay un ítem incluido inválido se bloquean las dos salidas de ese proveedor. Omitir ese ítem permite continuar con los demás.
+
+### Copiar texto y CSV: dos presentaciones de la misma lista
+
+`salidas.js` reúne funciones independientes de React y del navegador. `itemsSeleccionados` toma los productos no omitidos y vuelve a validar sus cantidades. Tanto `crearTexto` como `crearCSV` usan esa selección. Así no se mantiene una segunda lista que pueda quedar distinta de la pantalla.
+
+Un **CSV** es un archivo de texto con filas y columnas separadas por un carácter. No es un archivo de Excel con hojas, formato o fórmulas propias. Para la configuración regional habitual argentina elegimos estas reglas, ya acordadas en RN-14:
+
+| Regla | Para qué sirve |
+|---|---|
+| UTF-8 con BOM | El BOM son tres bytes iniciales que ayudan a reconocer la codificación y conservar ñ/tildes. |
+| Separador `;` | Permite usar la coma como separador decimal. |
+| Cantidades `12` o `0,250` | Respeta unidades enteras y kg con tres decimales, sin separador de miles. |
+| Fecha `AAAA-MM-DD HH:mm:ss-03:00` | Identifica el cálculo con el desplazamiento horario acordado para Argentina. |
+| Final de línea CRLF | Representa el salto entre filas con el formato definido para la exportación. |
+| Comillas y escape | Un nombre con `;` no debe crear otra columna; un salto no debe partir el registro. Las comillas internas se duplican. |
+| Apóstrofo ante posibles fórmulas | Texto que empieza con `=`, `+`, `-` o `@`, incluso después de espacios, no debe ejecutarse como fórmula al abrirlo. Solo cambia el CSV. |
+
+Las columnas son proveedor, fecha del cálculo, código, nombre, cantidad y unidad. La fecha no se genera al descargar: se toma de `calculadaEn`. Se repite junto al proveedor en cada fila para que cada registro se pueda entender por separado.
+
+Ejemplo de escape: el nombre `Harina; "especial"` se escribe como `"Harina; ""especial"""` dentro del archivo. Esas comillas delimitan un solo campo, no forman parte del nombre original. Los códigos como `001` se conservan así en los bytes del archivo; una hoja de cálculo puede interpretarlos como número y quitar ceros. Por eso, si hace falta, se importa indicando que la columna código es texto. No prometemos reconocimiento automático en cualquier programa.
+
+### Cómo se copia o descarga y qué pasa si falla
+
+Para copiar se llama a `navigator.clipboard.writeText`. El navegador puede negarlo por permisos o disponibilidad. Si falla, mostramos un textarea de solo lectura con el mismo texto, que se selecciona al enfocarlo. No se borran las cantidades. Si se edita después, el texto manual se actualiza y no conserva una versión vieja.
+
+Para descargar se crea un **Blob**, un conjunto de bytes en memoria, con el CSV. `URL.createObjectURL` le asigna una dirección temporal. Se crea un enlace con el nombre de archivo y el atributo `download`, se activa y se retira. Después se libera la dirección temporal. No hace falta subir un archivo a otro servidor ni crear una ruta de exportación.
+
+El mensaje dice «Descarga solicitada», porque el navegador controla el guardado y la persona puede cancelarlo. Si falla la preparación del archivo se avisa y la lista sigue disponible. Si se omiten todos los productos no se permite ninguna salida vacía.
+
+El permiso real se controla al pedir la lista al backend. Un empleado no puede conseguirla usando esa ruta. Una vez que una persona autorizada ya descargó o copió datos, no podemos borrar ese archivo o texto desde el servidor. Esa limitación también existe en cualquier exportación normal.
+
+### Qué comprobamos y qué no
+
+Codex ejecutó 40 pruebas de lógica/HTTP, 24 de integración con PostgreSQL, la compilación y un recorrido de 10 pasos en Edge con ambos roles y tamaños de escritorio/celular. Las nuevas pruebas de lógica verifican cantidades, salidas idénticas a lo editado, fecha, escape y fórmulas. Las de integración verifican datos reales, permisos, comercios, bajas, cálculos y ausencia de escrituras.
+
+En el navegador se descargaron archivos reales y se leyeron sus bytes. También se simularon rechazo del portapapeles, error al preparar una descarga y errores de la API para comprobar que se puede recuperar el recorrido. Se compararon saldos e historial antes y después de las salidas. El portapapeles se controló dentro de la prueba para no sobrescribir el portapapeles personal del equipo; no es una prueba del portapapeles del sistema operativo.
+
+No se probó todavía en la URL pública, con un comercio piloto ni abriendo el CSV en Excel. Tampoco equivale a que Tomás y Nazareno hayan realizado personalmente esos recorridos. La revisión de Claude está pendiente. Durante las pruebas se ajustó la etiqueta del texto manual para que quedara asociada explícitamente al campo: accesibilidad y pruebas deben identificar el mismo control sin ambigüedad.
+
+### Aportes y práctica oral
+
+Tomás coordinó esta etapa, actualizó su copia del proyecto y creó la rama. Codex escribió la implementación, las pruebas, esta explicación y ejecutó las comprobaciones. Nazareno coordinará la revisión con Claude. No corresponde decir que Tomás escribió manualmente ese código; sí deberá comprenderlo y poder justificar las decisiones que acepta para el proyecto.
+
+Un resumen para ensayar con palabras propias:
+
+> En mi etapa usamos el inventario de la etapa anterior para detectar faltantes. El servidor compara saldo con mínimo dentro del comercio autenticado. El dueño puede generar una fotografía por proveedor, con objetivo menos saldo. Esa lista se edita temporalmente en React y de ahí salen el texto y el CSV. No registra una compra ni cambia stock. Probamos permisos, decimales, listas vacías y que las salidas respeten lo que se editó.
+
+| Pregunta posible | Idea que hay que poder explicar |
+|---|---|
+| ¿Por qué no alertar cuando actual iguala mínimo? | RN-12 usa menor estricto; el ejemplo 5 y 5 no produce alerta. |
+| ¿Por qué no pedir mínimo menos actual? | El mínimo activa la alerta; el objetivo define hasta cuánto reponer. |
+| ¿Quién decide el comercio consultado? | El backend con el usuario leído de la base; no el navegador. |
+| ¿Alcanza con ocultar el botón al empleado? | No. La ruta también verifica DUENO y rechaza con 403. |
+| ¿Qué pasa si cambia el saldo durante la edición? | La lista mantiene la fotografía y su fecha. Recalcular la reemplaza. |
+| ¿Dónde está guardada la lista? | En memoria de React. No existe una tabla de órdenes. |
+| ¿Por qué copiar no suma mercadería? | Pedir y recibir son hechos distintos; la recepción se registra en Inventario. |
+| ¿Cómo evitan diferencias entre copia y CSV? | Ambas funciones leen los mismos ítems incluidos y cantidades editadas. |
+| ¿Qué evita que una ñ se vea mal o un punto y coma agregue otra columna? | UTF-8 con BOM y escape correcto de campos cumplen funciones diferentes. |
+| ¿Una descarga demuestra que funciona en cualquier Excel? | No. Probamos bytes y descarga; la importación depende de la configuración. |
+
+Ejercicios antes de rendir:
+
+1. Calcular a mano dos sugerencias: actual 3/mínimo 5/objetivo 12 y actual 0.100/mínimo 0.200/objetivo 0.350. Explicar por qué actual 5/mínimo 5 no entra.
+2. Ubicar en el código el filtro de comercio, el control de rol y la resta. No hace falta memorizar todo el SQL: sí leer qué está seleccionando.
+3. Generar una lista, editarla, omitir un producto y comparar el texto con el CSV. Abrir el CSV como texto para distinguir los datos del formato que muestra una planilla.
+4. Actualizar alertas y recalcular para comprobar la diferencia. Explicar qué se pierde al salir de la sección.
+5. Entrar como empleado y mostrar qué puede hacer. Después, explicar qué control del servidor impide generar la lista aunque se invente un botón en el navegador.
+6. Explicar sin mirar por qué generar una lista no agrega un movimiento de stock. Si cuesta, volver al recorrido de recepción de la etapa 4.
+
 ## Etapas siguientes
-
-### Etapa 5 — Alertas y reposición
-
-Pendiente. Tomás con Codex explicarán mínimos, objetivos, listas temporales, copia y CSV. Nazareno con Claude revisarán.
 
 ### Etapa 6 — Verificación del conjunto y despliegue
 

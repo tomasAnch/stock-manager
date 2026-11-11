@@ -1,0 +1,11 @@
+OK 1. Alertas estrictas y sugerencias por proveedor en escritorio.
+OK 2. Cantidades inválidas bloquean salidas; coma decimal y omisiones admitidas.
+OK 3. Archivos descargados reales: BOM, CRLF, columnas, omisiones, escape y fórmulas neutralizadas.
+OK 4. Copia con respuesta controlada y alternativa manual ante permiso denegado; texto actualizado.
+OK 5. Fallo de descarga conserva lista; grupo vacío bloqueado; saldos e historial intactos.
+OK 6. Actualizar alertas conserva la fotografía editada; recalcular obtiene faltantes nuevos.
+OK 7. Recarga descarta ediciones; lista utilizable sin desborde horizontal en móvil.
+OK 8. Fallas de consulta no se confunden con lista vacía; reintento repite la operación fallida.
+OK 9. Empleado consulta alertas en móvil sin controles de reposición.
+OK 10. Estados vacíos para ambos roles; no se ofrecen salidas vacías ni hubo errores de JavaScript.
+OK Datos propios de prueba retirados; seis tablas de negocio vacías.

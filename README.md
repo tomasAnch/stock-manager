@@ -19,9 +19,9 @@ El MVP contempla uno o dos comercios piloto, con datos separados por comercio y 
 |---|---|---|
 | Entrega 1: propuesta y viabilidad | Aprobada por la tutora | 01/09/2026 (aprobación) |
 | Entrega 2: diseño y módulos | Aprobada por la tutora; habilitada la implementación | 27/09/2026 (entrega); correcciones del 29/09 |
-| Implementación y entrega final | Etapa 1 cerrada; etapa 2 (acceso y permisos) cerrada; etapa 3 (catálogo) cerrada e integrada a main; etapa 4 (movimientos e historial) cerrada e integrada a main; reposición pendiente | 14/11/2026 (fecha límite) |
+| Implementación y entrega final | Etapas 1 a 4 cerradas; etapa 5 (alertas y reposición) implementada y probada localmente, pendiente de revisión cruzada | 14/11/2026 (fecha límite) |
 
-El proyecto ya tiene una base ejecutable: frontend React, servidor Express, cliente Prisma, migración inicial y seed de desarrollo. Desde la etapa 2 se ingresa con usuario y contraseña, y cada rol ve su menú; el backend verifica la sesión, el rol y el comercio en cada solicitud protegida. El catálogo ya permite administrar referencias y productos con stock inicial. Desde la etapa 4 se registran reposiciones, salidas y ajustes, y se consulta el historial por producto; la reposición sigue pendiente; la descripción funcional de abajo corresponde al MVP completo previsto.
+El proyecto ya tiene una base ejecutable: frontend React, servidor Express, cliente Prisma, migración inicial y seed de desarrollo. Se ingresa con usuario y contraseña, y el backend verifica la sesión, el rol y el comercio en cada solicitud protegida. El catálogo permite administrar referencias y productos con stock inicial. Inventario registra reposiciones, salidas y ajustes, y muestra el historial por producto. La etapa 5 agrega alertas para ambos roles y listas temporales por proveedor para el dueño, con cantidades editables, copia y CSV. Quedan pendientes su revisión cruzada, la verificación final del conjunto, el despliegue y el piloto.
 
 ## Stack definido
 
@@ -56,6 +56,8 @@ Para la entrega final, el campus exige al menos un componente principal alojado 
 Orden sugerido de lectura: requerimientos → reglas → modelo de datos → módulos. Los diagramas Mermaid están incluidos en los Markdown para consultarlos desde GitHub.
 
 ### Implementación
+
+[Etapa 5: alertas y reposición](docs/implementacion/etapa-5.md): comportamiento, API, decisiones, pruebas y recorrido para la revisión cruzada.
 
 [Preparación de la defensa oral](preparacion-defensa-oral.md): guía de estudio compartida, con explicaciones desde cero, decisiones justificadas, recorridos de código y preguntas para la defensa individual.
 
@@ -261,3 +263,7 @@ Nazareno integró `etapa-4-inventario` a main mediante fast-forward: main avanz�
 ### Pruebas de Nazareno — Etapa 4
 
 El 10/11 Nazareno ejecutó en su equipo, sobre main (`a8fd447`), `npm test` (36/36) y `npm run test:integration` (21/21). [Salida](docs/implementacion/resultados-etapa-4-naza-2026-11-10.txt). De la etapa 4 siguen pendientes el despliegue y el piloto.
+
+### 10/11/2026 — Implementación de la etapa 5, pendiente de revisión
+
+Se implementaron alertas para ambos roles y listas temporales de reposición para el dueño, agrupadas por proveedor, con edición, omisiones, copia manual/automática y CSV según RN-14. Actualizar alertas conserva la fotografía; recalcular la reemplaza. No se agregaron dependencias, tablas ni migraciones. Codex ejecutó 40/40 pruebas de lógica/HTTP, 24/24 de integración, build y 10 pasos en Edge con ambos roles. Se agregaron evidencias, informe y capítulo de defensa. [Detalle y límites](docs/implementacion/etapa-5.md). Pendientes: revisión de Nazareno con Claude, integración, despliegue y piloto.

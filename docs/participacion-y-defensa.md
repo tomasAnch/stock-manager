@@ -32,7 +32,7 @@ Los comandos de Git los ejecutan los integrantes. Este documento no asigna autor
 
 ## Qué hay que hacer en las etapas pendientes
 
-Estas explicaciones resumen la [hoja de ruta técnica](plan-desarrollo.md), donde está la checklist completa. Antes de implementar, leer también los [requerimientos](segunda_entrega/01-requerimientos.md) y las [reglas de negocio](segunda_entrega/02-reglas-de-negocio.md). La etapa 2 está cerrada: su implementación y revisión local terminaron y se integró a `main` el 09/11; su ensayo de despliegue sigue pendiente. La etapa 3 está implementada y aprobada por revisión cruzada el 10/11 sobre 28b1acb, integrada a main el 10/11 en f88b617; etapa cerrada. La etapa 4 está cerrada e integrada a `main` (`3b939c0`); su despliegue sigue pendiente y va con la etapa 6. Las etapas 5 a 7 están pendientes: 5 → revisión → 6 → 7. La etapa 5 la implementan Tomás con Codex y la revisan Nazareno con Claude.
+Estas explicaciones resumen la [hoja de ruta técnica](plan-desarrollo.md), donde está la checklist completa. Antes de implementar, leer también los [requerimientos](segunda_entrega/01-requerimientos.md) y las [reglas de negocio](segunda_entrega/02-reglas-de-negocio.md). La etapa 2 está cerrada: su implementación y revisión local terminaron y se integró a `main` el 09/11; su ensayo de despliegue sigue pendiente. La etapa 3 está implementada y aprobada por revisión cruzada el 10/11 sobre 28b1acb, integrada a main el 10/11 en f88b617; etapa cerrada. La etapa 4 está cerrada e integrada a `main` (`3b939c0`); su despliegue sigue pendiente y va con la etapa 6. La etapa 5 está implementada por Codex para Tomás y probada localmente, pendiente de revisión de Nazareno con Claude e integración. Luego siguen las etapas 6 y 7.
 
 ### Etapa 2 — Acceso y permisos
 
@@ -167,3 +167,17 @@ Tomás ejecutó el fast-forward y el push de la etapa 3 a main el 10/11/2026 (f8
 - **Para explicar en la defensa:** cómo dos salidas simultáneas de 3 sobre saldo 3 terminan con una sola confirmada; qué es un rollback con el ejemplo de la inserción que falla; por qué un ajuste agrega un movimiento. Material en la [guía de la defensa](../preparacion-defensa-oral.md#etapa-4--movimientos-e-historial).
 - **Comprensión pendiente de practicar:** ambos estudiantes; no se marca como adquirida hasta practicarla con las actividades de la guía.
 
+
+## Etapa 5 — Alertas y reposición
+
+- **Estado:** implementada y probada localmente el 10/11/2026 en `etapa-5-reposicion`; pendiente de revisión cruzada e integración.
+- **Responsable y revisor:** Tomás con Codex; revisarán Nazareno con Claude.
+- **Versión:** rama creada desde main actualizado (`cc4d42d`, informado por Tomás). El commit de revisión se registrará al compartirlo.
+- **Resultado:** alertas para ambos roles; lista por proveedor para el dueño con sugerencias, edición, omisiones, copia y CSV. RF-10 a RF-12 y RN-12 a RN-14.
+- **Aporte registrado de Tomás:** coordinó la etapa, actualizó el repositorio y creó la rama. Las pruebas y el código detallados aquí los ejecutó/escribió Codex; no se atribuyen como escritura manual ni recorridos personales de Tomás.
+- **Aporte de Nazareno:** revisión pendiente; no se registra anticipadamente como realizada.
+- **Asistencia de IA:** Codex implementó backend/frontend, pruebas, documentación y capítulo de estudio. Ejecutó comprobaciones de lógica, PostgreSQL y navegador.
+- **Decisiones:** consulta única de solo lectura con comercio autenticado; fotografía temporal que conserva ediciones; cálculo decimal exacto; texto y CSV derivados de la misma selección editada. No se agregan órdenes persistidas ni nuevas dependencias.
+- **Pruebas:** 40/40 de lógica/HTTP, 24/24 de integración, build y 10 pasos en Edge, incluyendo escritorio y móvil. [Informe y evidencias](implementacion/etapa-5.md). Portapapeles con respuestas controladas; descarga CSV real. No se probó Excel ni despliegue/piloto.
+- **Para estudiar:** [capítulo de etapa 5](../preparacion-defensa-oral.md#etapa-5--alertas-y-reposición). Explicar mínimo frente a objetivo, diferencia entre pedir y recibir, temporalidad de la lista, permisos y CSV.
+- **Siguiente paso:** compartir un commit identificable con Nazareno y Claude, resolver observaciones y registrar la aprobación antes de integrar. La comprensión individual sigue pendiente de practicar.

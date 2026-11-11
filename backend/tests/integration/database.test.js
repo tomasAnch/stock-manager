@@ -481,3 +481,85 @@ test('inventario: cada saldo coincide con ingresos menos egresos de su historial
   assert(filas.length >= 15, `se esperaban los productos de las pruebas anteriores (${filas.length})`);
   for (const fila of filas) assert.equal(Number(fila.saldo), Number(fila.calculado), `${fila.codigo}: saldo ${fila.saldo}, movimientos ${fila.calculado}`);
 });
+
+async function conReposicion(callback) {
+  await withServer(createApp({ prisma, auth }), async url => {
+    const tokens = {};
+    for (const [rol, correo, clave] of [
+      ['dueno', 'dueno.a@example.invalid', 'solo-test-dueno-123'],
+      ['empleado', 'empleado.a@example.invalid', 'solo-test-empleado-456'],
+      ['otro', 'dueno.b@example.invalid', 'solo-test-dueno-123'],
+    ]) tokens[rol] = (await (await login(url, correo, clave)).json()).token;
+    await callback(async (ruta, rol = 'dueno') => {
+      const res = await fetch(`${url}/api/reposicion/${ruta}`, { headers: tokens[rol] ? { Authorization: `Bearer ${tokens[rol]}` } : {} });
+      return { status: res.status, body: await res.json() };
+    });
+  });
+}
+
+test('API reposición: alertas estrictas, mínimo cero, bajas y separación de comercios para ambos roles', async () => {
+  const u = await productoDePrueba('REP-BAJO', { stockInicial: '3', stockMinimo: '5', stockObjetivo: '12' });
+  const igual = await productoDePrueba('REP-IGUAL', { stockInicial: '5', stockMinimo: '5', stockObjetivo: '12' });
+  const cero = await productoDePrueba('REP-CERO');
+  const baja = await productoDePrueba('REP-BAJA', { stockMinimo: '5', stockObjetivo: '5' });
+  await cambiarActividad(prisma, 'producto', await identidadDe('dueno.a@example.invalid'), baja.id, { activo: false });
+  const otro = await productoDePrueba('REP-AJENO', { stockMinimo: '5', stockObjetivo: '5' }, 'dueno.b@example.invalid');
+  await conReposicion(async api => {
+    for (const rol of ['dueno', 'empleado']) {
+      const res = await api(`alertas?comercioId=${otro.comercioId}`, rol);
+      assert.equal(res.status, 200);
+      assert(res.body.items.some(p => p.id === u.id));
+      for (const p of [igual, cero, baja, otro]) assert(!res.body.items.some(i => i.id === p.id));
+      assert(!JSON.stringify(res.body).includes('sugerida'));
+    }
+    const ajenas = await api('alertas', 'otro');
+    assert(ajenas.body.items.some(p => p.id === otro.id));
+    assert(!ajenas.body.items.some(p => p.id === u.id));
+    esperarError(await api('alertas', 'anonimo'), 401, 'AUTH_REQUIRED');
+    esperarError(await api('lista', 'empleado'), 403, 'FORBIDDEN');
+  });
+});
+
+test('API reposición: sugerencias exactas por proveedor, solo lectura y recálculo con saldos nuevos', async () => {
+  const dueno = await identidadDe('dueno.a@example.invalid');
+  const proveedor = await guardar(prisma, 'proveedor', dueno, { nombre: 'Proveedor de reposición' });
+  const kg = await productoDePrueba('REP-KG', { unidad: 'KG', stockInicial: '0.1', stockMinimo: '0.2', stockObjetivo: '0.35', proveedorId: proveedor.id });
+  const antes = JSON.stringify(await prisma.producto.findMany({ orderBy: { id: 'asc' } }));
+  const movimientosAntes = await prisma.movimientoStock.count();
+  await conReposicion(async api => {
+    const res = await api('lista'); assert.equal(res.status, 200);
+    assert(Number.isFinite(Date.parse(res.body.calculadaEn)));
+    const grupo = res.body.grupos.find(g => g.proveedor.id === proveedor.id);
+    assert.equal(grupo.proveedor.nombre, proveedor.nombre);
+    assert.equal(grupo.items.length, 1); assert.equal(grupo.items[0].cantidad, '0.25');
+    assert.equal(grupo.items[0].stockActual, '0.1');
+    const items = res.body.grupos.flatMap(g => g.items);
+    assert.equal(items.find(p => p.codigo === 'REP-BAJO').cantidad, '9');
+    assert(!items.some(p => ['REP-IGUAL', 'REP-CERO', 'REP-BAJA', 'REP-AJENO'].includes(p.codigo)));
+    assert.equal(JSON.stringify(await prisma.producto.findMany({ orderBy: { id: 'asc' } })), antes);
+    assert.equal(await prisma.movimientoStock.count(), movimientosAntes);
+    await crearMovimiento(prisma, dueno, { productoId: kg.id, tipo: 'INGRESO', motivo: 'REPOSICION', cantidad: '0.1' });
+    const nueva = await api('lista');
+    assert(!nueva.body.grupos.flatMap(g => g.items).some(p => p.id === kg.id));
+    assert.equal(grupo.items[0].cantidad, '0.25', 'la respuesta anterior sigue siendo una fotografía');
+    assert.equal(await saldo(kg.id), '0.2');
+  });
+});
+
+test('API reposición: lista vacía y permiso actualizado aunque el token siga vigente', async () => {
+  const vacio = await prisma.comercio.create({ data: { nombre: 'Comercio sin catálogo' } });
+  const dueno = await identidadDe('dueno.a@example.invalid');
+  await conReposicion(async api => {
+    try {
+      await prisma.usuario.update({ where: { id: dueno.usuarioId }, data: { comercioId: vacio.id } });
+      const res = await api('lista'); assert.equal(res.status, 200); assert.deepEqual(res.body.grupos, []);
+      assert.deepEqual((await api('alertas')).body.items, []);
+      await prisma.usuario.update({ where: { id: dueno.usuarioId }, data: { rol: 'EMPLEADO' } });
+      esperarError(await api('lista'), 403, 'FORBIDDEN');
+      await prisma.usuario.update({ where: { id: dueno.usuarioId }, data: { activo: false } });
+      esperarError(await api('alertas'), 401, 'INVALID_SESSION');
+    } finally {
+      await prisma.usuario.update({ where: { id: dueno.usuarioId }, data: { comercioId: dueno.comercioId, rol: 'DUENO', activo: true } });
+    }
+  });
+});

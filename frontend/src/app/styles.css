@@ -446,3 +446,21 @@ button.link:hover:not(:disabled) {
 .inventario-error-historial { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
 .inventario-error-historial p { margin:0; flex:1 1 220px; }
 .inventario-productos button:disabled { opacity:.6; cursor:not-allowed; }
+.reposicion h1 { font-size:clamp(28px,4vw,44px); }
+.reposicion h2 { font-size:24px; margin-top:28px; }
+.reposicion-alertas { padding-left:22px; display:grid; gap:12px; overflow-wrap:anywhere; }
+.reposicion-alertas span { color:#4d625c; }
+.reposicion-grupo { background:#fff; border:1px solid #dce3da; border-radius:12px; padding:20px; margin:18px 0; overflow-wrap:anywhere; }
+.reposicion-grupo h3 { margin-top:0; }
+.reposicion-grupo fieldset { min-width:0; padding:0; margin:0; border:0; }
+.reposicion-grupo legend { font-size:14px; margin-bottom:12px; }
+.reposicion-item { display:grid; gap:8px; padding:16px 0; border-top:1px solid #dce3da; }
+.reposicion label { display:flex; flex-direction:column; gap:6px; font-size:14px; }
+.reposicion label.reposicion-incluir { flex-direction:row; align-items:center; }
+.reposicion input[type=text],.reposicion textarea { padding:10px; border:1px solid #b9c9be; border-radius:6px; font:inherit; color:#173e37; background:white; min-width:0; width:100%; }
+.reposicion input[type=text] { max-width:260px; }
+.reposicion input[type=checkbox] { width:18px; height:18px; flex-shrink:0; }
+.reposicion textarea { resize:vertical; }
+.reposicion-error { color:#8c291c; margin:0; font-size:14px; }
+.reposicion input[aria-invalid=true] { border-color:#8c291c; }
+.reposicion button { overflow-wrap:anywhere; max-width:100%; }

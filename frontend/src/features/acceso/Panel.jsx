@@ -4,6 +4,7 @@ import { NOMBRE_ROL, seccionesDelRol } from './secciones.js';
 import EstadoConexion from '../../components/EstadoConexion.jsx';
 import Catalogo from '../catalogo/Catalogo.jsx';
 import Inventario from '../inventario/Inventario.jsx';
+import Reposicion from '../reposicion/Reposicion.jsx';
 
 // Interfaz después del login: datos de la sesión, menú según el rol y contenido.
 export default function Panel({ token, usuario, onUsuario, onSesionInvalida, onCerrarSesion }) {
@@ -58,6 +59,7 @@ export default function Panel({ token, usuario, onUsuario, onSesionInvalida, onC
           ? <Inicio usuario={usuario} secciones={secciones.slice(1)} onAbrir={setSeccionId} />
           : seccion.id === 'catalogo' ? <Catalogo token={token} usuario={usuario} onSesionInvalida={onSesionInvalida} />
           : seccion.id === 'inventario' ? <Inventario token={token} usuario={usuario} onSesionInvalida={onSesionInvalida} />
+          : ['reposicion', 'alertas'].includes(seccion.id) ? <Reposicion key={`${usuario.id}-${usuario.rol}`} token={token} usuario={usuario} onSesionInvalida={onSesionInvalida} />
           : <SeccionPendiente seccion={seccion} />}
       </main>
     </>

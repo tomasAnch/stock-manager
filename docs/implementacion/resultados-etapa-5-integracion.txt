@@ -1,0 +1,57 @@
+
+> stock-manager@0.1.0 test:integration
+> npm run test:integration -w backend
+
+
+> @stock-manager/backend@0.1.0 test:integration
+> tsx tests/run-integration.js
+
+Preflight correcto: sin datos ni objetos ajenos. Se pueden aplicar migraciones.
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "stock_manager_test", schema "public" at "127.0.0.1:55435"
+
+1 migration found in prisma/migrations
+
+Applying migration `202610280001_initial`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 202610280001_initial/
+    └─ migration.sql
+
+All migrations have been successfully applied.
+✔ migración instala seis tablas y siete CHECK validados (96.7064ms)
+✔ seed repetible, hashes válidos, referencias en dos comercios y sin restablecer cuentas (1216.6547ms)
+✔ escritura y lectura con cliente generado y rollback real (6.6429ms)
+✔ restricción de stock rechaza escritura inválida desde Prisma (63.3224ms)
+✔ HTTP consulta PostgreSQL mediante el cliente generado (35.262ms)
+✔ acceso con PostgreSQL: login, sesión y rechazo inmediato al desactivar la cuenta (739.1822ms)
+✔ acceso con PostgreSQL: permisos por rol y registros de otro comercio (246.0893ms)
+✔ catálogo: alta atómica, baja conserva saldo y unidad con historial estable (63.7923ms)
+✔ catálogo: cero sin movimiento, kg exactos y reversión si falla el movimiento inicial (34.8803ms)
+✔ catálogo: normalización, referencias inactivas y reactivación con reasignación (45.2701ms)
+✔ catálogo: alta y baja concurrentes no dejan referencias inactivas en productos activos (60.1253ms)
+✔ inventario compartido: dos salidas simultáneas solo descuentan una y un fallo posterior revierte saldo (48.7531ms)
+✔ API catálogo: empleado consulta sin editar; comercio ajeno no se lee ni se asigna; validaciones HTTP (763.4223ms)
+✔ API inventario: reposición y salida para ambos roles, ajuste solo del dueño con explicación (892.3928ms)
+✔ API inventario: cantidades exactas, rango, saldo insuficiente y producto inactivo (927.8249ms)
+✔ API inventario: otro comercio no se mueve ni se consulta, con la misma respuesta que un ID inexistente (725.339ms)
+✔ API inventario: dos egresos simultáneos de 3 sobre saldo 3 confirman uno solo (3472.8632ms)
+✔ inventario: si falla la inserción del movimiento después de actualizar el saldo, se revierte todo (18.452ms)
+✔ inventario: el bloqueo del producto coordina movimientos con la baja y el cambio de unidad (1044.5651ms)
+✔ API inventario: historial paginado, ordenado, con productos inactivos y sin datos de más (840.4045ms)
+✔ inventario: cada saldo coincide con ingresos menos egresos de su historial (2.2868ms)
+✔ API reposición: alertas estrictas, mínimo cero, bajas y separación de comercios para ambos roles (1055.1337ms)
+✔ API reposición: sugerencias exactas por proveedor, solo lectura y recálculo con saldos nuevos (1004.2906ms)
+✔ API reposición: lista vacía y permiso actualizado aunque el token siga vigente (1101.7054ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15024.2533

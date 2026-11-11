@@ -1,0 +1,15 @@
+OK salida desde la pantalla: un envío, saldo e historial actualizados.
+OK saldo insuficiente y cantidad fraccionaria en unidades: mensaje claro y datos conservados.
+OK ajuste del dueño: exige explicación y queda en el historial.
+OK kg con coma decimal: saldo exacto.
+OK falla de conexión: aviso de resultado incierto, sin reintento automático.
+OK producto de la segunda página seleccionable; buscar dos veces no deja la carga trabada.
+OK respuestas demoradas y cambio rápido de producto: sin datos del producto anterior.
+OK producto inactivo: sin formulario y con historial.
+OK Inventario ↔ Catálogo ↔ Inicio sin errores; Catálogo muestra el saldo actualizado.
+OK envío en curso (dueño): selector bloqueado; respuesta demorada y respuesta perdida tras confirmar quedan en el producto enviado.
+OK historial que falla: error con reintento y sin estado vacío falso.
+OK sesión inválida al registrar: vuelve al login con el motivo.
+OK empleado: solo reposición y salida, carga con teclado, móvil sin desborde.
+OK envío en curso (empleado): mismo resultado.
+OK sin excepciones de JavaScript; saldos conciliados con el historial.

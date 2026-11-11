@@ -110,12 +110,14 @@ RF-07 a RF-09; RN-04 a RN-11.
 
 RF-10 a RF-12; RN-12 a RN-14.
 
-- [ ] Mostrar productos activos con stock menor al mínimo, respetando mínimo cero e igualdad al mínimo.
-- [ ] Generar para el dueño la lista por proveedor, calculando objetivo menos stock actual.
-- [ ] Permitir editar cantidades y omitir ítems temporalmente, con las validaciones de unidad correspondientes.
-- [ ] Implementar copia de texto, alternativa de copia manual y descarga CSV desde la misma lista editada.
-- [ ] Probar lista vacía, permisos, recálculo y ausencia de cambios en stock al copiar o exportar.
-- [ ] Verificar el CSV de RN-14: UTF-8 con BOM, `;`, coma decimal, fecha del cálculo, escape de campos y tratamiento de texto que pueda interpretarse como fórmula.
+- [x] Mostrar productos activos con stock menor al mínimo, respetando mínimo cero e igualdad al mínimo.
+- [x] Generar para el dueño la lista por proveedor, calculando objetivo menos stock actual.
+- [x] Permitir editar cantidades y omitir ítems temporalmente, con las validaciones de unidad correspondientes.
+- [x] Implementar copia de texto, alternativa de copia manual y descarga CSV desde la misma lista editada.
+- [x] Probar lista vacía, permisos, recálculo y ausencia de cambios en stock al copiar o exportar.
+- [x] Verificar el CSV de RN-14: UTF-8 con BOM, `;`, coma decimal, fecha del cálculo, escape de campos y tratamiento de texto que pueda interpretarse como fórmula.
+
+**Estado (10/11):** implementada por Codex para Tomás en `etapa-5-reposicion`, pendiente de revisión cruzada de Nazareno con Claude e integración. Pruebas locales: 40/40 de lógica/HTTP, 24/24 de integración, build y 10 pasos de navegador correctos. Ver [informe y límites de las pruebas](implementacion/etapa-5.md). Los puntos marcados acreditan comprobaciones locales, no aprobación del revisor ni despliegue.
 
 **Terminada cuando:** el dueño obtiene faltantes, modifica la lista y puede usar ambas salidas. El empleado consulta alertas pero no genera ni exporta reposición.
 
@@ -161,9 +163,9 @@ Se priorizan comportamientos importantes y errores posibles; no se agrega un tes
 
 ## Registro de avance y continuidad
 
-**Estado actual:** etapas 1 y 2 cerradas. Etapa 3 implementada el 09/11 por Codex para Tomás en etapa-3-catalogo, aprobada por Nazareno con Claude el 10/11 sobre 28b1acb e integrada a main el 10/11/2026 mediante fast-forward a f88b617; etapa cerrada. Correcciones B1 y S1-S4 verificadas y aprobadas por Claude. Pruebas: 31/31 unitarias, 13/13 integración, build y recorrido de navegador correctos. Ver [informe de etapa 3](implementacion/etapa-3.md). Etapa 4 implementada el 10/11 por Nazareno con Claude en `etapa-4-inventario`: 36/36 unitarias, 21/21 de integración, build y 12 pasos de navegador, ejecutados por Claude ([informe de etapa 4](implementacion/etapa-4.md)). Revisada por Tomás con Codex sobre `e463673`: un bloqueante y dos sugerencias, corregidos el 10/11 y aprobados por Codex sobre `bc7465d` (36/36, 21/21, build y 15 pasos en Windows/Edge, según su informe). Implementación y revisión cruzada aprobadas; integrada a `main` el 10/11 por Nazareno mediante fast-forward a `3b939c0` (no se creó commit de merge). Etapa cerrada. Etapas 5 a 7 pendientes; ensayo online y piloto pendientes.
+**Estado actual:** etapas 1 y 2 cerradas. Etapa 3 implementada el 09/11 por Codex para Tomás en etapa-3-catalogo, aprobada por Nazareno con Claude el 10/11 sobre 28b1acb e integrada a main el 10/11/2026 mediante fast-forward a f88b617; etapa cerrada. Correcciones B1 y S1-S4 verificadas y aprobadas por Claude. Pruebas: 31/31 unitarias, 13/13 integración, build y recorrido de navegador correctos. Ver [informe de etapa 3](implementacion/etapa-3.md). Etapa 4 implementada el 10/11 por Nazareno con Claude en `etapa-4-inventario`: 36/36 unitarias, 21/21 de integración, build y 12 pasos de navegador, ejecutados por Claude ([informe de etapa 4](implementacion/etapa-4.md)). Revisada por Tomás con Codex sobre `e463673`: un bloqueante y dos sugerencias, corregidos el 10/11 y aprobados por Codex sobre `bc7465d` (36/36, 21/21, build y 15 pasos en Windows/Edge, según su informe). Implementación y revisión cruzada aprobadas; integrada a `main` el 10/11 por Nazareno mediante fast-forward a `3b939c0` (no se creó commit de merge). Etapa cerrada. Etapa 5 implementada y probada localmente el 10/11 en etapa-5-reposicion: 40/40 de lógica/HTTP, 24/24 de integración, build y 10 pasos de navegador. Pendiente de revisión cruzada e integración. Etapas 6 y 7, ensayo online y piloto pendientes.
 
-**Siguiente acción:** Tomás con Codex implementan la etapa 5 (alertas, reposición y CSV) en una rama nueva desde `main` actualizado; Nazareno con Claude la revisan. Pendiente de la etapa 4: su despliegue, que va con la etapa 6. Git lo ejecutan los integrantes.
+**Siguiente acción:** Tomás comparte el commit de `etapa-5-reposicion` y Nazareno con Claude revisan código, pruebas y guía de defensa. Resolver observaciones antes de integrar a main. Despliegue y piloto siguen pendientes (etapas 6 y 7). Git lo ejecutan los integrantes.
 
 **Datos externos pendientes:** disponibilidad y acceso al comercio piloto; cuentas y condiciones del hosting. No se necesitan para redactar o probar toda la lógica local.
 
