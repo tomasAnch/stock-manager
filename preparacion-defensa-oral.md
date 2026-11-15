@@ -1446,7 +1446,7 @@ Todo lo de esta tabla lo **ejecutó Claude** el 10/11 en una copia aislada. Code
 
 ### Estado, responsables y problema que resolvemos
 
-Implementada por Codex con la coordinación de Tomás el 10/11/2026, en `etapa-5-reposicion`. Las comprobaciones locales pasaron. Claude aprobó b9675f9 sin bloqueantes; el 11/11 Codex aplicó sus cuatro sugerencias. Falta confirmar esos ajustes e integrar. Esto describe el código construido, no una función futura. El [informe de etapa 5](docs/implementacion/etapa-5.md) contiene las evidencias y los pasos para repetirlas.
+Implementada por Codex con la coordinación de Tomás el 10/11/2026, en `etapa-5-reposicion`. Las comprobaciones locales pasaron. Claude aprobó b9675f9 sin bloqueantes; el 11/11 Codex aplicó sus cuatro sugerencias. Claude confirmó S1-S4 sobre febd6ef, según el mensaje compartido por Tomás el 14/11. Solo falta integrar. Esto describe el código construido, no una función futura. El [informe de etapa 5](docs/implementacion/etapa-5.md) contiene las evidencias y los pasos para repetirlas.
 
 Hasta la etapa 4 ya sabíamos registrar cuánto entra y sale. Ahora usamos ese saldo para responder dos preguntas del comercio: «¿qué me está faltando?» y «¿cuánto le pido a cada proveedor?». El empleado puede consultar faltantes. El dueño prepara las cantidades que desea solicitar y obtiene texto para pegar en un mensaje o un archivo CSV. La aplicación no envía el pedido, no guarda una orden y no carga automáticamente la mercadería: cuando llega, se registra un ingreso en Inventario.
 

@@ -19,9 +19,9 @@ El MVP contempla uno o dos comercios piloto, con datos separados por comercio y 
 |---|---|---|
 | Entrega 1: propuesta y viabilidad | Aprobada por la tutora | 01/09/2026 (aprobación) |
 | Entrega 2: diseño y módulos | Aprobada por la tutora; habilitada la implementación | 27/09/2026 (entrega); correcciones del 29/09 |
-| Implementación y entrega final | Etapas 1 a 4 cerradas; etapa 5 (alertas y reposición) implementada y probada localmente, pendiente de revisión cruzada | 14/11/2026 (fecha límite) |
+| Implementación y entrega final | Etapas 1 a 4 cerradas; etapa 5 (alertas y reposición) aprobada por revisión cruzada sobre febd6ef, pendiente de integración | 14/11/2026 (fecha límite) |
 
-El proyecto ya tiene una base ejecutable: frontend React, servidor Express, cliente Prisma, migración inicial y seed de desarrollo. Se ingresa con usuario y contraseña, y el backend verifica la sesión, el rol y el comercio en cada solicitud protegida. El catálogo permite administrar referencias y productos con stock inicial. Inventario registra reposiciones, salidas y ajustes, y muestra el historial por producto. La etapa 5 agrega alertas para ambos roles y listas temporales por proveedor para el dueño, con cantidades editables, copia y CSV. Quedan pendientes su revisión cruzada, la verificación final del conjunto, el despliegue y el piloto.
+El proyecto ya tiene una base ejecutable: frontend React, servidor Express, cliente Prisma, migración inicial y seed de desarrollo. Se ingresa con usuario y contraseña, y el backend verifica la sesión, el rol y el comercio en cada solicitud protegida. El catálogo permite administrar referencias y productos con stock inicial. Inventario registra reposiciones, salidas y ajustes, y muestra el historial por producto. La etapa 5 agrega alertas para ambos roles y listas temporales por proveedor para el dueño, con cantidades editables, copia y CSV. Quedan pendientes su integración, la verificación final del conjunto, el despliegue y el piloto.
 
 ## Stack definido
 
@@ -271,3 +271,7 @@ Se implementaron alertas para ambos roles y listas temporales de reposición par
 ### 11/11/2026 — Sugerencias de revisión de la etapa 5
 
 Claude aprobó b9675f9 sin bloqueantes. Se aplicaron sus cuatro sugerencias: fecha argentina en el nombre del CSV, cantidades por unidad sin separadores, singular «unidad» y precisión sobre Decimal/toString en la guía. Codex verificó 42/42 pruebas de lógica/HTTP, build y 10 pasos de navegador. Pendientes: confirmación de estos cambios e integración. [Detalle y evidencia](docs/implementacion/etapa-5.md#revisión-cruzada-y-correcciones--11112026).
+
+### 14/11/2026 — Etapa 5 aprobada para integrar
+
+Claude confirmó S1-S4 sobre febd6ef, según el reporte compartido por Tomás. Se registra la aprobación y se ordena el Markdown de la revisión original. Implementación y revisión cruzada aprobadas; falta integrar la rama a main. [Registro](docs/implementacion/etapa-5.md). Despliegue y piloto pendientes.

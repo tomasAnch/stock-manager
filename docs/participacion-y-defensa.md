@@ -185,3 +185,7 @@ Tomás ejecutó el fast-forward y el push de la etapa 3 a main el 10/11/2026 (f8
 ### Etapa 5 — Revisión y ajustes del 11/11/2026
 
 Nazareno compartió mediante Tomás la revisión de Claude sobre b9675f9: sin bloqueantes, cuatro sugerencias. Codex las aplicó y verificó localmente (42/42, build, 10 pasos en Edge). La corrección relevante para estudiar es evitar que 1.000 unidades se entienda como uno: en esta lista solo se escriben dígitos. También se precisó dónde se convierte Decimal a texto. No se atribuyen las ejecuciones automatizadas como pruebas personales de los estudiantes. [Registro completo](implementacion/etapa-5.md#revisión-cruzada-y-correcciones--11112026). Pendiente de confirmación del nuevo commit por Claude e integración.
+
+### Etapa 5 — Confirmación de revisión, 14/11/2026
+
+Tomás transmitió el resultado de la verificación de Claude coordinada por Nazareno: febd6ef aprobado, S1-S4 resueltas. Los resultados reportados y sus límites se registran en [etapa 5](implementacion/etapa-5.md). Codex corrigió el formato del informe y registró la aprobación sin modificar código. Integración pendiente de ejecución por Tomás; no se atribuye todavía como realizada.

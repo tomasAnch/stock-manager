@@ -2,7 +2,7 @@
 
 ## Estado y responsables
 
-Implementada el 10/11/2026 en `etapa-5-reposicion`, partiendo del `main` actualizado que Tomás informó (`cc4d42d`). Tomás coordina; Codex escribió código, pruebas y documentación y ejecutó las comprobaciones locales. Nazareno con Claude harán la revisión cruzada. **La versión b9675f9 fue aprobada por Claude sin bloqueantes; S1-S4 ya están aplicadas y pendientes de confirmación. Todavía no se integró a main.** Git lo ejecuta Tomás; el commit a revisar se identifica cuando lo comparta.
+Implementada el 10/11/2026 en `etapa-5-reposicion`, partiendo del `main` actualizado que Tomás informó (`cc4d42d`). Tomás coordina; Codex escribió código, pruebas y documentación y ejecutó las comprobaciones locales. Nazareno coordinó la revisión cruzada con Claude. **La versión b9675f9 fue aprobada por Claude sin bloqueantes; S1-S4 fueron verificadas y aprobadas por Claude sobre febd6ef, según el mensaje compartido por Tomás el 14/11. Todavía no se integró a main.** Git lo ejecuta Tomás; el commit a revisar se identifica cuando lo comparta.
 
 ## Qué quedó funcionando
 
@@ -111,3 +111,11 @@ Verificación ejecutada por Codex después de los cambios:
 No se repitieron las 24 pruebas de integración ni el recorrido de Inventario en esta ronda: no se modificaron backend, esquema ni lógica de Inventario. El navegador sí usó la API y PostgreSQL reales; solo la fecha inicial y los errores indicados en el script se controlan para reproducir los casos. Retiró sus datos al terminar. Las capturas anteriores se conservan como evidencia de la primera versión, no se presentan como nuevas.
 
 **Estado:** sugerencias resueltas y probadas localmente, pendientes de confirmación de Claude sobre el nuevo commit y de integración a main. Para la etapa 6 queda revisar si conviene unificar la ayuda de ingreso de cantidades entre módulos; esta ronda cambia únicamente la edición de la lista de reposición.
+
+## Aprobación de correcciones — registrada el 14/11/2026
+
+Tomás compartió el mensaje de Nazareno con el resultado de Claude: verificó `febd6ef`, confirmó S1-S4 resueltas y aprobó integrar a main. Según ese reporte, repitió 42/42 pruebas, build, reposición 10/10, Inventario 15/15 e integración 24/24; además alteró deliberadamente S1 y S2 en su copia y las pruebas detectaron los fallos.
+
+Esta es evidencia comunicada por el equipo, no una ejecución nueva de Codex ni una salida de terminal adjunta. El mensaje no detalla cómo ejecutó la integración en esta segunda revisión; no se presume que haya desaparecido la limitación de migración de la revisión inicial. No se modificó código después de la aprobación: solo documentación. Se ordenó el Markdown del informe original conservando sus observaciones históricas.
+
+Estado: implementación y revisión cruzada aprobadas; integración a main pendiente de ejecución y confirmación por Tomás. Despliegue y piloto siguen pendientes.
