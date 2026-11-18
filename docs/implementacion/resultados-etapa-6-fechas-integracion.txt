@@ -1,0 +1,33 @@
+✔ migración instala seis tablas y siete CHECK validados (244.7391ms)
+✔ seed repetible, hashes válidos, referencias en dos comercios y sin restablecer cuentas (1711.0617ms)
+✔ escritura y lectura con cliente generado y rollback real (6.8884ms)
+✔ restricción de stock rechaza escritura inválida desde Prisma (72.622ms)
+✔ HTTP consulta PostgreSQL mediante el cliente generado (46.591ms)
+✔ acceso con PostgreSQL: login, sesión y rechazo inmediato al desactivar la cuenta (965.5404ms)
+✔ acceso con PostgreSQL: permisos por rol y registros de otro comercio (388.4645ms)
+✔ catálogo: alta atómica, baja conserva saldo y unidad con historial estable (79.4129ms)
+✔ catálogo: cero sin movimiento, kg exactos y reversión si falla el movimiento inicial (55.266ms)
+✔ catálogo: normalización, referencias inactivas y reactivación con reasignación (72.9525ms)
+✔ catálogo: alta y baja concurrentes no dejan referencias inactivas en productos activos (81.6251ms)
+✔ inventario compartido: dos salidas simultáneas solo descuentan una y un fallo posterior revierte saldo (51.1737ms)
+✔ API catálogo: empleado consulta sin editar; comercio ajeno no se lee ni se asigna; validaciones HTTP (809.2165ms)
+✔ API inventario: reposición y salida para ambos roles, ajuste solo del dueño con explicación (788.9615ms)
+✔ API inventario: cantidades exactas, rango, saldo insuficiente y producto inactivo (751.5405ms)
+✔ API inventario: otro comercio no se mueve ni se consulta, con la misma respuesta que un ID inexistente (605.7153ms)
+✔ API inventario: dos egresos simultáneos de 3 sobre saldo 3 confirman uno solo (3216.0933ms)
+✔ inventario: si falla la inserción del movimiento después de actualizar el saldo, se revierte todo (22.2038ms)
+✔ inventario: el bloqueo del producto coordina movimientos con la baja y el cambio de unidad (1030.0691ms)
+✔ API inventario: historial paginado, ordenado, con productos inactivos y sin datos de más (774.2563ms)
+✔ inventario: cada saldo coincide con ingresos menos egresos de su historial (2.9107ms)
+✔ API reposición: alertas estrictas, mínimo cero, bajas y separación de comercios para ambos roles (931.8018ms)
+✔ API reposición: sugerencias exactas por proveedor, solo lectura y recálculo con saldos nuevos (871.7296ms)
+✔ API reposición: lista vacía y permiso actualizado aunque el token siga vigente (955.282ms)
+✔ API: las fechas del movimiento, el historial y la reposición representan el instante real (1491.3287ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 17409.52

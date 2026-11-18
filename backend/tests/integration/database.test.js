@@ -563,3 +563,37 @@ test('API reposición: lista vacía y permiso actualizado aunque el token siga v
     }
   });
 });
+
+test('API: las fechas del movimiento, el historial y la reposición representan el instante real', async () => {
+  const producto = await productoDePrueba('REP-FECHA-UTC', { stockMinimo: '5', stockObjetivo: '8' });
+
+  // Leer el reloj como milisegundos desde Epoch evita que el propio dato de referencia
+  // pase por el mismo decodificador de timestamptz que estamos probando.
+  async function reloj() {
+    const [{ ms }] = await prisma.$queryRaw`SELECT floor(extract(epoch FROM clock_timestamp()) * 1000)::bigint AS ms`;
+    return Number(ms);
+  }
+  function assertInstante(fecha, inicio, fin, campo) {
+    const ms = Date.parse(fecha);
+    assert(ms >= inicio - 1 && ms <= fin + 1, `${campo}: ${fecha} debe estar entre ${new Date(inicio).toISOString()} y ${new Date(fin).toISOString()}`);
+  }
+
+  await conInventario(async api => {
+    const inicio = await reloj();
+    const res = await api('movimientos', 'POST', { productoId: producto.id, tipo: 'INGRESO', motivo: 'REPOSICION', cantidad: '1' });
+    const fin = await reloj();
+    assert.equal(res.status, 201);
+    assertInstante(res.body.movimiento.creadoEn, inicio, fin, 'Movimiento');
+    const historial = await api(`productos/${producto.id}/movimientos`);
+    assert.equal(historial.status, 200);
+    assert.equal(historial.body.items[0].creadoEn, res.body.movimiento.creadoEn);
+  });
+  await conReposicion(async api => {
+    const inicio = await reloj();
+    const res = await api('lista');
+    const fin = await reloj();
+    assert.equal(res.status, 200);
+    assert(res.body.grupos.some(grupo => grupo.items.some(item => item.id === producto.id)));
+    assertInstante(res.body.calculadaEn, inicio, fin, 'Reposición');
+  });
+});
