@@ -1,6 +1,11 @@
-# Preparación del despliegue
+# Despliegue de Stock Manager
 
-Etapa 1 · 28/10/2026. Configuración prevista, todavía no desplegada ni verificada en un proveedor cloud. Los servicios, cuentas y costos se acuerdan con el equipo antes de publicar. El primer ensayo online corresponde a la etapa 2 cuando estén los accesos.
+El sistema está publicado con Vercel para el frontend, Render para Express y Neon para PostgreSQL. La base publicada contiene datos ficticios.
+
+- [Aplicación pública](https://stock-manager-plum-phi.vercel.app/)
+- [Estado de la API y de la base](https://stock-manager-jome.onrender.com/api/health)
+- [Evidencia de la prueba cruzada online](#prueba-cruzada-online--20112026)
+- [Persistencia y recuperación](#persistencia-y-recuperación-para-la-defensa)
 
 ## Backend
 
@@ -13,22 +18,18 @@ Etapa 1 · 28/10/2026. Configuración prevista, todavía no desplegada ni verifi
 - Comprobación de disponibilidad: `/api/health`. Devuelve 503 si la base o la tabla consultada no están disponibles. No devuelve versión, cuentas ni datos de negocio.
 - Usar la conexión y TLS indicados por el proveedor sin desactivar la validación de certificados. Revisar conexión directa para migraciones si el servicio ofrece un pool separado.
 
-No ejecutar el seed de demostración en producción: mantener `NODE_ENV=production` y `ALLOW_DEMO_SEED=false`. El alta de cuentas piloto reales y sus credenciales se coordinará antes del primer despliegue funcional. No se guarda información sensible en este documento.
+El entorno publicado mantiene `NODE_ENV=production` y el seed local deshabilitado. Las cuentas de la demo se cargan con el [procedimiento de preparación de la base online](#base-online-y-cuentas-de-demo--19112026). Si se incorpora un comercio piloto, coordinar sus cuentas y datos antes de iniciar esa prueba.
 
 ### Cómo ejecutar la migración según el servicio
 
-“Antes del arranque” describe el orden, no obliga a usar un hook específico. En Render, el comando **pre-deploy** está disponible en servicios pagos; no se puede asumir su disponibilidad en el plan gratis. Si se elige un servicio sin ese hook, el primer despliegue puede coordinarse manualmente: desde una copia con las migraciones de la versión a publicar, configurar la conexión directa de la base elegida, ejecutar `npm run db:migrate`, verificar el resultado y recién después publicar esa versión. Esa sesión debe tener `NODE_ENV=production` y el seed deshabilitado. Las credenciales se configuran fuera del repositorio. Fuente: [despliegues de Render](https://render.com/docs/deploys), consultada el 29/10/2026.
-
-Otra posibilidad es incorporar la migración a un paso automatizado de entrega o al build si el proveedor lo permite. No se configura todavía: antes hay que verificar conectividad, credenciales, compatibilidad con la versión que sigue funcionando y evitar que un build de vista previa migre producción. La decisión y el comando efectivo se registrarán al elegir el hosting.
-
-La base gratuita de Render expira a los **30 días desde su creación**. Si se crease el 29/10, ese plazo llegaría al 28/11, después del 14/11; aun así podría no cubrir la defensa. Se evaluarán las opciones del stack, incluida Supabase, con sus condiciones vigentes y la duración necesaria antes de decidir. No se presupone que otro plan gratuito no tenga límites. Fuente: [plan gratuito de Render](https://render.com/docs/free), consultada el 29/10/2026.
+La migración inicial de Neon se aplicó manualmente desde una copia con el esquema de la versión publicada. Para repetir ese procedimiento en una base nueva, configurar su conexión directa en una sesión privada, establecer `NODE_ENV=production`, mantener el seed deshabilitado y ejecutar `npm run db:migrate` antes de publicar la API. Para migraciones posteriores, revisar compatibilidad con la versión en servicio y preparar un respaldo antes de aplicar cambios. El build y las vistas previas se mantienen separados de las migraciones de producción.
 
 ## Frontend
 
-- Directorio de trabajo: raíz del repositorio.
-- Instalación: `npm ci --include=dev`.
-- Compilación: `npm run build -w frontend`.
-- Directorio publicado: `frontend/dist`.
+- Directorio raíz del proyecto en Vercel: `frontend`, con preset Vite y Node 24.x.
+- Instalación: detección de npm y del workspace desde el lockfile del repositorio.
+- Compilación: `npm run build` desde `frontend`.
+- Directorio publicado: `dist`, relativo a `frontend`.
 - Variable al compilar: `VITE_API_URL=https://URL-DEL-BACKEND` sin barra final. Es una URL pública, no una credencial.
 - Cambiar la variable requiere recompilar. `API_PROXY_TARGET` solo sirve para desarrollo local; el servidor de Vite no se publica como servidor de producción.
 
@@ -38,7 +39,9 @@ La base gratuita de Render expira a los **30 días desde su creación**. Si se c
 - [x] El frontend usa HTTPS y consulta la URL correcta del backend.
 - [x] CORS permite el origen del frontend. La autenticación conserva sus controles propios.
 - [x] Neon registró la migración inicial.
-- [ ] Los datos persisten tras reiniciar la aplicación.
+- [x] Tomás y Nazareno realizaron recorridos online con dueño y empleado.
+- [ ] Comparar saldo e historial tras reiniciar la aplicación.
+- [ ] Restaurar un respaldo en una base separada y comprobar su contenido.
 - [x] Se documentan proveedor, comandos efectivos, variables sin valores secretos y URL de acceso.
 
 El mínimo del campus es un componente principal online. El objetivo del proyecto es poder usar la aplicación completa desde una URL. Ninguno de estos puntos se marca como cumplido por haber funcionado localmente.
@@ -100,7 +103,19 @@ Tomás recorrió el alta, la salida y la reposición en producción con un produ
 
 Tomás también entró desde Vercel como empleado e hizo el ingreso de una unidad indicado en la prueba. La captura posterior muestra el rol EMPLEADO y la lista de alertas vacía. El resultado esperado era subir de 4 a 5 unidades y salir de la alerta al igualar el mínimo. En esa pantalla se ve la opción de actualizar alertas y la generación queda reservada al dueño.
 
-Queda registrar la hora completa del historial y del CSV online, la persistencia después de reiniciar Render y el recorrido cruzado de Nazareno.
+## Prueba cruzada online — 20/11/2026
+
+Nazareno hizo el recorrido desde la URL de producción con el producto ficticio `NAZA01`. Los resultados provienen de su reporte. Claude inspeccionó el archivo CSV exportado.
+
+| Comprobación | Resultado informado |
+|---|---|
+| Dueño: alta y salida | Creó el producto con saldo 6, mínimo 5 y objetivo 10. Una salida de 2 dejó saldo 4. El historial mostró las 23:50 del 19/11, con el reloj del equipo en 23:51 al comprobarlo. |
+| Egreso superior al saldo | Una salida de 5 se rechazó con saldo disponible de 4. El historial mantuvo sus dos movimientos. |
+| Lista y CSV | La lista sugirió 6 unidades. Al editar a 7, el texto y el CSV incluyeron 7. El CSV consignó `2026-11-20 00:58:58-03:00`, la hora del cálculo. Claude comprobó BOM, separador de punto y coma y terminadores CRLF. |
+| Empleado: permisos y reposición | Pudo consultar el producto y ver la alerta con 4 de 5 unidades. Los controles de alta, edición, baja y generación de lista quedaron reservados al dueño. Un ingreso de 1 dejó saldo 5, registró la hora local `01:04` y retiró el producto de la alerta. |
+| Reactivación del servicio | Tras una hora de inactividad, la app avisó que no podía confirmar un movimiento. Nazareno verificó el saldo y el historial antes de volver a enviar. Con la API disponible pudo continuar. |
+
+En una nueva comprobación pública, el 20/11 el frontend respondió HTTP 200 y la API devolvió HTTP 200 con `status: ok` y `database: connected`. En una base local temporal con PostgreSQL 18, Codex aplicó desde cero la migración inicial y ejecutó 25/25 pruebas de integración. También pasaron 42/42 pruebas unitarias y de HTTP y `npm run build`.
 
 ## Persistencia y recuperación para la defensa
 
@@ -110,4 +125,4 @@ Queda registrar la hora completa del historial y del CSV online, la persistencia
 4. Después de las pruebas, exporta un respaldo con `pg_dump` en formato personalizado (`-Fc`) usando el endpoint directo de Neon y un cliente PostgreSQL de versión compatible. Guarda el archivo fuera del repositorio en una ubicación privada porque contiene datos de negocio y hashes de cuentas. Inspecciona el índice con `pg_restore --list`.
 5. Para ensayar recuperación, restaura el archivo completo con `pg_restore --single-transaction --no-owner --no-acl` en una base nueva y vacía. Comprueba los usuarios y el producto de demo allí. Si hubiera que recuperar el servicio, apunta Render a la base restaurada tras comprobar su contenido y repite el login y el recorrido de inventario. [Exportación y restauración en Neon](https://neon.com/docs/import/migrate-from-postgres).
 
-El reinicio con comparación y el respaldo con restauración todavía están pendientes de ejecución.
+El reinicio con comparación y el respaldo con restauración todavía están pendientes de ejecución. Al completarlos, registrar fecha, responsable, versión, saldo e historial antes y después, y comprobaciones en la base restaurada. Guardar el respaldo en privado.

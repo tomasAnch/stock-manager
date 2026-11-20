@@ -32,7 +32,7 @@ Los comandos de Git los ejecutan los integrantes. Este documento no asigna autor
 
 ## Qué hay que hacer en las etapas pendientes
 
-Estas explicaciones resumen la [hoja de ruta técnica](plan-desarrollo.md), donde está la checklist completa. Antes de implementar, leer también los [requerimientos](segunda_entrega/01-requerimientos.md) y las [reglas de negocio](segunda_entrega/02-reglas-de-negocio.md). La etapa 2 está cerrada: su implementación y revisión local terminaron y se integró a `main` el 09/11; su ensayo de despliegue sigue pendiente. La etapa 3 está implementada y aprobada por revisión cruzada el 10/11 sobre 28b1acb, integrada a main el 10/11 en f88b617; etapa cerrada. La etapa 4 está cerrada e integrada a `main` (`3b939c0`); su despliegue sigue pendiente y va con la etapa 6. La etapa 5 está implementada por Codex para Tomás y probada localmente, pendiente de revisión de Nazareno con Claude e integración. Luego siguen las etapas 6 y 7.
+Estas explicaciones resumen la [hoja de ruta técnica](plan-desarrollo.md), donde está la checklist completa. Antes de implementar, leer también los [requerimientos](segunda_entrega/01-requerimientos.md) y las [reglas de negocio](segunda_entrega/02-reglas-de-negocio.md). La etapa 2 está cerrada: su implementación y revisión local terminaron y se integró a `main` el 09/11; su ensayo de despliegue sigue pendiente. La etapa 3 está implementada y aprobada por revisión cruzada el 10/11 sobre 28b1acb, integrada a main el 10/11 en f88b617; etapa cerrada. La etapa 4 está cerrada e integrada a `main` (`3b939c0`); su despliegue sigue pendiente y va con la etapa 6. La etapa 5 está cerrada, con revisión de Nazareno y Claude e integración a main en da09193. Luego siguen las etapas 6 y 7.
 
 ### Etapa 2 — Acceso y permisos
 
@@ -188,4 +188,11 @@ Nazareno compartió mediante Tomás la revisión de Claude sobre b9675f9: sin bl
 
 ### Etapa 5 — Confirmación de revisión, 14/11/2026
 
-Tomás transmitió el resultado de la verificación de Claude coordinada por Nazareno: febd6ef aprobado, S1-S4 resueltas. Los resultados reportados y sus límites se registran en [etapa 5](implementacion/etapa-5.md). Codex corrigió el formato del informe y registró la aprobación sin modificar código. Integración pendiente de ejecución por Tomás; no se atribuye todavía como realizada.
+Tomás transmitió el resultado de la verificación de Claude coordinada por Nazareno: febd6ef aprobado, S1-S4 resueltas. Los resultados reportados y sus límites se registran en [etapa 5](implementacion/etapa-5.md). Codex corrigió el formato del informe y registró la aprobación sin modificar código. Tomás integró y publicó la etapa en main el 14/11/2026 (da09193).
+
+## Etapa 6 — Verificación y despliegue (19 y 20/11/2026)
+
+- **Tomás con Codex:** Tomás configuró Neon, Render y Vercel, aplicó la migración, preparó las cuentas de demo y probó ambos roles en la app publicada. Codex implementó la corrección de zona horaria y la prueba de regresión, y verificó la conexión pública y las pruebas locales.
+- **Nazareno con Claude:** Nazareno realizó la verificación local del conjunto y detectó el desfase. Claude analizó la causa. Nazareno repitió el recorrido en producción con dueño y empleado, verificó la hora de los movimientos y el CSV, y reportó el comportamiento al reactivarse la API. Claude inspeccionó el formato del archivo exportado.
+- **Estado:** despliegue y prueba cruzada online comprobados. Quedan la persistencia tras reiniciar y el ensayo de restauración. Ver [configuración y resultados](implementacion/despliegue.md).
+- **Para la defensa:** practicar cómo se comunican Vercel, Render y Neon, qué verifica `/api/health` y cómo distinguir un error de confirmación del fallo de un movimiento.

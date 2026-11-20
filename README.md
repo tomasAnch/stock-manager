@@ -2,6 +2,8 @@
 
 Trabajo Final Integrador — Tecnicatura Universitaria en Programación, UTN.
 
+[Abrir Stock Manager](https://stock-manager-plum-phi.vercel.app/) · [Estado de la API y de la base](https://stock-manager-jome.onrender.com/api/health)
+
 ## Integrantes
 
 - Tomás Anchorena
@@ -11,7 +13,9 @@ Trabajo Final Integrador — Tecnicatura Universitaria en Programación, UTN.
 
 Sistema web de inventario y reposición para pequeños comercios minoristas, como kioscos, almacenes, dietéticas y papeleras de barrio. Permite registrar entradas y salidas, consultar existencias, detectar productos bajo el mínimo y preparar listas de reposición por proveedor.
 
-El MVP contempla uno o dos comercios piloto, con datos separados por comercio y dos roles: dueño y empleado. Ambos registran reposiciones y salidas; el dueño administra el catálogo, realiza ajustes y genera las listas copiables o exportables en CSV. No incluye facturación, pagos ni órdenes con seguimiento.
+El MVP separa los datos por comercio y tiene dos roles. Dueño y empleado registran reposiciones y salidas. El dueño administra el catálogo, realiza ajustes y genera listas copiables o exportables en CSV.
+
+La publicación usa un comercio con datos ficticios. Para probarla se necesita una cuenta habilitada por el equipo. Tras un período de inactividad, Render puede demorar en responder. Si ocurre, abrí el enlace de estado de la API y esperá a que indique `"database":"connected"` antes de iniciar sesión.
 
 ## Estado y entregas
 
@@ -19,21 +23,19 @@ El MVP contempla uno o dos comercios piloto, con datos separados por comercio y 
 |---|---|---|
 | Entrega 1: propuesta y viabilidad | Aprobada por la tutora | 01/09/2026 (aprobación) |
 | Entrega 2: diseño y módulos | Aprobada por la tutora; habilitada la implementación | 27/09/2026 (entrega); correcciones del 29/09 |
-| Implementación y entrega final | Etapas 1 a 4 cerradas; etapa 5 (alertas y reposición) aprobada por revisión cruzada sobre febd6ef, pendiente de integración | 14/11/2026 (fecha límite) |
+| Implementación y despliegue | Etapas 1 a 5 integradas. Sistema publicado y probado online por ambos integrantes. Falta comprobar persistencia y restauración | 20/11/2026 (estado verificado) |
+| Entrega final | PDF final y video en preparación. El piloto con un comercio real sigue pendiente | 21/11/2026 (fecha de referencia del equipo) |
 
-El proyecto ya tiene una base ejecutable: frontend React, servidor Express, cliente Prisma, migración inicial y seed de desarrollo. Se ingresa con usuario y contraseña, y el backend verifica la sesión, el rol y el comercio en cada solicitud protegida. El catálogo permite administrar referencias y productos con stock inicial. Inventario registra reposiciones, salidas y ajustes, y muestra el historial por producto. La etapa 5 agrega alertas para ambos roles y listas temporales por proveedor para el dueño, con cantidades editables, copia y CSV. Quedan pendientes su integración, la verificación final del conjunto, el despliegue y el piloto.
+La validación online incluyó catálogo, movimientos, alertas y exportación CSV, con controles distintos para dueño y empleado. Los resultados y las verificaciones pendientes están en el [registro de despliegue](docs/implementacion/despliegue.md).
 
 ## Stack definido
 
 | Capa | Tecnología |
 |---|---|
-| Frontend | React |
-| Backend | Node.js + Express, API REST |
-| Base de datos | PostgreSQL |
+| Frontend | React con Vite, publicado en Vercel |
+| Backend | Node.js 24 con Express, API REST publicada en Render |
+| Base de datos | PostgreSQL en Neon |
 | Acceso a datos | Prisma ORM 7 |
-| Despliegue previsto | Render/Vercel; PostgreSQL en Supabase o Render, a confirmar durante la implementación |
-
-Para la entrega final, el campus exige al menos un componente principal alojado y funcionando online.
 
 ## Documentación
 
@@ -57,13 +59,20 @@ Orden sugerido de lectura: requerimientos → reglas → modelo de datos → mó
 
 ### Implementación
 
-[Etapa 5: alertas y reposición](docs/implementacion/etapa-5.md): comportamiento, API, decisiones, pruebas y recorrido para la revisión cruzada.
+| Etapa | Documentación |
+|---|---|
+| 1. Base del proyecto | [Instalación, migración y pruebas iniciales](docs/implementacion/etapa-1.md) |
+| 2. Acceso y permisos | [Sesión, roles y separación por comercio](docs/implementacion/etapa-2.md) |
+| 3. Catálogo | [Productos, categorías, proveedores y alta con stock inicial](docs/implementacion/etapa-3.md) |
+| 4. Inventario | [Movimientos, historial y concurrencia](docs/implementacion/etapa-4.md) |
+| 5. Alertas y reposición | [Faltantes por proveedor, copia y exportación CSV](docs/implementacion/etapa-5.md) |
+| 6. Despliegue | [Configuración, comprobaciones y recuperación](docs/implementacion/despliegue.md) |
 
 [Preparación de la defensa oral](preparacion-defensa-oral.md): guía de estudio compartida, con explicaciones desde cero, decisiones justificadas, recorridos de código y preguntas para la defensa individual.
 
 [Participación y preparación de la defensa](docs/participacion-y-defensa.md): reparto de etapas y registro de aportes, decisiones, pruebas y revisión de cada integrante.
 
-[Hoja de ruta de desarrollo](docs/plan-desarrollo.md): etapas, checklist y registro de avance. [Etapa 1: funcionamiento y revisión](docs/implementacion/etapa-1.md): explicación, comprobaciones y límites de lo implementado. [Etapa 2: acceso y permisos](docs/implementacion/etapa-2.md): login, sesión, roles, decisiones y pruebas. [Preparación del despliegue](docs/implementacion/despliegue.md): configuración prevista; todavía no hay un despliegue público.
+[Hoja de ruta de desarrollo](docs/plan-desarrollo.md): etapas, checklist y registro de avance.
 
 ## Alcance funcional del MVP
 
@@ -74,7 +83,7 @@ Orden sugerido de lectura: requerimientos → reglas → modelo de datos → mó
 - Alertas calculadas cuando el stock actual es menor al mínimo.
 - Listas temporales de reposición por proveedor, editables, copiables y exportables en CSV por el dueño.
 
-Los comercios y usuarios piloto se cargarán mediante un seed. No se incluyen ABM de cuentas, registro público, recuperación de contraseñas, precios de venta, facturación ni circuitos de compras. El detalle y las exclusiones están en [requerimientos](docs/segunda_entrega/01-requerimientos.md).
+El desarrollo local tiene un seed y la publicación utiliza un script de preparación de cuentas de demo. La administración de cuentas, el registro público, la recuperación de contraseñas, los precios de venta, la facturación y el circuito de órdenes de compra quedan fuera del alcance. El detalle está en [requerimientos](docs/segunda_entrega/01-requerimientos.md).
 
 ## Estructura actual
 

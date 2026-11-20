@@ -33,7 +33,8 @@ Los ejemplos orales son una guía para practicar. Cada integrante debe ajustarlo
 - [Etapa 3 — Catálogo](#etapa-3--catálogo)
 - [Etapa 4 — Movimientos e historial](#etapa-4--movimientos-e-historial)
 - [Etapa 5 — Alertas y reposición](#etapa-5--alertas-y-reposición)
-- [Etapas siguientes](#etapas-siguientes)
+- [Etapa 6 — Verificación del conjunto y despliegue](#etapa-6--verificación-del-conjunto-y-despliegue)
+- [Etapa 7 — Piloto, documentación y entrega](#etapa-7--piloto-documentación-y-entrega)
 - [Acuerdo para ampliar esta guía](#acuerdo-para-ampliar-esta-guía)
 
 ## El proyecto y las palabras básicas
@@ -1446,7 +1447,7 @@ Todo lo de esta tabla lo **ejecutó Claude** el 10/11 en una copia aislada. Code
 
 ### Estado, responsables y problema que resolvemos
 
-Implementada por Codex con la coordinación de Tomás el 10/11/2026, en `etapa-5-reposicion`. Las comprobaciones locales pasaron. Claude aprobó b9675f9 sin bloqueantes; el 11/11 Codex aplicó sus cuatro sugerencias. Claude confirmó S1-S4 sobre febd6ef, según el mensaje compartido por Tomás el 14/11. Solo falta integrar. Esto describe el código construido, no una función futura. El [informe de etapa 5](docs/implementacion/etapa-5.md) contiene las evidencias y los pasos para repetirlas.
+Implementada por Codex con la coordinación de Tomás el 10/11/2026, en `etapa-5-reposicion`. Las comprobaciones locales pasaron. Claude aprobó b9675f9 sin bloqueantes; el 11/11 Codex aplicó sus cuatro sugerencias. Claude confirmó S1-S4 sobre febd6ef, según el mensaje compartido por Tomás el 14/11. Tomás integró la etapa a main el 14/11, en da09193. Esto describe el código construido, no una función futura. El [informe de etapa 5](docs/implementacion/etapa-5.md) contiene las evidencias y los pasos para repetirlas.
 
 Hasta la etapa 4 ya sabíamos registrar cuánto entra y sale. Ahora usamos ese saldo para responder dos preguntas del comercio: «¿qué me está faltando?» y «¿cuánto le pido a cada proveedor?». El empleado puede consultar faltantes. El dueño prepara las cantidades que desea solicitar y obtiene texto para pegar en un mensaje o un archivo CSV. La aplicación no envía el pedido, no guarda una orden y no carga automáticamente la mercadería: cuando llega, se registra un ingreso en Inventario.
 
@@ -1587,13 +1588,25 @@ Ejercicios antes de rendir:
 5. Entrar como empleado y mostrar qué puede hacer. Después, explicar qué control del servidor impide generar la lista aunque se invente un botón en el navegador.
 6. Explicar sin mirar por qué generar una lista no agrega un movimiento de stock. Si cuesta, volver al recorrido de recepción de la etapa 4.
 
-## Etapas siguientes
+## Etapa 6 — Verificación del conjunto y despliegue
 
-### Etapa 6 — Verificación del conjunto y despliegue
+Tomás configuró el entorno público y probó el recorrido. Nazareno verificó el conjunto en local con Claude y repitió el circuito en producción con ambos roles. Codex aplicó la corrección de zona horaria y agregó su prueba. Las tareas y evidencias individuales están en [participación](docs/participacion-y-defensa.md#etapa-6--verificación-y-despliegue-19-y-20112026) y [despliegue](docs/implementacion/despliegue.md).
 
-Pendiente. Ambos registrarán el recorrido completo, decisiones del alojamiento real, publicación, configuración y resultados online, con tareas individuales identificadas.
+### Recorrido de una solicitud online
 
-### Etapa 7 — Piloto, documentación y entrega
+1. El navegador descarga la interfaz de Vercel. La URL pública de la API quedó incorporada al compilar el frontend con `VITE_API_URL`.
+2. Express recibe la solicitud en Render. CORS autoriza al navegador a leer respuestas desde el origen de producción. Para operaciones protegidas, Express además valida el token y vuelve a consultar el rol y comercio del usuario.
+3. Prisma consulta PostgreSQL en Neon. Si se confirma un movimiento, tanto el movimiento como su nuevo saldo quedan allí. El navegador recibe la respuesta y muestra el resultado.
+4. El endpoint `/api/health` comprueba que Express puede consultar la base. La prueba tras reiniciar Render debe comparar también un producto y su historial para verificar que se conservan sus datos.
+
+### Qué practicar
+
+- Explicar por qué las contraseñas de PostgreSQL y la firma JWT se configuran en el servidor, y por qué la URL de la API puede ser pública.
+- Contar la diferencia entre registrar el instante en UTC y mostrar la hora de Argentina. Usar como ejemplo el movimiento de Nazareno y la fecha del CSV.
+- Explicar qué pasó al intentar una salida con Render inactivo: antes de repetir una operación cuya respuesta se perdió, hay que consultar el historial para saber si fue registrada.
+- Describir qué comprueba un reinicio y qué comprueba una restauración sobre una base aparte. Ambos ensayos siguen pendientes.
+
+## Etapa 7 — Piloto, documentación y entrega
 
 Pendiente. Ambos registrarán pruebas con usuarios, mediciones, problemas, correcciones, informe y video. Se completará la preparación individual de la defensa con ejemplos de la versión final.
 

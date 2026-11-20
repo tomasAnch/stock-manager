@@ -10,9 +10,10 @@ Este plan organiza el desarrollo por dependencias y resultados verificables. No 
 - [x] Diseño, requerimientos, reglas y módulos documentados en la segunda entrega.
 - [x] Correcciones de diseño y pruebas SQL registradas: 32 comprobaciones en PostgreSQL y siete CHECK, ejecutados el 29/09. Es evidencia de esa ejecución, no una prueba de la aplicación futura.
 - [x] Aprobación de la segunda entrega por Sofía y autorización para implementar, según el mensaje que compartió Tomás el 28/10. No se presupone que esa sea la fecha en que la docente lo envió.
-- [ ] Aplicación implementada y funcionando.
-- [ ] Pruebas de integración, interfaz y uso piloto realizadas.
-- [ ] Despliegue, informe final y video terminados.
+- [x] Aplicación implementada y funcionando en la URL pública.
+- [x] Pruebas de integración, interfaz y recorrido de demo.
+- [ ] Piloto con un comercio real.
+- [ ] Comprobaciones de persistencia y recuperación, PDF final y video.
 
 El último commit local revisado al preparar el plan es `20ac7ea`. La carpeta estaba limpia antes de agregar esta hoja de ruta y actualizar el README. Tomás comprobó con fetch/status que no había cambios remotos antes de comenzar. No se ejecutan comandos de Git desde el asistente por preferencia del equipo.
 
@@ -123,14 +124,14 @@ RF-10 a RF-12; RN-12 a RN-14.
 
 ## Etapa 6 — Verificación del conjunto y despliegue final
 
-- [ ] Ejecutar el recorrido completo: login → alta → ingreso/egreso → alerta → reposición → copia/CSV.
-- [ ] Revisar interfaz en escritorio y móvil, navegación por teclado, mensajes de error y estados vacíos/de carga.
-- [ ] Repetir la batería relevante de integración, comprobar compilación y realizar una instalación desde cero con migraciones y seed.
-- [ ] Completar el despliegue de frontend, backend y base, comprobar HTTPS, configuración de orígenes, variables de entorno y persistencia tras reiniciar.
-- [ ] Verificar desde la URL online los mismos recorridos y permisos. No dar por aprobado el entorno online solo porque funciona localmente.
-- [ ] Confirmar que no se versionan secretos ni se exponen credenciales de demostración con acceso a datos reales.
+- [x] Ejecutar el recorrido completo: login → alta → ingreso/egreso → alerta → reposición → copia/CSV.
+- [x] Revisar interfaz en escritorio y móvil, teclado, mensajes de error y estados vacíos/de carga. Verificación local reportada por Nazareno y Claude.
+- [x] Compilar y probar una instalación desde cero con migraciones y seed. El 20/11 pasaron 42/42 pruebas unitarias y de HTTP y 25/25 de integración con una base temporal recién migrada.
+- [x] Publicar frontend, API y base. Comprobar HTTPS, conexión a la base, origen permitido y variables documentadas.
+- [x] Verificar desde la URL online los recorridos de dueño y empleado.
+- [ ] Comparar saldo e historial tras reiniciar Render y comprobar la restauración de un respaldo en una base vacía aparte.
 
-El campus exige al menos un componente principal online. La meta operativa es que la aplicación completa pueda usarse desde su URL; las cuentas, servicios y costos se decidirán con el equipo antes de contratar o publicar recursos.
+La [configuración y evidencia del despliegue](implementacion/despliegue.md) incluye los recorridos de ambos integrantes y las instrucciones de recuperación. La publicación utiliza datos ficticios. Los secretos se configuran fuera del repositorio.
 
 **Terminada cuando:** Tomás y Nazareno pueden usar el sistema online, se mantienen las reglas de negocio y existen instrucciones para instalarlo y recuperar el entorno.
 
@@ -142,9 +143,9 @@ La coordinación del piloto empieza en la etapa 0. La redacción del informe y l
 - [ ] Medir el objetivo de carga de movimientos en menos de 10 segundos bajo condiciones registradas, sin darlo por cumplido por anticipado.
 - [ ] Corregir los problemas detectados y volver a probar los recorridos afectados.
 - [ ] Actualizar README, instrucciones, esquema/migraciones y documentos que hayan cambiado durante la implementación.
-- [ ] Preparar el informe final con problema, solución desarrollada, decisiones, pruebas, resultados y límites reales.
+- [ ] Cerrar el borrador del informe, publicar su PDF en el repositorio y enlazarlo desde el README.
 - [ ] Preparar guion y grabar el video explicativo; el campus indica preferentemente en inglés, no lo establece como requisito obligatorio.
-- [ ] Armar una guía breve de defensa separada en frontend, backend, base de datos y decisiones, usando el código efectivamente construido.
+- [x] Preparar la [guía de defensa](../preparacion-defensa-oral.md) con los módulos, el código y las decisiones vigentes. El ensayo individual se comprueba por separado.
 - [ ] Revisar enlaces, acceso online, instalación, archivos y requisitos de entrega. Subir la versión acordada y avisar a la docente por el canal correspondiente.
 
 **Terminada cuando:** el repositorio contiene código, esquema/migraciones y documentación; la app online es accesible, el informe y video están listos y el equipo puede explicar el recorrido principal. La aprobación académica posterior corresponde a la docente/comité, no a la checklist técnica.
@@ -163,13 +164,13 @@ Se priorizan comportamientos importantes y errores posibles; no se agrega un tes
 
 ## Registro de avance y continuidad
 
-**Estado actual:** etapas 1 y 2 cerradas. Etapa 3 implementada el 09/11 por Codex para Tomás en etapa-3-catalogo, aprobada por Nazareno con Claude el 10/11 sobre 28b1acb e integrada a main el 10/11/2026 mediante fast-forward a f88b617; etapa cerrada. Correcciones B1 y S1-S4 verificadas y aprobadas por Claude. Pruebas: 31/31 unitarias, 13/13 integración, build y recorrido de navegador correctos. Ver [informe de etapa 3](implementacion/etapa-3.md). Etapa 4 implementada el 10/11 por Nazareno con Claude en `etapa-4-inventario`: 36/36 unitarias, 21/21 de integración, build y 12 pasos de navegador, ejecutados por Claude ([informe de etapa 4](implementacion/etapa-4.md)). Revisada por Tomás con Codex sobre `e463673`: un bloqueante y dos sugerencias, corregidos el 10/11 y aprobados por Codex sobre `bc7465d` (36/36, 21/21, build y 15 pasos en Windows/Edge, según su informe). Implementación y revisión cruzada aprobadas; integrada a `main` el 10/11 por Nazareno mediante fast-forward a `3b939c0` (no se creó commit de merge). Etapa cerrada. Etapa 5 implementada y probada localmente el 10/11 en etapa-5-reposicion: 40/40 de lógica/HTTP, 24/24 de integración, build y 10 pasos de navegador. Pendiente de revisión cruzada e integración. Etapas 6 y 7, ensayo online y piloto pendientes.
+**Estado actual:** etapas 1 a 5 cerradas e integradas. La etapa 6 tiene la aplicación publicada y los recorridos online de Tomás y Nazareno. Quedan las comprobaciones de persistencia y recuperación. Ver [registro del despliegue](implementacion/despliegue.md).
 
-**Siguiente acción:** Tomás comparte el commit de `etapa-5-reposicion` y Nazareno con Claude revisan código, pruebas y guía de defensa. Resolver observaciones antes de integrar a main. Despliegue y piloto siguen pendientes (etapas 6 y 7). Git lo ejecutan los integrantes.
+**Siguiente acción:** compartir el repositorio para revisión. Después, completar las pruebas del despliegue, cerrar el informe y preparar el video. Al publicar el video, agregar el enlace al PDF y al README.
 
-**Datos externos pendientes:** disponibilidad y acceso al comercio piloto; cuentas y condiciones del hosting. No se necesitan para redactar o probar toda la lógica local.
+**Datos externos pendientes:** disponibilidad de un comercio para el piloto y confirmación de Sofía sobre cómo acreditar esta parte de la validación.
 
-**Referencia de entrega:** la consigna adjuntada el 28/10 fija el 14/11 para el informe/video y el 21/11 como fin de cursado; su línea de tiempo también llega al 21/11. Usar el 14/11 como referencia mientras no exista otra indicación de Sofía. Estas fechas no determinan el orden ni la profundidad de las etapas.
+**Fecha de referencia del equipo:** 21/11/2026 para el cierre de cursada. La entrega previa a la defensa en mesa se confirma por separado con la cátedra.
 
 Al cerrar una sesión, actualizar aquí:
 
