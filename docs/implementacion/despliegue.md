@@ -46,20 +46,6 @@ La migración inicial de Neon se aplicó manualmente desde una copia con el esqu
 
 El mínimo del campus es un componente principal online. El objetivo del proyecto es poder usar la aplicación completa desde una URL. Ninguno de estos puntos se marca como cumplido por haber funcionado localmente.
 
-## Preparación de etapa 6 — 17/11/2026
-
-La base de trabajo es main en da09193, con las cinco etapas integradas. Codex ejecutó npm run build en etapa-6-despliegue. Se generó el cliente de Prisma y compiló el frontend correctamente. Quedan por ejecutar el recorrido local completo y la comprobación online.
-
-En producción, el seed de demostración está bloqueado. Antes de probar el login online hay que preparar el comercio y dos usuarios con contraseñas hasheadas, uno DUENO y otro EMPLEADO. Se usará una base de despliegue separada y los valores de las credenciales se mantendrán fuera del repositorio.
-
-Una vez elegido el alojamiento:
-
-1. Crear la base PostgreSQL, aplicar las migraciones versionadas y preparar las cuentas autorizadas.
-2. Configurar el backend y probar /api/health por HTTPS.
-3. Compilar y publicar el frontend con VITE_API_URL. Configurar FRONTEND_ORIGIN con su origen exacto y comprobar el login desde esa URL.
-4. Con ambos roles, verificar alta, movimiento, alerta y reposición, incluyendo que el empleado reciba 403 al solicitar la lista del dueño.
-5. Registrar un movimiento de prueba, reiniciar el backend y consultar nuevamente el saldo y el historial para comprobar que persistieron.
-
 ## Alojamiento acordado
 
 Entrega el 21/11/2026 y defensa a partir de febrero de 2027, según confirmó Tomás. La demo académica se publicará con Vercel Hobby para el frontend, Render Free Web Service para Express y Neon Free para PostgreSQL.

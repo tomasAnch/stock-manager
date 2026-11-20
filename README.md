@@ -6,8 +6,12 @@ Trabajo Final Integrador — Tecnicatura Universitaria en Programación, UTN.
 
 ## Integrantes
 
-- Tomás Anchorena
-- Nazareno Romero
+| Integrante | Aportes |
+|---|---|
+| Tomás Anchorena | Coordinación de la base inicial, catálogo y reposición. Configuración del despliegue. |
+| Nazareno Romero | Coordinación de acceso e inventario. Verificación local del conjunto. |
+
+Ambos revisaron etapas y probaron la demo publicada. Se usaron Codex y Claude para generar código y asistir en pruebas, revisiones y documentación.
 
 ## Descripción
 
@@ -23,7 +27,7 @@ La publicación usa un comercio con datos ficticios. Para probarla se necesita u
 |---|---|---|
 | Entrega 1: propuesta y viabilidad | Aprobada por la tutora | 01/09/2026 (aprobación) |
 | Entrega 2: diseño y módulos | Aprobada por la tutora; habilitada la implementación | 27/09/2026 (entrega); correcciones del 29/09 |
-| Implementación y despliegue | Etapas 1 a 5 integradas. Sistema publicado y probado online por ambos integrantes. Falta comprobar persistencia y restauración | 20/11/2026 (estado verificado) |
+| Implementación y despliegue | Sistema publicado y probado online por ambos integrantes. Falta comprobar persistencia y restauración | 20/11/2026 (estado verificado) |
 | Entrega final | PDF final y video en preparación. El piloto con un comercio real sigue pendiente | 21/11/2026 (fecha de referencia del equipo) |
 
 La validación online incluyó catálogo, movimientos, alertas y exportación CSV, con controles distintos para dueño y empleado. Los resultados y las verificaciones pendientes están en el [registro de despliegue](docs/implementacion/despliegue.md).
@@ -59,20 +63,9 @@ Orden sugerido de lectura: requerimientos → reglas → modelo de datos → mó
 
 ### Implementación
 
-| Etapa | Documentación |
-|---|---|
-| 1. Base del proyecto | [Instalación, migración y pruebas iniciales](docs/implementacion/etapa-1.md) |
-| 2. Acceso y permisos | [Sesión, roles y separación por comercio](docs/implementacion/etapa-2.md) |
-| 3. Catálogo | [Productos, categorías, proveedores y alta con stock inicial](docs/implementacion/etapa-3.md) |
-| 4. Inventario | [Movimientos, historial y concurrencia](docs/implementacion/etapa-4.md) |
-| 5. Alertas y reposición | [Faltantes por proveedor, copia y exportación CSV](docs/implementacion/etapa-5.md) |
-| 6. Despliegue | [Configuración, comprobaciones y recuperación](docs/implementacion/despliegue.md) |
-
-[Preparación de la defensa oral](preparacion-defensa-oral.md): guía de estudio compartida, con explicaciones desde cero, decisiones justificadas, recorridos de código y preguntas para la defensa individual.
-
-El proyecto se desarrolló con asistencia de IA. Codex y Claude generaron código y ayudaron con revisiones, pruebas y documentación. Tomás y Nazareno coordinaron las etapas, revisaron los resultados, integraron los cambios y probaron la aplicación publicada. El [registro de participación](docs/participacion-y-defensa.md) detalla los aportes y la evidencia por etapa.
-
-[Hoja de ruta de desarrollo](docs/plan-desarrollo.md): etapas, checklist y registro de avance.
+- [Backend](backend/README.md) y [frontend](frontend/README.md). Organización del código y responsabilidades de cada módulo.
+- [Esquema Prisma vigente](backend/prisma/schema.prisma) y [migración inicial](backend/prisma/migrations/202610280001_initial/migration.sql).
+- [Despliegue y verificación online](docs/implementacion/despliegue.md). Configuración, recorrido con ambos roles y procedimiento de recuperación.
 
 ## Alcance funcional del MVP
 
@@ -93,8 +86,7 @@ El desarrollo local tiene un seed y la publicación utiliza un script de prepara
 ├── package.json                 # Comandos y workspaces
 ├── package-lock.json            # Dependencias reproducibles
 ├── docs/
-│   ├── plan-desarrollo.md
-│   ├── implementacion/
+│   ├── implementacion/         # Despliegue y evidencia técnica
 │   ├── TFI_Entrega1_Anchorena_Romero.pdf
 │   └── segunda_entrega/
 │       ├── 01-requerimientos.md
@@ -119,8 +111,6 @@ El desarrollo local tiene un seed y la publicación utiliza un script de prepara
     └── src/features/            # acceso, catalogo, inventario, reposicion
 ```
 
-Los README de [backend](backend/README.md) y [frontend](frontend/README.md) explican el estado de cada parte. Los documentos de la segunda entrega se conservan como antecedente del diseño; la implementación vigente se registra en esta sección.
-
 ## Instalación y ejecución
 
 Versión recomendada: **Node.js 24.22.1** y **PostgreSQL 18** (verificado con 18.6). `.nvmrc` y `.node-version` fijan esa recomendación. El rango de npm es `>=24.22.1 <25`: acepta versiones 24.x posteriores, pero rechaza Node 22, Node 25 y versiones anteriores al mínimo. Si usás NVM para Windows, ejecutá `nvm install 24.22.1` y `nvm use 24.22.1`; comprobá después `node --version` en una nueva terminal. No se necesita instalar Prisma globalmente.
@@ -131,7 +121,7 @@ Desde la raíz `stock-manager`:
 
    Nazareno reportó un aviso `install-scripts` / `allowScripts` sobre scripts no ejecutados de `@prisma/engines`, `esbuild` y `prisma`. En su instalación, la generación, las pruebas y la compilación funcionaron igualmente. Si aparece ese aviso, comprobar los resultados de los comandos siguientes; no habilitar todos los scripts automáticamente. El aviso no está incluido en la salida guardada, por lo que esta nota registra lo informado por Nazareno.
 
-2. Copiar `backend/.env.example` a `backend/.env` **solo si no existe**. Completar la conexión a PostgreSQL, las contraseñas del seed y `JWT_SECRET` (el comando para generarlo está en el ejemplo). Si ya tenías un `.env` de la etapa 1, agregale `JWT_SECRET` y `JWT_EXPIRES_IN=8h`: sin el secreto, la API no arranca. No subir este archivo. `frontend/.env.example` es opcional en desarrollo porque el proxy local ya está configurado.
+2. Copiar `backend/.env.example` a `backend/.env` **solo si no existe**. Completar la conexión a PostgreSQL, las contraseñas del seed y `JWT_SECRET` (el comando para generarlo está en el ejemplo). El backend exige `JWT_SECRET` y la sesión dura ocho horas por defecto. No subir este archivo. `frontend/.env.example` es opcional en desarrollo porque el proxy local ya está configurado.
 
    En Windows, guardar, cerrar el editor y volver a abrir el archivo exacto con `notepad backend/.env`, desde la raíz del proyecto. Comprobar localmente que quedaron los valores editados y que no se guardó como `.env.txt`. Ante un error de autenticación `P1000`, revisar también que los cambios se hayan guardado y que la conexión corresponda al usuario, contraseña y servidor elegidos. No pegar el contenido del `.env` en chats ni incluirlo en capturas o registros de pruebas.
 3. Crear dos bases vacías con el usuario administrador de la instalación:
@@ -159,7 +149,16 @@ El seed crea dos comercios ficticios, una categoría y proveedor por comercio, y
 | `npm run build` | Genera el cliente Prisma y compila el frontend en `frontend/dist`. |
 | `npm start` | Inicia solo la API mediante tsx. |
 
-Las pruebas de integración exigen `TEST_DATABASE_URL`, distinta de desarrollo; nunca toman `DATABASE_URL` como reemplazo. Las pruebas de la etapa 2 cubren login, sesión vencida o alterada, usuario desactivado, permisos por rol y registros de otro comercio; los movimientos concurrentes corresponden a la etapa 4. La evidencia histórica de las 32 comprobaciones SQL de septiembre sigue en [segunda entrega](docs/segunda_entrega/pruebas/README.md).
+## Pruebas y evidencia
+
+Las pruebas de integración usan `TEST_DATABASE_URL` para conectarse a la base exclusiva `stock_manager_test`. Cubren migración y seed, permisos por rol y comercio, egresos concurrentes, rollback de movimientos, alertas y fechas.
+
+| Verificación | Resultado | Evidencia |
+|---|---|---|
+| Diseño SQL · 29/09/2026 | 32 casos correctos y siete restricciones CHECK. | [Pruebas del esquema](docs/segunda_entrega/pruebas/README.md) |
+| Instalación limpia · 29/10/2026 | En Windows con Node 24.22.1 y PostgreSQL 18.6 se aplicó la migración en dos bases vacías, se repitió el seed sin duplicados y pasaron 14 pruebas unitarias y de HTTP, 5 de integración y el build. El runner también rechazó bases con datos u objetos ajenos. | [Salida de la instalación](docs/implementacion/resultados-instalacion-final-2026-10-29.txt) |
+| Instalación de Nazareno · 30/10/2026 | Migración desde cero, seed repetido, 14 pruebas unitarias y de HTTP, 5 de integración en dos ejecuciones y build correcto. | [Salida en otro equipo](docs/implementacion/instalacion-nazareno-2026-10-30.txt) |
+| Verificación final · 20/11/2026 | 42/42 pruebas unitarias y de HTTP, 25/25 de integración sobre una base recién migrada y compilación correcta. Tomás y Nazareno probaron en producción con dueño y empleado. | [Resultados y pendientes](docs/implementacion/despliegue.md#prueba-cruzada-online--20112026) |
 
 ### Si se interrumpió una prueba
 
@@ -177,110 +176,7 @@ Si hay conexiones abiertas, PostgreSQL rechazará el borrado; cerralas antes de 
 
 ## Registro de cambios
 
-### 09/11/2026 — Cierre de la etapa 2
-
-- La etapa se integró a `main` tras verificar las correcciones de [acceso y permisos](docs/implementacion/etapa-2.md). Nazareno repitió las pruebas en su equipo, con 26/26 unitarias y 7/7 de integración. [Salida de las pruebas](docs/implementacion/resultados-etapa-2-naza-2026-11-09.txt)
-
-### 07/11/2026 — Etapa 2: correcciones de la revisión
-
-- El login rechaza contraseñas de más de 72 bytes, el límite que compara bcrypt (observación bloqueante de la revisión). El token sin vencimiento se rechaza y el panel avisa cuando no puede comprobar la sesión por un problema de conexión. Detalle en [etapa 2](docs/implementacion/etapa-2.md#revisión-cruzada).
-
-### 05/11/2026 — Etapa 2: acceso y permisos (en revisión)
-
-- Se agregan login (`POST /api/auth/login`), consulta de sesión (`GET /api/auth/sesion`) y cierre de sesión en el navegador. Los middlewares `requireAuth` y `requireRole` y el filtro por comercio quedan listos para los módulos siguientes.
-- El token JWT solo identifica al usuario y vence; rol, comercio y estado activo se leen de la base en cada solicitud. Nueva variable obligatoria `JWT_SECRET` y dependencia `jsonwebtoken`.
-- La interfaz muestra login, datos de la sesión y un menú distinto para dueño y empleado. Detalle, decisiones y pruebas en [etapa 2](docs/implementacion/etapa-2.md).
-
-### 30/10/2026 — Instalación de Nazareno y cierre de la etapa 1
-
-- Se incorpora la [salida enviada por Nazareno](docs/implementacion/instalacion-nazareno-2026-10-30.txt) sobre el commit `501810c` y su [captura de conexión](docs/implementacion/instalacion-nazareno-2026-10-30.png). Registra migraciones, seed repetido, 14 pruebas de lógica/HTTP, 5 de integración en dos ejecuciones y compilación correcta.
-- Se aclaran el aviso de instalación reportado y la comprobación del guardado del `.env`. Se actualiza la hoja de ruta: la siguiente etapa es acceso y permisos.
-
-### 29/10/2026 — Revisión de la etapa 1
-
-- Se agregan mensajes controlados para errores, habilitación explícita del seed y una inspección de la base de pruebas anterior a las migraciones.
-- Se precisa el CHECK esperado en las pruebas, se simplifica código y se documenta la recuperación de pruebas interrumpidas.
-- Se conserva la migración aplicada y la evidencia del 28/10. La nueva verificación desde una copia limpia se registra por separado en [la revisión](docs/implementacion/revision-etapa-1.md).
-
-### 28/10/2026 — Preparación de la implementación
-
-- Se actualiza el estado de la segunda entrega a aprobada por la tutora, según la devolución compartida por el equipo, que habilita comenzar la implementación.
-- Se incorpora una hoja de ruta para implementar y probar el MVP por etapas, incluyendo despliegue, piloto, informe y video. No cambia el alcance funcional ni reemplaza las consignas del campus.
-- Se implementa la etapa 1 con Node 24.22.1, Prisma 7.10.1 y dependencias fijadas en el lockfile. Se agregan aplicación mínima, migración con CHECK, seed repetible, validaciones comunes y pruebas. Los módulos funcionales del MVP siguen pendientes.
-
-### 29/09/2026 — Correcciones a partir de la devolución
-
-- Se incorpora el análisis de normalización: 3FN bajo las reglas definidas, con excepciones justificadas a FNBC en categorías, proveedores y productos. Se incluyen claves candidatas y dependencias.
-- Se explica `stock_actual` como desnormalización deliberada: permite comprobar y actualizar el saldo sobre una fila, a cambio de mantenerlo junto con cada movimiento en una transacción. Se agrega una consulta de conciliación con el historial.
-- Se aplica en PostgreSQL el DDL generado desde el esquema y luego `restricciones.sql`. Se guardan los scripts y la salida de 32 comprobaciones correctas, junto con la versión y la fecha reales.
-- Se crean `backend/` y `frontend/` con los módulos documentados y directorios auxiliares. Todavía no contienen una aplicación ejecutable.
-- Se reincorpora la exportación CSV a partir de la devolución de la tutora, además de copiar texto. Se actualizan alcance, RF-12, CU-08, RN-14, permisos y módulos. Se define su formato para uso con configuración regional argentina.
-
-Respecto de las órdenes, la primera propuesta las describía como un “listado exportable o copiable con los productos faltantes clasificados para enviar a proveedores”. En el diseño concretamos ese resultado como una lista calculada por proveedor: se puede editar y enviar fuera del sistema, pero no tiene seguimiento de aprobación, envío o recepción dentro de la aplicación. Elegimos ese límite porque el problema abordado es detectar faltantes y preparar la reposición; el stock se actualiza al recibir mercadería, mediante un movimiento independiente. Guardar órdenes y administrar estados incorporaría un circuito de compras que no se desarrolló en la propuesta. Dejamos explícita esta decisión para la revisión de la tutora.
-
-El 24/09 se había seleccionado solo la copia de texto entre las dos salidas previstas. Con esta corrección se ofrecen ambas. El CSV puede conservarse fuera de la aplicación, aunque la lista de trabajo sea temporal. La entrada del 24/09 se mantiene como registro de lo decidido en esa fecha.
-
-### 24/09/2026 — Diseño y módulos
-
-Los siguientes cambios son precisiones y decisiones del equipo respecto de la primera entrega; no se atribuyen a observaciones particulares de la tutora:
-
-- Se completa el modelo con Comercio, Usuario, Categoria y Proveedor, además de Producto y MovimientoStock. Se reemplaza el término documental “colecciones” por “tablas” en el diseño vigente.
-- Se concreta la separación de datos por comercio. MovimientoStock obtiene el comercio a través del producto, evitando repetir ese campo. Se explicita que las FK simples requieren controles adicionales de comercio en el backend.
-- Se precisan roles y acceso: dueño y empleado registran operaciones habituales; el dueño administra catálogo, registra ajustes y genera reposición. No se desarrolla una pantalla de aprobación de pedidos.
-- “Órdenes de compra/reposición” se concreta como listas calculadas y copiables por proveedor, sin persistencia, estados ni exportación CSV. El envío se realiza fuera de la aplicación.
-- Se agrega stock objetivo para calcular cantidades sugeridas. Se conserva el criterio de alerta “por debajo del mínimo” de la primera entrega, incluyendo mínimo cero como desactivación de alertas.
-- Se incorporan unidad de medida y cantidades decimales para kg; los productos por unidad conservan cantidades enteras.
-- Se definen stock inicial, ajustes con motivo, historial inmutable, bajas lógicas y controles de reactivación. Se especifican transacciones y operaciones condicionales para mantener el saldo.
-- Se excluye el precio de venta, mencionado en la descripción inicial del actor dueño: no interviene en las funcionalidades de inventario y reposición comprometidas.
-- Se definen nombres normalizados de categorías/proveedores: espacios normalizados y minúsculas para unicidad, conservando tildes. Se documentan controles SQL y validaciones de aplicación por separado.
-- Se actualiza el estado de la primera entrega y se corrige el enlace al PDF. La descripción del piloto se unifica en uno o dos comercios, conforme a la propuesta presentada.
-- Se define JavaScript con módulos ES para el backend y tsx para ejecutar el cliente TypeScript que genera Prisma 7.
-
-El PDF de la primera entrega se conserva tal como fue presentado.
-
-### Avance del 09/11 — Etapa 3
-
-Catálogo implementado, pendiente de revisión cruzada y de integración a main. [Informe y pruebas](docs/implementacion/etapa-3.md). Se agregó la explicación a la guía de defensa. Sin cambios de esquema ni dependencias.
-
-
-### Verificación del 10/11 — Etapa 3
-
-La revisión cruzada confirmó las correcciones del catálogo en `28b1acb`, incluida la navegación entre pestañas. [Verificación](docs/implementacion/verificacion-etapa-3-claude.md)
-
-
-### Integración del 10/11 — Etapa 3
-
-Tomás integró y publicó la etapa de catálogo en `main` en `f88b617`, tras la revisión de `28b1acb`.
-
-
-### Avance del 10/11 — Etapa 4
-
-La rama `etapa-4-inventario` incorporó la pantalla de Inventario, el registro de movimientos y el historial por producto. [Informe y pruebas](docs/implementacion/etapa-4.md)
-
-### Correcciones del 10/11 — Etapa 4
-
-La revisión de `e463673` detectó que el resultado de una operación podía mostrarse sobre otro producto seleccionado durante el envío. Se corrigió ese comportamiento y se agregó una prueba de navegador. [Detalle de la revisión](docs/implementacion/etapa-4.md#revisión-cruzada)
-
-### Aprobación del 10/11 — Etapa 4
-
-La verificación de `bc7465d` registró 36/36 pruebas unitarias, 21/21 de integración, compilación y 15 pasos de navegador en Windows/Edge. [Informe y evidencia](docs/implementacion/etapa-4.md)
-
-### Integración del 10/11 — Etapa 4
-
-Nazareno integró la etapa de Inventario a `main`, de `b1b1b82` a `3b939c0`.
-
-### Pruebas de Nazareno — Etapa 4
-
-El 10/11 Nazareno ejecutó en su equipo, sobre main (`a8fd447`), `npm test` (36/36) y `npm run test:integration` (21/21). [Salida](docs/implementacion/resultados-etapa-4-naza-2026-11-10.txt). De la etapa 4 siguen pendientes el despliegue y el piloto.
-
-### 10/11/2026 — Implementación de la etapa 5, pendiente de revisión
-
-Se incorporaron alertas para ambos roles y listas temporales de reposición por proveedor para el dueño. Las listas admiten edición, omisión de productos, copia y CSV. La versión inicial registró 40/40 pruebas de lógica y HTTP, 24/24 de integración, compilación y un recorrido con ambos roles. [Informe y evidencia](docs/implementacion/etapa-5.md)
-
-### 11/11/2026 — Sugerencias de revisión de la etapa 5
-
-La revisión de `b9675f9` precisó el formato de fecha del CSV, la escritura de las cantidades y la explicación de los decimales. Las correcciones se comprobaron con 42/42 pruebas de lógica y HTTP, compilación y 10 pasos de navegador. [Detalle y evidencia](docs/implementacion/etapa-5.md#revisión-cruzada-y-correcciones--11112026)
-
-### 14/11/2026 — Etapa 5 aprobada para integrar
-
-La revisión cruzada de `febd6ef` confirmó las cuatro correcciones. [Registro](docs/implementacion/etapa-5.md)
+- **Septiembre de 2026.** Se aprobó la propuesta y se completó el diseño. Las correcciones documentaron la normalización y el stock derivado, incorporaron CSV y verificaron el esquema en PostgreSQL.
+- **Octubre de 2026.** Se preparó el entorno, se versionó la migración y se verificó la instalación desde cero en dos equipos.
+- **5 al 14 de noviembre de 2026.** Se incorporaron acceso, catálogo, movimientos, alertas y reposición. Se integraron las correcciones de las revisiones cruzadas.
+- **18 al 20 de noviembre de 2026.** Se corrigió el manejo de la zona horaria, se publicó el sistema y se verificó online con ambos roles.
