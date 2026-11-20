@@ -70,7 +70,7 @@ Orden sugerido de lectura: requerimientos → reglas → modelo de datos → mó
 
 [Preparación de la defensa oral](preparacion-defensa-oral.md): guía de estudio compartida, con explicaciones desde cero, decisiones justificadas, recorridos de código y preguntas para la defensa individual.
 
-[Participación y preparación de la defensa](docs/participacion-y-defensa.md): reparto de etapas y registro de aportes, decisiones, pruebas y revisión de cada integrante.
+El proyecto se desarrolló con asistencia de IA. Codex y Claude generaron código y ayudaron con revisiones, pruebas y documentación. Tomás y Nazareno coordinaron las etapas, revisaron los resultados, integraron los cambios y probaron la aplicación publicada. El [registro de participación](docs/participacion-y-defensa.md) detalla los aportes y la evidencia por etapa.
 
 [Hoja de ruta de desarrollo](docs/plan-desarrollo.md): etapas, checklist y registro de avance.
 
@@ -179,7 +179,7 @@ Si hay conexiones abiertas, PostgreSQL rechazará el borrado; cerralas antes de 
 
 ### 09/11/2026 — Cierre de la etapa 2
 
-- Codex verificó las correcciones y aprobó la etapa. Se integra a `main` junto con su capítulo en la [guía de la defensa](preparacion-defensa-oral.md#etapa-2--problema-estado-y-alcance). Nazareno repitió las pruebas en `main` en su equipo: 26/26 y 7/7 ([salida](docs/implementacion/resultados-etapa-2-naza-2026-11-09.txt)). El ensayo de despliegue sigue pendiente.
+- La etapa se integró a `main` tras verificar las correcciones de [acceso y permisos](docs/implementacion/etapa-2.md). Nazareno repitió las pruebas en su equipo, con 26/26 unitarias y 7/7 de integración. [Salida de las pruebas](docs/implementacion/resultados-etapa-2-naza-2026-11-09.txt)
 
 ### 07/11/2026 — Etapa 2: correcciones de la revisión
 
@@ -245,29 +245,29 @@ Catálogo implementado, pendiente de revisión cruzada y de integración a main.
 
 ### Verificación del 10/11 — Etapa 3
 
-Claude aprobó las correcciones sobre 28b1acb: B1 y S1–S4 resueltos, sin nuevos bloqueantes. [Verificación](docs/implementacion/verificacion-etapa-3-claude.md). Implementación y revisión local completas; integrada a main el 10/11/2026 mediante fast-forward a f88b617. El despliegue y el piloto siguen pendientes.
+La revisión cruzada confirmó las correcciones del catálogo en `28b1acb`, incluida la navegación entre pestañas. [Verificación](docs/implementacion/verificacion-etapa-3-claude.md)
 
 
 ### Integración del 10/11 — Etapa 3
 
-Etapa cerrada: Tomás integró y publicó main en f88b617, después de la aprobación de Claude sobre 28b1acb. La siguiente etapa es movimientos e historial, a cargo de Nazareno con Claude y revisión de Tomás con Codex. El despliegue y el piloto siguen pendientes.
+Tomás integró y publicó la etapa de catálogo en `main` en `f88b617`, tras la revisión de `28b1acb`.
 
 
 ### Avance del 10/11 — Etapa 4
 
-Movimientos e historial implementados por Nazareno con Claude en `etapa-4-inventario`, pendientes de revisión cruzada y de integración a main. Se agregan `POST /api/inventario/movimientos`, `GET /api/inventario/productos/:id/movimientos` y la pantalla de Inventario. [Informe y pruebas](docs/implementacion/etapa-4.md). Capítulo nuevo en la guía de defensa. Sin cambios de esquema ni dependencias.
+La rama `etapa-4-inventario` incorporó la pantalla de Inventario, el registro de movimientos y el historial por producto. [Informe y pruebas](docs/implementacion/etapa-4.md)
 
 ### Correcciones del 10/11 — Etapa 4
 
-Tomás revisó con Codex `e463673`: un bloqueante en la pantalla (la respuesta de un envío podía aplicarse a otro producto elegido mientras tanto) y dos sugerencias. Corregidas por Nazareno con Claude, con pruebas nuevas de navegador; pendiente de verificación de Codex. Detalle en [etapa 4](docs/implementacion/etapa-4.md#revisión-cruzada).
+La revisión de `e463673` detectó que el resultado de una operación podía mostrarse sobre otro producto seleccionado durante el envío. Se corrigió ese comportamiento y se agregó una prueba de navegador. [Detalle de la revisión](docs/implementacion/etapa-4.md#revisión-cruzada)
 
 ### Aprobación del 10/11 — Etapa 4
 
-Codex verificó `bc7465d` y aprobó las correcciones: 36/36 unitarias, 21/21 de integración, build y 15 pasos de navegador en Windows/Edge, según su informe. Implementación y revisión cruzada aprobadas; integración a main pendiente. Siguen pendientes el despliegue, el piloto y las pruebas personales de Nazareno de esta etapa.
+La verificación de `bc7465d` registró 36/36 pruebas unitarias, 21/21 de integración, compilación y 15 pasos de navegador en Windows/Edge. [Informe y evidencia](docs/implementacion/etapa-4.md)
 
 ### Integración del 10/11 — Etapa 4
 
-Nazareno integró `etapa-4-inventario` a main mediante fast-forward: main avanzó de `b1b1b82` a `3b939c0` (no se creó commit de merge). Etapa 4 cerrada. Siguen pendientes el despliegue, el piloto y las pruebas personales de Nazareno de esta etapa. Próxima: etapa 5, con Tomás y Codex; revisan Nazareno y Claude.
+Nazareno integró la etapa de Inventario a `main`, de `b1b1b82` a `3b939c0`.
 
 ### Pruebas de Nazareno — Etapa 4
 
@@ -275,12 +275,12 @@ El 10/11 Nazareno ejecutó en su equipo, sobre main (`a8fd447`), `npm test` (36/
 
 ### 10/11/2026 — Implementación de la etapa 5, pendiente de revisión
 
-Se implementaron alertas para ambos roles y listas temporales de reposición para el dueño, agrupadas por proveedor, con edición, omisiones, copia manual/automática y CSV según RN-14. Actualizar alertas conserva la fotografía; recalcular la reemplaza. No se agregaron dependencias, tablas ni migraciones. Codex ejecutó 40/40 pruebas de lógica/HTTP, 24/24 de integración, build y 10 pasos en Edge con ambos roles. Se agregaron evidencias, informe y capítulo de defensa. [Detalle y límites](docs/implementacion/etapa-5.md). Pendientes: revisión de Nazareno con Claude, integración, despliegue y piloto.
+Se incorporaron alertas para ambos roles y listas temporales de reposición por proveedor para el dueño. Las listas admiten edición, omisión de productos, copia y CSV. La versión inicial registró 40/40 pruebas de lógica y HTTP, 24/24 de integración, compilación y un recorrido con ambos roles. [Informe y evidencia](docs/implementacion/etapa-5.md)
 
 ### 11/11/2026 — Sugerencias de revisión de la etapa 5
 
-Claude aprobó b9675f9 sin bloqueantes. Se aplicaron sus cuatro sugerencias: fecha argentina en el nombre del CSV, cantidades por unidad sin separadores, singular «unidad» y precisión sobre Decimal/toString en la guía. Codex verificó 42/42 pruebas de lógica/HTTP, build y 10 pasos de navegador. Pendientes: confirmación de estos cambios e integración. [Detalle y evidencia](docs/implementacion/etapa-5.md#revisión-cruzada-y-correcciones--11112026).
+La revisión de `b9675f9` precisó el formato de fecha del CSV, la escritura de las cantidades y la explicación de los decimales. Las correcciones se comprobaron con 42/42 pruebas de lógica y HTTP, compilación y 10 pasos de navegador. [Detalle y evidencia](docs/implementacion/etapa-5.md#revisión-cruzada-y-correcciones--11112026)
 
 ### 14/11/2026 — Etapa 5 aprobada para integrar
 
-Claude confirmó S1-S4 sobre febd6ef, según el reporte compartido por Tomás. Se registra la aprobación y se ordena el Markdown de la revisión original. Implementación y revisión cruzada aprobadas; falta integrar la rama a main. [Registro](docs/implementacion/etapa-5.md). Despliegue y piloto pendientes.
+La revisión cruzada de `febd6ef` confirmó las cuatro correcciones. [Registro](docs/implementacion/etapa-5.md)
