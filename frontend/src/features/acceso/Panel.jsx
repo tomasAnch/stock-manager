@@ -2,9 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { obtenerSesion } from '../../services/api.js';
 import { NOMBRE_ROL, seccionesDelRol } from './secciones.js';
 import EstadoConexion from '../../components/EstadoConexion.jsx';
+import Marca from '../../components/Marca.jsx';
 import Catalogo from '../catalogo/Catalogo.jsx';
 import Inventario from '../inventario/Inventario.jsx';
 import Reposicion from '../reposicion/Reposicion.jsx';
+
+function IconoSeccion({ seccion }) {
+  return <span className="section-icon" data-icon={seccion === 'reposicion' ? 'alertas' : seccion} aria-hidden="true" />;
+}
 
 // Interfaz después del login: datos de la sesión, menú según el rol y contenido.
 export default function Panel({ token, usuario, onUsuario, onSesionInvalida, onCerrarSesion }) {
@@ -31,70 +36,77 @@ export default function Panel({ token, usuario, onUsuario, onSesionInvalida, onC
   }, [seccionId, token, reintento]);
 
   return (
-    <>
-      <div className="session-bar">
-        <p>
-          <strong>{usuario.nombre}</strong>
-          <span className="role-tag">{NOMBRE_ROL[usuario.rol] ?? usuario.rol}</span>
-          <span className="store">{usuario.comercio.nombre}</span>
-        </p>
-        <button type="button" className="secondary" onClick={() => onCerrarSesion()}>Cerrar sesión</button>
-      </div>
-      <nav className="sections" aria-label="Secciones">
-        {secciones.map(item => (
-          <button key={item.id} type="button" aria-current={item.id === seccion.id ? 'page' : undefined}
-            onClick={() => setSeccionId(item.id)}>
-            {item.titulo}
-          </button>
-        ))}
-      </nav>
-      <main>
-        {avisoConexion && (
-          <div className="connection-notice" role="alert">
-            <p>{avisoConexion}</p>
-            <button type="button" className="secondary" onClick={() => setReintento(valor => valor + 1)}>Reintentar</button>
+    <div className="workspace">
+      <a className="skip-link" href="#contenido">Ir al contenido</a>
+      <aside className="sidebar">
+        <Marca />
+        <nav className="sections" aria-label="Secciones">
+          {secciones.map(item => (
+            <button key={item.id} type="button" aria-current={item.id === seccion.id ? 'page' : undefined}
+              onClick={() => setSeccionId(item.id)}>
+              <IconoSeccion seccion={item.id} />
+              <span>{item.titulo}</span>
+            </button>
+          ))}
+        </nav>
+        <div className="sidebar-account">
+          <div className="account-initial" aria-hidden="true">{usuario.nombre.trim().charAt(0).toUpperCase()}</div>
+          <div className="account-copy">
+            <strong>{usuario.nombre}</strong>
+            <span>{NOMBRE_ROL[usuario.rol] ?? usuario.rol}</span>
           </div>
-        )}
-        {seccion.id === 'inicio'
-          ? <Inicio usuario={usuario} secciones={secciones.slice(1)} onAbrir={setSeccionId} />
-          : seccion.id === 'catalogo' ? <Catalogo token={token} usuario={usuario} onSesionInvalida={onSesionInvalida} />
-          : seccion.id === 'inventario' ? <Inventario token={token} usuario={usuario} onSesionInvalida={onSesionInvalida} />
-          : ['reposicion', 'alertas'].includes(seccion.id) ? <Reposicion key={`${usuario.id}-${usuario.rol}`} token={token} usuario={usuario} onSesionInvalida={onSesionInvalida} />
-          : <SeccionPendiente seccion={seccion} />}
-      </main>
-    </>
+        </div>
+        <button type="button" className="secondary signout" onClick={() => onCerrarSesion()}>Cerrar sesión</button>
+      </aside>
+      <div className="workspace-body">
+        <header className="workspace-topbar">
+          <span>{usuario.comercio.nombre}</span>
+          <span className="workspace-path" aria-hidden="true">/</span>
+          <strong>{seccion.titulo}</strong>
+        </header>
+        <main id="contenido" className="workspace-main" tabIndex={-1}>
+          {avisoConexion && (
+            <div className="connection-notice" role="alert">
+              <p>{avisoConexion}</p>
+              <button type="button" className="secondary" onClick={() => setReintento(valor => valor + 1)}>Reintentar</button>
+            </div>
+          )}
+          {seccion.id === 'inicio' && <Inicio usuario={usuario} secciones={secciones.slice(1)} onAbrir={setSeccionId} />}
+          {seccion.id === 'catalogo' && <Catalogo token={token} usuario={usuario} onSesionInvalida={onSesionInvalida} />}
+          {seccion.id === 'inventario' && <Inventario token={token} usuario={usuario} onSesionInvalida={onSesionInvalida} />}
+          {['reposicion', 'alertas'].includes(seccion.id) && (
+            <Reposicion key={`${usuario.id}-${usuario.rol}`} token={token} usuario={usuario} onSesionInvalida={onSesionInvalida} />
+          )}
+        </main>
+        <footer className="app-footer">
+          <span>TFI · UTN</span>
+          <span>Tomás Anchorena · Nazareno Romero</span>
+        </footer>
+      </div>
+    </div>
   );
 }
 
 function Inicio({ usuario, secciones, onAbrir }) {
   return (
     <>
-      <p className="eyebrow">{usuario.comercio.nombre.toUpperCase()}</p>
-      <h1>Hola, {usuario.nombre}.</h1>
-      <p className="intro">
-        Ingresaste como {NOMBRE_ROL[usuario.rol]?.toLowerCase()}. Estas son las secciones disponibles para tu rol.
-      </p>
-      <EstadoConexion />
-      <div className="cards">
+      <div className="home-heading">
+        <h1>Hola, {usuario.nombre}.</h1>
+        <p className="intro">Consultá el stock y gestioná los movimientos de tu comercio.</p>
+      </div>
+      <div className="home-cards">
         {secciones.map(item => (
-          <article key={item.id}>
-            <span className="number">ETAPA {item.etapa}</span>
-            <h3>{item.titulo}</h3>
-            <p>{item.descripcion}</p>
-            <button type="button" className="link" onClick={() => onAbrir(item.id)}>Ver sección</button>
-          </article>
+          <button key={item.id} type="button" className="module-card" data-module={item.id} onClick={() => onAbrir(item.id)}>
+            <span className="module-card-top">
+              <span className="module-icon"><IconoSeccion seccion={item.id} /></span>
+              <span className="module-arrow" aria-hidden="true">↗</span>
+            </span>
+            <strong>{item.titulo}</strong>
+            <span>{item.descripcion}</span>
+          </button>
         ))}
       </div>
+      <EstadoConexion />
     </>
-  );
-}
-
-function SeccionPendiente({ seccion }) {
-  return (
-    <section className="pending-section" aria-labelledby="pendiente-titulo">
-      <h1 id="pendiente-titulo">{seccion.titulo}</h1>
-      <p className="intro">{seccion.descripcion}</p>
-      <p className="pending">Pendiente de implementación · etapa {seccion.etapa} de la hoja de ruta.</p>
-    </section>
   );
 }

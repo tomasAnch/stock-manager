@@ -3,6 +3,7 @@ import { obtenerSesion } from '../services/api.js';
 import { borrarToken, guardarToken, leerToken } from '../features/acceso/token-guardado.js';
 import LoginPage from '../features/acceso/LoginPage.jsx';
 import Panel from '../features/acceso/Panel.jsx';
+import Marca from '../components/Marca.jsx';
 
 // Estados de la sesión:
 // - verificando: hay un token guardado y se consulta al backend si sigue siendo válido.
@@ -44,12 +45,22 @@ export default function App() {
     setSesion(actual => (actual.fase === 'autenticado' ? { ...actual, usuario } : actual));
   }
 
+  if (sesion.fase === 'autenticado') {
+    return (
+      <Panel
+        token={sesion.token}
+        usuario={sesion.usuario}
+        onUsuario={actualizarUsuario}
+        onSesionInvalida={cerrarSesion}
+        onCerrarSesion={() => cerrarSesion('Cerraste la sesión.')}
+      />
+    );
+  }
+
   return (
-    <div className="shell">
+    <div className="public-shell">
       <header className="topbar">
-        <span className="brand">
-          <span className="brand-mark" aria-hidden="true">▥</span> Stock Manager
-        </span>
+        <Marca />
         <span className="tag">TFI · UTN</span>
       </header>
 
@@ -69,17 +80,7 @@ export default function App() {
         </main>
       )}
 
-      {sesion.fase === 'autenticado' && (
-        <Panel
-          token={sesion.token}
-          usuario={sesion.usuario}
-          onUsuario={actualizarUsuario}
-          onSesionInvalida={cerrarSesion}
-          onCerrarSesion={() => cerrarSesion('Cerraste la sesión.')}
-        />
-      )}
-
-      <footer>
+      <footer className="app-footer">
         <span>Stock Manager</span>
         <span>Tomás Anchorena · Nazareno Romero</span>
       </footer>

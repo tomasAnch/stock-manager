@@ -25,22 +25,31 @@ export default function LoginPage({ aviso, onLogin }) {
 
   return (
     <main className="login">
-      <p className="eyebrow">INVENTARIO PARA TU COMERCIO</p>
-      <h1>Ingresá a<br />tu comercio.</h1>
-      <form className="login-card" onSubmit={enviar} noValidate>
-        {aviso && <p className="notice" role="status">{aviso}</p>}
-        <label htmlFor="correo">Correo</label>
-        <input id="correo" type="email" autoComplete="username" required
-          value={correo} onChange={event => setCorreo(event.target.value)} disabled={enviando} />
-        <label htmlFor="contrasena">Contraseña</label>
-        <input id="contrasena" type="password" autoComplete="current-password" required
-          value={contrasena} onChange={event => setContrasena(event.target.value)} disabled={enviando} />
-        {error && <p className="form-error" role="alert">{error}</p>}
-        <button type="submit" disabled={enviando || !correo.trim() || !contrasena}>
-          {enviando ? 'Ingresando…' : 'Ingresar'}
-        </button>
-        <p className="hint">Las cuentas las crea el equipo del proyecto. No hay registro público.</p>
-      </form>
+      <div className="login-content">
+        <h1>Ingresá a tu comercio.</h1>
+        <form className="login-card" onSubmit={enviar} noValidate>
+          {aviso && <p className="notice" role="status">{aviso}</p>}
+          <label htmlFor="correo">Correo</label>
+          <input id="correo" type="email" autoComplete="username" required
+            value={correo} onChange={event => setCorreo(event.target.value)} disabled={enviando} />
+          <label htmlFor="contrasena">Contraseña</label>
+          <input id="contrasena" type="password" autoComplete="current-password" required
+            value={contrasena} onChange={event => setContrasena(event.target.value)} disabled={enviando} />
+          {error && <p className="form-error" role="alert">{error}</p>}
+          <button type="submit" disabled={enviando || !correo.trim() || !contrasena}>
+            {enviando ? 'Ingresando…' : 'Ingresar'}
+          </button>
+          <p className="hint">Las cuentas las crea el equipo del proyecto. No hay registro público.</p>
+        </form>
+      </div>
+      <div className="login-art" aria-hidden="true">
+        <div className="package-grid">
+          <span className="package package-label"><i /></span>
+          <span className="package package-sun" />
+          <span className="package package-tape" />
+          <span className="package package-barcode"><i /></span>
+        </div>
+      </div>
     </main>
   );
 }

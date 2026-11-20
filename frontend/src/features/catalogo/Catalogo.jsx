@@ -89,10 +89,25 @@ export default function Catalogo({ token, usuario, onSesionInvalida }) {
         <div className="catalogo-actions"><button type="submit">{ocupado ? 'Guardando…' : 'Guardar'}</button><button type="button" className="secondary" onClick={() => setEditor(null)}>Cancelar</button></div>
       </fieldset>
     </form> : <>
-      <form className="catalogo-actions" onSubmit={e => { e.preventDefault(); setQ(busqueda); setPagina(1); setRevision(n => n + 1); }}>
-        <label>Buscar por {tipo === 'productos' ? 'código o nombre' : 'nombre'}<input value={busqueda} maxLength={160} onChange={e => setBusqueda(e.target.value)} /></label>
-        <label>Estado<select aria-label="Estado" value={estado} onChange={e => { setEstado(e.target.value); setPagina(1); }}><option value="activos">Activos</option><option value="inactivos">Inactivos</option><option value="todos">Todos</option></select></label>
-        <button>Buscar</button>{dueno && <button type="button" disabled={ocupado} onClick={() => abrir(null)}>Crear nuevo</button>}
+      <form className="catalogo-barra" onSubmit={e => { e.preventDefault(); setQ(busqueda); setPagina(1); setRevision(n => n + 1); }}>
+        <div className="catalogo-filtros">
+          <label className="catalogo-busqueda">
+            Buscar por {tipo === 'productos' ? 'código o nombre' : 'nombre'}
+            <input value={busqueda} maxLength={160} onChange={e => setBusqueda(e.target.value)} />
+          </label>
+          <label>
+            Estado
+            <select aria-label="Estado" value={estado} onChange={e => { setEstado(e.target.value); setPagina(1); }}>
+              <option value="activos">Activos</option>
+              <option value="inactivos">Inactivos</option>
+              <option value="todos">Todos</option>
+            </select>
+          </label>
+          <button type="submit" className="secondary">Buscar</button>
+        </div>
+        {dueno && (
+          <button type="button" className="catalogo-crear" disabled={ocupado} onClick={() => abrir(null)}>Crear nuevo</button>
+        )}
       </form>
       {cargando ? <p role="status">Cargando catálogo…</p> : <>
         <p>{lista.total} registros · página {pagina} de {lista.paginas}</p>
@@ -102,7 +117,14 @@ export default function Catalogo({ token, usuario, onSesionInvalida }) {
           {tipo === 'productos' ? <><p>Código: {item.codigo} · {item.unidad === 'KG' ? 'kg' : 'unidades'}</p><dl><dt>Stock actual</dt><dd>{item.stockActual}</dd><dt>Mínimo / objetivo</dt><dd>{item.stockMinimo} / {item.stockObjetivo}</dd><dt>Categoría</dt><dd>{item.categoria.nombre}</dd><dt>Proveedor</dt><dd>{item.proveedor.nombre}</dd></dl></> : tipo === 'proveedores' && <p>{item.telefono || 'Sin teléfono'} · {item.correo || 'Sin correo'}</p>}
           {dueno && <div className="catalogo-actions"><button aria-label={`Editar ${item.nombre}`} disabled={ocupado} onClick={() => abrir(item)}>Editar</button><button aria-label={`${item.activo ? 'Desactivar' : 'Reactivar'} ${item.nombre}`} disabled={ocupado} className="secondary" onClick={() => actividad(item)}>{item.activo ? 'Desactivar' : 'Reactivar'}</button></div>}
         </article>)}</div>
-        <div className="catalogo-actions"><button disabled={pagina <= 1 || ocupado} onClick={() => setPagina(n => n - 1)}>Anterior</button><button disabled={pagina >= lista.paginas || ocupado} onClick={() => setPagina(n => n + 1)}>Siguiente</button></div>
+        <nav className="catalogo-paginas" aria-label="Paginación del catálogo">
+          <button type="button" disabled={pagina <= 1 || ocupado} onClick={() => setPagina(n => n - 1)}>
+            <span aria-hidden="true">←</span> Anterior
+          </button>
+          <button type="button" disabled={pagina >= lista.paginas || ocupado} onClick={() => setPagina(n => n + 1)}>
+            Siguiente <span aria-hidden="true">→</span>
+          </button>
+        </nav>
       </>}
     </>}
   </section>;
